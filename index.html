@@ -458,7 +458,7 @@ function renderCard(e,ctx){
   const rightHtml=isMeal&&mealCal>0?`<span class="tcard-kcal">${mealCal} kcal</span>`:!isMeal&&e.calories?`<span class="tcard-kcal">−${e.calories} kcal</span>`:'';
   const subHtml=!isMeal&&(e.duration||e.distance)?`<div class="tcard-sub">${e.duration?e.duration+'分鐘':''}${e.distance?' · '+e.distance+'km':''}</div>`:'';
   const noteHtml=e.note?`<div class="tcard-note">${esc(e.note)}</div>`:'';
-  const icon=isMeal?(MEAL_ICONS[e.mealType]||'🍽'):(allExIcons()[e.exerciseType]||'⚡');
+  const _ei=allExIcons();const icon=isMeal?(MEAL_ICONS[e.mealType]||'🍽'):(_ei[e.exerciseType]?_ei[e.exerciseType]+' ':'')+e.exerciseType;
   const pid=ctx+'-'+e.id;
   // 運動加綠色框線 class
   const bodyClass='tcard-body'+(isMeal?'':' exercise');
@@ -471,7 +471,7 @@ function renderCard(e,ctx){
     <div class="${bodyClass}">
       ${imgHtml}
       <div class="tcard-content">
-        <div class="tcard-row"><span class="tcard-name">${icon} ${esc(isMeal?e.mealType:e.exerciseType)}</span>${rightHtml}</div>
+        <div class="tcard-row"><span class="tcard-name">${isMeal?icon+" "+esc(e.mealType):icon}</span>${rightHtml}</div>
         ${tagsHtml}${subHtml}${noteHtml}
       </div>
     </div>
@@ -664,7 +664,9 @@ function renderChips(){
   document.getElementById('exTypeChips').innerHTML=et.map(t=>{
     const isC=customNames.has(t);
     const lp=isC?`oncontextmenu="delCustomEx(event,'${esc(t)}')" ontouchstart="lpStart(event,'${esc(t)}')" ontouchend="lpEnd()" ontouchmove="lpEnd()"`:'' ;
-    return `<button class="chip${t===selExType?' active':''}${isC?' chip-custom':''}" onclick="selEx('${esc(t)}')" ${lp}>${ei[t]||'⚡'} ${t}</button>`;
+    // 原始類別顯示 icon+名稱，自訂類別直接顯示使用者輸入的完整文字
+    const label=isC?t:`${ei[t]||'⚡'} ${t}`;
+    return `<button class="chip${t===selExType?' active':''}${isC?' chip-custom':''}" onclick="selEx('${esc(t)}')" ${lp}>${label}</button>`;
   }).join('');
 }
 function selMeal(m){selMealType=m;renderChips();}
@@ -679,11 +681,13 @@ function delCustomEx(ev,name){
   renderChips();
 }
 function openAddExType(){
-  const name=prompt('輸入自訂運動名稱（例如：攀岩）');
-  if(!name?.trim())return;
-  const icon=prompt('選擇 emoji 圖示','⚡');
-  const custom=loadCustomEx();custom.push({name:name.trim(),icon:icon||'⚡'});
-  saveCustomEx(custom);selExType=name.trim();renderChips();
+  const input=prompt('輸入運動類別（例如：🧗 攀岩）');
+  if(!input?.trim())return;
+  const label=input.trim();
+  const custom=loadCustomEx();
+  if(custom.find(x=>x.name===label)||EX_BASE.includes(label)){showToast('此名稱已存在');return;}
+  custom.push({name:label,icon:''});
+  saveCustomEx(custom);selExType=label;renderChips();
 }
 
 function saveEntry(){
