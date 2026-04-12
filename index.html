@@ -244,7 +244,7 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;gap
           <div class="form-label">記錄照片（可多選，自動壓縮）</div>
           <div id="photoUploadArea" class="photo-upload" onclick="document.getElementById('photoInput').click()">
             <div style="font-size:26px;margin-bottom:3px">📷</div>
-            <div style="font-size:13px">點擊上傳（可多選）</div>
+            <div style="font-size:13px">點擊上傳 或 貼上圖片</div>
           </div>
           <div id="photoGrid" class="photo-grid"></div>
         </div>
@@ -253,7 +253,7 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;gap
       </div>
       <div id="exerciseFields" style="display:none">
         <div class="form-label">運動類型</div>
-        <div class="chip-hint">💡 長按自訂類別可刪除</div>
+        <div class="chip-hint">💡 長按自訂類別可刪除・拖曳排序</div>
         <div class="chip-group" id="exTypeChips"></div>
         <button onclick="openAddExType()" style="margin-bottom:13px;background:#f5f0e8;color:#8b6f47;border:1.5px dashed #c8b89a;border-radius:20px;padding:6px 13px;font-size:13px;font-weight:600">＋ 自訂類別</button>
         <div class="num-grid">
@@ -264,7 +264,7 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;gap
         <div class="form-label">記錄照片（可多選，自動壓縮）</div>
         <div id="exPhotoUploadArea" class="photo-upload" onclick="document.getElementById('exPhotoInput').click()">
           <div style="font-size:26px;margin-bottom:3px">📷</div>
-          <div style="font-size:13px">點擊上傳（可多選）</div>
+          <div style="font-size:13px">點擊上傳 或 貼上圖片</div>
         </div>
         <div id="exPhotoGrid" class="photo-grid"></div>
         <div class="form-label" style="margin-top:12px">備注</div>
@@ -331,8 +331,8 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;gap
 
 <script>
 const STORE_KEY='diet_log_v3';
-const MEAL_ICONS={'早餐':'☀️','午餐':'🌤️','晚餐':'🌙','點心':'🍡','宵夜':'🌛'};
-const MEAL_TYPES=['早餐','午餐','晚餐','點心','宵夜'];
+const MEAL_ICONS={'早餐':'☀️','早午餐':'🍳','午餐':'🌤️','下午茶':'🧋','晚餐':'🌙','點心':'🍡','宵夜':'🌛'};
+const MEAL_TYPES=['早餐','早午餐','午餐','下午茶','晚餐','點心','宵夜'];
 // 只保留「跑步」作為原始類別，其餘改為自訂
 const EX_BASE=['跑步'];
 const EX_BASE_ICONS={'跑步':'🏃'};
@@ -770,7 +770,7 @@ function openAdd(type,date){
   document.getElementById('fNote').value='';document.getElementById('fExNote').value='';
   document.getElementById('fDuration').value='';document.getElementById('fDistance').value='';document.getElementById('fCalories').value='';
   mealPhotos=[];exPhotos=[];renderPhotoGrid('meal');renderPhotoGrid('ex');
-  selMealType='早餐';selExType='跑步';
+  selMealType=guessMealType();selExType='跑步';
   renderChips();setType(currentType);
   document.getElementById('addSheet').style.display='flex';
   document.getElementById('addSheet').querySelector('.sheet-save').textContent='儲存';
@@ -787,22 +787,79 @@ function setType(t){
 }
 function switchType(t){setType(t);}
 
+function guessMealType(){
+  const h=new Date().getHours();
+  if(h>=4&&h<9) return '早餐';
+  if(h>=9&&h<11) return '早午餐';
+  if(h>=11&&h<14) return '午餐';
+  if(h>=14&&h<17) return '下午茶';
+  if(h>=17&&h<21) return '晚餐';
+  if(h>=21||h<1) return '宵夜';
+  return '點心';
+}
+
 function renderChips(){
   document.getElementById('mealTypeChips').innerHTML=MEAL_TYPES.map(m=>`<button class="chip${m===selMealType?' active':''}" onclick="selMeal('${m}')">${MEAL_ICONS[m]} ${m}</button>`).join('');
   const customNames=new Set(loadCustomEx().map(x=>x.name));
   const et=allExTypes(),ei=allExIcons();
-  document.getElementById('exTypeChips').innerHTML=et.map(t=>{
+  const chipsEl=document.getElementById('exTypeChips');
+  chipsEl.innerHTML=et.map((t,idx)=>{
     const isC=customNames.has(t);
-    const lp=isC?`oncontextmenu="delCustomEx(event,'${esc(t)}')" ontouchstart="lpStart(event,'${esc(t)}')" ontouchend="lpEnd()" ontouchmove="lpEnd()"`:'' ;
-    // 原始類別顯示 icon+名稱，自訂類別直接顯示使用者輸入的完整文字
+    const lp=isC?`oncontextmenu="delCustomEx(event,'${esc(t)}')" ontouchstart="exChipTouchStart(event,'${esc(t)}')" ontouchend="exChipTouchEnd(event,'${esc(t)}')" ontouchmove="exChipTouchMove(event,'${esc(t)}')"`:'' ;
     const label=isC?t:`${ei[t]||'⚡'} ${t}`;
-    return `<button class="chip${t===selExType?' active':''}${isC?' chip-custom':''}" onclick="selEx('${esc(t)}')" ${lp}>${label}</button>`;
+    const drag=isC?`draggable="true" ondragstart="exDragStart(event,'${esc(t)}')" ondragover="exDragOver(event,'${esc(t)}')" ondrop="exDrop(event,'${esc(t)}')"`:'' ;
+    return `<button class="chip${t===selExType?' active':''}${isC?' chip-custom':''}" onclick="selEx('${esc(t)}')" ${lp} ${drag} data-name="${esc(t)}">${label}</button>`;
   }).join('');
 }
 function selMeal(m){selMealType=m;renderChips();}
 function selEx(t){selExType=t;renderChips();}
 function lpStart(ev,name){_lpTimer=setTimeout(()=>{_lpTimer=null;delCustomEx(null,name);},600);}
 function lpEnd(){if(_lpTimer){clearTimeout(_lpTimer);_lpTimer=null;}}
+
+// Drag-to-reorder custom exercise types
+let _dragSrc=null;
+function exDragStart(ev,name){_dragSrc=name;ev.dataTransfer.effectAllowed='move';}
+function exDragOver(ev,name){ev.preventDefault();ev.dataTransfer.dropEffect='move';}
+function exDrop(ev,name){
+  ev.preventDefault();
+  if(!_dragSrc||_dragSrc===name)return;
+  const custom=loadCustomEx();
+  const fromIdx=custom.findIndex(x=>x.name===_dragSrc);
+  const toIdx=custom.findIndex(x=>x.name===name);
+  if(fromIdx<0||toIdx<0)return;
+  const [item]=custom.splice(fromIdx,1);
+  custom.splice(toIdx,0,item);
+  saveCustomEx(custom);
+  renderChips();
+  _dragSrc=null;
+}
+
+// Touch-based long-press (same as before) + touch drag for reorder
+let _touchDragName=null,_touchDragTimer=null;
+function exChipTouchStart(ev,name){
+  _touchDragName=name;
+  _lpTimer=setTimeout(()=>{_lpTimer=null;delCustomEx(null,name);},600);
+}
+function exChipTouchEnd(ev,name){lpEnd();}
+function exChipTouchMove(ev,name){
+  lpEnd();
+  // find chip under finger
+  const touch=ev.touches[0];
+  const el=document.elementFromPoint(touch.clientX,touch.clientY);
+  if(el&&el.dataset.name&&el.dataset.name!==name){
+    ev.preventDefault();
+    const custom=loadCustomEx();
+    const fromIdx=custom.findIndex(x=>x.name===name);
+    const toIdx=custom.findIndex(x=>x.name===el.dataset.name);
+    if(fromIdx>=0&&toIdx>=0&&fromIdx!==toIdx){
+      const [item]=custom.splice(fromIdx,1);
+      custom.splice(toIdx,0,item);
+      saveCustomEx(custom);
+      renderChips();
+      selExType=name; // keep selection
+    }
+  }
+}
 function delCustomEx(ev,name){
   if(ev)ev.preventDefault();
   if(!confirm(`刪除「${name}」？`))return;
@@ -841,21 +898,49 @@ function saveEntry(){
 
 function handlePhotos(event,kind){
   const files=Array.from(event.target.files);if(!files.length)return;
-  const MAX=900,Q=0.82;
-  files.forEach(file=>{
-    const r=new FileReader();
-    r.onload=ev=>{
-      const img=new Image();img.onload=()=>{
-        let w=img.width,h=img.height;
-        if(w>h){if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}}else{if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}}
-        const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
-        if(kind==='meal')mealPhotos.push(c.toDataURL('image/jpeg',Q));
-        else exPhotos.push(c.toDataURL('image/jpeg',Q));
-        renderPhotoGrid(kind);
-      };img.src=ev.target.result;
-    };r.readAsDataURL(file);
-  });event.target.value='';
+  files.forEach(file=>compressAndAdd(file,kind));
+  event.target.value='';
 }
+// ── Paste image support ──────────────────────────────────────────
+document.addEventListener('paste', ev=>{
+  // Only when add sheet is open
+  const sheet=document.getElementById('addSheet');
+  if(!sheet||sheet.style.display==='none') return;
+  const items=Array.from(ev.clipboardData?.items||[]);
+  const imgItems=items.filter(it=>it.type.startsWith('image/'));
+  if(!imgItems.length) return;
+  ev.preventDefault();
+  const kind=currentType==='meal'?'meal':'ex';
+  imgItems.forEach(item=>{
+    const file=item.getAsFile();
+    if(!file) return;
+    compressAndAdd(file, kind);
+  });
+});
+
+function compressAndAdd(file, kind){
+  const MAX=900, Q=0.82;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const img=new Image();
+    img.onload=()=>{
+      let w=img.width, h=img.height;
+      if(w>h){if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}}
+      else{if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}}
+      const canvas=document.createElement('canvas');
+      canvas.width=w; canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      const data=canvas.toDataURL('image/jpeg',Q);
+      if(kind==='meal') mealPhotos.push(data);
+      else exPhotos.push(data);
+      renderPhotoGrid(kind);
+      showToast('📋 已貼上照片');
+    };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
 function renderPhotoGrid(kind){
   const arr=kind==='meal'?mealPhotos:exPhotos;
   const grid=document.getElementById(kind==='meal'?'photoGrid':'exPhotoGrid');
