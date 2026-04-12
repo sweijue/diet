@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
@@ -56,17 +57,34 @@ button{cursor:pointer}
 .today-badge{font-size:11px;background:#c8a96e;color:#2c2416;padding:2px 8px;border-radius:99px;font-weight:700}
 .day-cal{font-size:12px;text-align:right;line-height:1.7}
 .timeline-entries{padding:8px 16px;position:relative}
-.timeline-line{position:absolute;left:36px;top:0;bottom:0;width:1px;background:#e0d8cc}
-/* ── 卡片滑動：左刪除、右編輯 ── */
+.timeline-line{position:absolute;left:50px;top:0;bottom:0;width:1px;background:#e0d8cc}
+
+/* ── 卡片滑動：兩側按鈕都在 tcard-body 右側 ── */
 .tcard-wrap{position:relative;overflow:hidden;margin-bottom:11px}
-.tcard-action-left{position:absolute;left:0;top:0;bottom:0;width:90px;display:flex;align-items:stretch;opacity:0;pointer-events:none}
-.tcard-action-right{position:absolute;right:0;top:0;bottom:0;width:90px;display:flex;align-items:stretch;opacity:0;pointer-events:none}
-.btn-swipe-edit{flex:1;background:#c8a96e;color:#2c2416;border:none;font-size:12px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-radius:12px 0 0 12px}
-.btn-swipe-del{flex:1;background:#e06060;color:#fff;border:none;font-size:12px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-radius:0 12px 12px 0}
+/* 右側：編輯（橘）+ 刪除（紅），左滑顯示 */
+.tcard-action-right{
+position:absolute;right:0;top:0;bottom:0;
+display:flex;align-items:stretch;
+opacity:0;pointer-events:none;
+border-radius:0 12px 12px 0;
+overflow:hidden;
+}
+.btn-swipe-edit{
+width:68px;background:#c8a96e;color:#2c2416;border:none;
+font-size:12px;font-weight:700;cursor:pointer;
+display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+}
+.btn-swipe-del{
+width:68px;background:#e06060;color:#fff;border:none;
+font-size:12px;font-weight:700;cursor:pointer;
+display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+}
 .tcard-inner{transition:transform .22s ease;display:flex;align-items:flex-start;position:relative;z-index:1}
+/* 時間欄 */
 .tcard-time{width:50px;flex-shrink:0;text-align:right;padding-right:10px;padding-top:4px;font-size:14px;font-weight:800;color:#2c2416}
-.tcard-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:5px;z-index:1;border:2px solid #f7f4ef}
-.tcard-body{flex:1;margin-left:10px;background:#fff;border-radius:12px;border:1px solid #ece6de;overflow:hidden;box-shadow:0 2px 8px rgba(44,36,22,.06)}
+/* 內容框：用餐預設邊線，運動改綠色邊線 */
+.tcard-body{flex:1;background:#fff;border-radius:12px;border:1px solid #ece6de;overflow:hidden;box-shadow:0 2px 8px rgba(44,36,22,.06)}
+.tcard-body.exercise{border-color:#7aaa8a;box-shadow:0 2px 8px rgba(90,154,106,.10)}
 .tcard-imgs{display:flex;gap:2px;overflow:hidden}
 .tcard-img{flex:1;height:110px;object-fit:cover;display:block;min-width:0;cursor:zoom-in}
 .tcard-content{padding:9px 12px}
@@ -77,6 +95,7 @@ button{cursor:pointer}
 .tag{display:inline-block;padding:3px 9px;border-radius:99px;background:#f5f0e8;color:#6b5230;font-size:12px;font-weight:600}
 .tcard-sub{font-size:12px;color:#999;margin-top:4px}
 .tcard-note{font-size:12px;color:#aaa;font-style:italic;margin-top:4px;border-top:1px solid #f5f0e8;padding-top:4px}
+
 /* 日曆 */
 .cal-nav{display:flex;align-items:center;justify-content:space-between;padding:13px 16px 10px;border-bottom:1px solid #e8e2d8}
 .cal-nav-btn{background:none;border:none;font-size:26px;color:#8b6f47;padding:4px 12px}
@@ -92,8 +111,8 @@ button{cursor:pointer}
 .cal-dot{width:4px;height:4px;border-radius:50%;display:inline-block}
 .cal-selected-header{padding:10px 16px 7px;display:flex;justify-content:space-between;align-items:center;background:#faf8f5;border-top:2px solid #2c2416}
 .cal-selected-date{font-weight:700;font-size:16px;color:#2c2416}
-.cal-entries{padding:6px 16px 20px;position:relative}
-.cal-tl-line{position:absolute;left:52px;top:0;bottom:0;width:1px;background:#e0d8cc;pointer-events:none}
+.cal-entries{padding:6px 16px 20px}
+
 /* 表單 */
 .sheet-overlay{position:fixed;inset:0;background:rgba(44,36,22,.65);z-index:200;display:flex;align-items:flex-end;backdrop-filter:blur(4px);animation:fadeIn .2s ease}
 .sheet{width:100%;max-width:480px;margin:0 auto;background:#fdf9f4;border-radius:20px 20px 0 0;max-height:92vh;overflow-y:auto;animation:slideUp .28s ease}
@@ -136,6 +155,7 @@ button{cursor:pointer}
 .clear-info{font-size:13px;color:#999;margin-bottom:16px}
 .btn-clear-confirm{width:100%;padding:14px;border-radius:10px;background:#d44;color:#fff;border:none;font-weight:700;font-size:16px}
 </style>
+
 </head>
 <body>
 <div id="app">
@@ -172,6 +192,7 @@ button{cursor:pointer}
 </div>
 
 <button id="fab" onclick="toggleFabMenu()">+</button>
+
 <div id="fabMenu">
   <div class="fab-item">
     <div class="fab-item-label">記錄用餐</div>
@@ -280,10 +301,11 @@ button{cursor:pointer}
 const STORE_KEY='diet_log_v3';
 const MEAL_ICONS={'早餐':'☀️','午餐':'🌤️','晚餐':'🌙','點心':'🍡','宵夜':'🌛'};
 const MEAL_TYPES=['早餐','午餐','晚餐','點心','宵夜'];
-const EX_BASE=['跑步','走路','騎車','游泳','重訓','瑜伽','HIIT','其他'];
-const EX_BASE_ICONS={'跑步':'🏃','走路':'🚶','騎車':'🚴','游泳':'🏊','重訓':'💪','瑜伽':'🧘','HIIT':'🔥','其他':'⚡'};
+// 只保留「跑步」作為原始類別，其餘改為自訂
+const EX_BASE=['跑步'];
+const EX_BASE_ICONS={'跑步':'🏃'};
 const WEEKDAYS=['日','一','二','三','四','五','六'];
-const SWIPE_W=90;
+const SWIPE_W=136; // 兩個按鈕各68px
 
 function loadCustomEx(){try{return JSON.parse(localStorage.getItem('ex_custom')||'[]');}catch{return[];}}
 function saveCustomEx(a){localStorage.setItem('ex_custom',JSON.stringify(a));}
@@ -295,7 +317,6 @@ let calYear=new Date().getFullYear(),calMonth=new Date().getMonth(),calSelected=
 let mealPhotos=[],exPhotos=[],selMealType='早餐',selExType='跑步';
 let fabOpen=false;
 const collapsedDays=new Set();
-// swipe state: {id, ctx, dir}
 let swipeTouches={},currentSwiped=null;
 let lbPhotos=[],lbIdx=0,lbEntryId=null;
 let _lpTimer=null;
@@ -427,9 +448,9 @@ function renderTimeline(){
   }).join('');
 }
 
-/* ── 通用卡片（時間線 & 日曆共用） ── */
+/* ── 通用卡片 ── */
 function renderCard(e,ctx){
-  const isMeal=e.type==='meal',dot=isMeal?'#c8a96e':'#7aaa8a';
+  const isMeal=e.type==='meal';
   const photos=e.photos||[];
   const imgHtml=photos.length?`<div class="tcard-imgs">${photos.slice(0,3).map((p,i)=>`<img class="tcard-img" src="${p}" loading="lazy" style="flex:${photos.length===1?'unset;width:100%':'1'}" onclick="openLightboxEntry(event,'${e.id}',${i})">`).join('')}</div>`:'';
   const tagsHtml=isMeal&&e.foods?.length?`<div class="tags">${e.foods.map(f=>`<span class="tag">${esc(f.name)}</span>`).join('')}</div>`:'';
@@ -439,17 +460,15 @@ function renderCard(e,ctx){
   const noteHtml=e.note?`<div class="tcard-note">${esc(e.note)}</div>`:'';
   const icon=isMeal?(MEAL_ICONS[e.mealType]||'🍽'):(allExIcons()[e.exerciseType]||'⚡');
   const pid=ctx+'-'+e.id;
+  // 運動加綠色框線 class
+  const bodyClass='tcard-body'+(isMeal?'':' exercise');
   return `<div class="tcard-wrap" id="wrap-${pid}">
-  <div class="tcard-action-left" id="aL-${pid}">
-    <button class="btn-swipe-edit" onclick="doEdit('${e.id}','${ctx}')">✏️<span>編輯</span></button>
-  </div>
   <div class="tcard-inner" id="inn-${pid}"
     ontouchstart="tsStart(event,'${e.id}','${ctx}')"
     ontouchmove="tsMove(event,'${e.id}','${ctx}')"
     ontouchend="tsEnd(event,'${e.id}','${ctx}')">
     <div class="tcard-time">${e.time}</div>
-    <div class="tcard-dot" style="background:${dot}"></div>
-    <div class="tcard-body">
+    <div class="${bodyClass}">
       ${imgHtml}
       <div class="tcard-content">
         <div class="tcard-row"><span class="tcard-name">${icon} ${esc(isMeal?e.mealType:e.exerciseType)}</span>${rightHtml}</div>
@@ -458,15 +477,16 @@ function renderCard(e,ctx){
     </div>
   </div>
   <div class="tcard-action-right" id="aR-${pid}">
+    <button class="btn-swipe-edit" onclick="doEdit('${e.id}','${ctx}')">✏️<span>編輯</span></button>
     <button class="btn-swipe-del" onclick="doDel('${e.id}','${ctx}')">🗑<span>刪除</span></button>
   </div>
 </div>`;
 }
 
-/* ── 滑動手勢 ── */
+/* ── 滑動（只左滑，右側顯示編輯+刪除） ── */
 function tsStart(ev,id,ctx){
   const t=ev.touches[0];
-  swipeTouches[id+ctx]={x:t.clientX,y:t.clientY,moved:false,id,ctx};
+  swipeTouches[id+ctx]={x:t.clientX,y:t.clientY,moved:false};
 }
 function tsMove(ev,id,ctx){
   const key=id+ctx,d=swipeTouches[key];if(!d)return;
@@ -475,13 +495,12 @@ function tsMove(ev,id,ctx){
   if(Math.abs(dx)>5){d.moved=true;ev.preventDefault();}
   const pid=ctx+'-'+id;
   const el=document.getElementById('inn-'+pid);if(!el)return;
-  let base=0;
-  if(currentSwiped&&currentSwiped.id===id&&currentSwiped.ctx===ctx){
-    base=currentSwiped.dir==='left'?-SWIPE_W:SWIPE_W;
-  }
-  const off=Math.max(-SWIPE_W,Math.min(SWIPE_W,base+dx));
+  const base=(currentSwiped&&currentSwiped.id===id&&currentSwiped.ctx===ctx)?-SWIPE_W:0;
+  // 只允許左滑（負方向）
+  const off=Math.max(-SWIPE_W,Math.min(0,base+dx));
   el.style.transition='none';el.style.transform=`translateX(${off}px)`;
-  syncActionOpacity(pid,off);
+  const aR=document.getElementById('aR-'+pid);
+  if(aR){const o=Math.min(1,-off/SWIPE_W);aR.style.opacity=String(o);aR.style.pointerEvents=o>.5?'auto':'none';}
 }
 function tsEnd(ev,id,ctx){
   const key=id+ctx,d=swipeTouches[key];if(!d)return;
@@ -495,31 +514,26 @@ function tsEnd(ev,id,ctx){
     delete swipeTouches[key];return;
   }
   if(currentSwiped&&!(currentSwiped.id===id&&currentSwiped.ctx===ctx))closeSwipe();
-  if(dx<-30){activateSwipe(id,ctx,'left');}
-  else if(dx>30){activateSwipe(id,ctx,'right');}
+  if(dx<-30){activateSwipe(id,ctx);}
   else{closeSwipe();}
   delete swipeTouches[key];
 }
-function syncActionOpacity(pid,off){
-  const aL=document.getElementById('aL-'+pid),aR=document.getElementById('aR-'+pid);
-  if(aL){const o=Math.min(1,off/SWIPE_W);aL.style.opacity=o>0?String(o):'0';aL.style.pointerEvents=o>.5?'auto':'none';}
-  if(aR){const o=Math.min(1,-off/SWIPE_W);aR.style.opacity=o>0?String(o):'0';aR.style.pointerEvents=o>.5?'auto':'none';}
-}
-function activateSwipe(id,ctx,dir){
+function activateSwipe(id,ctx){
   closeSwipe();
   const pid=ctx+'-'+id;
   const el=document.getElementById('inn-'+pid);if(!el)return;
-  const off=dir==='left'?-SWIPE_W:SWIPE_W;
-  el.style.transform=`translateX(${off}px)`;
-  syncActionOpacity(pid,off);
-  currentSwiped={id,ctx,dir};
+  el.style.transform=`translateX(-${SWIPE_W}px)`;
+  const aR=document.getElementById('aR-'+pid);
+  if(aR){aR.style.opacity='1';aR.style.pointerEvents='auto';}
+  currentSwiped={id,ctx};
 }
 function closeSwipe(){
   if(!currentSwiped)return;
   const pid=currentSwiped.ctx+'-'+currentSwiped.id;
   const el=document.getElementById('inn-'+pid);
-  if(el){el.style.transform='';}
-  syncActionOpacity(pid,0);
+  if(el)el.style.transform='';
+  const aR=document.getElementById('aR-'+pid);
+  if(aR){aR.style.opacity='0';aR.style.pointerEvents='none';}
   currentSwiped=null;
 }
 function doEdit(id,ctx){closeSwipe();editEntry(id);}
@@ -557,13 +571,11 @@ function renderCalendar(){
     const cf=other?'':`onclick="calClick('${ds}')"`;
     return `<div class="cal-cell" style="${cs}" ${cf}>${pe}<div class="cal-cell-inner"><div class="cal-day-num" style="background:${nb};color:${nc};font-weight:${active?700:400}">${day}</div>${dots}</div></div>`;
   }).join('');
-
   const se=g[calSelected]||[];
   const cardsHtml=se.length
     ?se.map(e=>renderCard(e,'cal')).join('')
     :`<div style="text-align:center;padding:22px 0;color:#ccc;font-size:14px">這天還沒有記錄</div>`;
-
-  el.innerHTML=`<div class="cal-nav"><button class="cal-nav-btn" onclick="calPrev()">‹</button><div class="cal-month">${calYear}年${calMonth+1}月</div><button class="cal-nav-btn" onclick="calNext()">›</button></div><div class="cal-weekdays">${WEEKDAYS.map((d,i)=>`<div class="cal-wd" style="color:${i===0?'#c0756a':i===6?'#7090c0':'#8b6f47'}">${d}</div>`).join('')}</div><div class="cal-grid">${grid}</div><div class="cal-selected-header"><div class="cal-selected-date">${fmtDate(calSelected)}</div></div><div class="cal-entries"><div class="cal-tl-line"></div>${cardsHtml}</div>`;
+  el.innerHTML=`<div class="cal-nav"><button class="cal-nav-btn" onclick="calPrev()">‹</button><div class="cal-month">${calYear}年${calMonth+1}月</div><button class="cal-nav-btn" onclick="calNext()">›</button></div><div class="cal-weekdays">${WEEKDAYS.map((d,i)=>`<div class="cal-wd" style="color:${i===0?'#c0756a':i===6?'#7090c0':'#8b6f47'}">${d}</div>`).join('')}</div><div class="cal-grid">${grid}</div><div class="cal-selected-header"><div class="cal-selected-date">${fmtDate(calSelected)}</div></div><div class="cal-entries">${cardsHtml}</div>`;
 }
 
 function calClick(ds){calSelected=ds;if(currentSwiped)closeSwipe();renderCalendar();}
@@ -645,7 +657,6 @@ function setType(t){
 }
 function switchType(t){setType(t);}
 
-/* ── 運動 chip（長按刪除自訂） ── */
 function renderChips(){
   document.getElementById('mealTypeChips').innerHTML=MEAL_TYPES.map(m=>`<button class="chip${m===selMealType?' active':''}" onclick="selMeal('${m}')">${MEAL_ICONS[m]} ${m}</button>`).join('');
   const customNames=new Set(loadCustomEx().map(x=>x.name));
@@ -794,31 +805,43 @@ function toggleDropdown(){const m=document.getElementById('dropdownMenu');if(m.s
 function closeDropdown(){document.getElementById('dropdownMenu').style.display='none';}
 function rerender(){renderTimeline();if(currentTab==='calendar')renderCalendar();}
 
-/* ── 模擬五天資料 ── */
+/* ── Demo 資料（含 SVG 假照片） ── */
+function makePhoto(color,label){
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="400" height="300" fill="${color}"/><text x="200" y="155" font-size="28" font-family="sans-serif" fill="rgba(255,255,255,.9)" text-anchor="middle">${label}</text></svg>`;
+  return 'data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent(svg)));
+}
+const P={
+  bowl:  makePhoto('#8b6f47','🍜 午餐'),
+  run:   makePhoto('#5a9a6a','🏃 晨跑'),
+  fish:  makePhoto('#5b8cbf','🐟 鮭魚餐'),
+  hot:   makePhoto('#c0756a','🍲 火鍋'),
+  bike:  makePhoto('#7aaa8a','🚴 騎車'),
+};
+
 function buildDemo(){
   const D=new Date();
   function ago(n){const x=new Date(D);x.setDate(x.getDate()-n);return `${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`;}
   return [
     {id:'d01',type:'meal',date:ago(0),time:'07:30',mealType:'早餐',foods:[{name:'燕麥',qty:1,cal:150,id:'f1'},{name:'牛奶',qty:1,cal:150,id:'f2'},{name:'香蕉',qty:1,cal:90,id:'f3'}],note:'元氣早餐',photos:[]},
-    {id:'d02',type:'exercise',date:ago(0),time:'08:30',exerciseType:'跑步',duration:'35',distance:'5.2',calories:'310',note:'清晨慢跑，狀態很好',photos:[]},
-    {id:'d03',type:'meal',date:ago(0),time:'12:00',mealType:'午餐',foods:[{name:'雞胸肉',qty:1,cal:165,id:'f4'},{name:'糙米飯',qty:1,cal:165,id:'f5'},{name:'花椰菜',qty:1,cal:35,id:'f6'}],note:'健身餐',photos:[]},
+    {id:'d02',type:'exercise',date:ago(0),time:'08:30',exerciseType:'跑步',duration:'35',distance:'5.2',calories:'310',note:'清晨慢跑，狀態很好',photos:[P.run]},
+    {id:'d03',type:'meal',date:ago(0),time:'12:00',mealType:'午餐',foods:[{name:'雞胸肉',qty:1,cal:165,id:'f4'},{name:'糙米飯',qty:1,cal:165,id:'f5'},{name:'花椰菜',qty:1,cal:35,id:'f6'}],note:'健身餐',photos:[P.bowl]},
     {id:'d04',type:'meal',date:ago(0),time:'15:30',mealType:'點心',foods:[{name:'優格',qty:1,cal:100,id:'f7'},{name:'蘋果',qty:1,cal:80,id:'f8'}],note:'',photos:[]},
-    {id:'d05',type:'meal',date:ago(0),time:'19:00',mealType:'晚餐',foods:[{name:'鮭魚',qty:1,cal:200,id:'f9'},{name:'白飯',qty:1,cal:180,id:'fa'},{name:'菠菜',qty:1,cal:23,id:'fb'}],note:'',photos:[]},
+    {id:'d05',type:'meal',date:ago(0),time:'19:00',mealType:'晚餐',foods:[{name:'鮭魚',qty:1,cal:200,id:'f9'},{name:'白飯',qty:1,cal:180,id:'fa'},{name:'菠菜',qty:1,cal:23,id:'fb'}],note:'',photos:[P.fish]},
     {id:'d06',type:'meal',date:ago(1),time:'08:00',mealType:'早餐',foods:[{name:'吐司',qty:2,cal:140,id:'fc'},{name:'荷包蛋',qty:1,cal:90,id:'fd'},{name:'黑咖啡',qty:1,cal:5,id:'fe'}],note:'',photos:[]},
     {id:'d07',type:'meal',date:ago(1),time:'12:30',mealType:'午餐',foods:[{name:'牛肉麵',qty:1,cal:550,id:'ff'}],note:'巷口新開的，湯底很濃郁',photos:[]},
-    {id:'d08',type:'exercise',date:ago(1),time:'18:00',exerciseType:'重訓',duration:'60',distance:'',calories:'280',note:'胸背日，臥推有進步',photos:[]},
+    {id:'d08',type:'exercise',date:ago(1),time:'18:00',exerciseType:'跑步',duration:'60',distance:'',calories:'280',note:'胸背日，臥推有進步',photos:[]},
     {id:'d09',type:'meal',date:ago(1),time:'19:30',mealType:'晚餐',foods:[{name:'沙拉',qty:1,cal:50,id:'fg'},{name:'豆腐',qty:1,cal:80,id:'fh'}],note:'',photos:[]},
     {id:'d10',type:'meal',date:ago(2),time:'09:00',mealType:'早餐',foods:[{name:'蛋餅',qty:1,cal:280,id:'fi'},{name:'豆漿',qty:1,cal:54,id:'fj'}],note:'早餐店',photos:[]},
-    {id:'d11',type:'exercise',date:ago(2),time:'10:30',exerciseType:'瑜伽',duration:'45',distance:'',calories:'150',note:'肩頸舒緩',photos:[]},
+    {id:'d11',type:'exercise',date:ago(2),time:'10:30',exerciseType:'跑步',duration:'45',distance:'',calories:'150',note:'肩頸舒緩',photos:[]},
     {id:'d12',type:'meal',date:ago(2),time:'13:00',mealType:'午餐',foods:[{name:'排骨便當',qty:1,cal:700,id:'fk'}],note:'',photos:[]},
-    {id:'d13',type:'meal',date:ago(2),time:'18:30',mealType:'晚餐',foods:[{name:'火鍋',qty:1,cal:500,id:'fl'}],note:'朋友聚餐',photos:[]},
+    {id:'d13',type:'meal',date:ago(2),time:'18:30',mealType:'晚餐',foods:[{name:'火鍋',qty:1,cal:500,id:'fl'}],note:'朋友聚餐',photos:[P.hot]},
     {id:'d14',type:'meal',date:ago(2),time:'21:00',mealType:'宵夜',foods:[{name:'珍珠奶茶',qty:1,cal:450,id:'fm'}],note:'罪惡的一杯',photos:[]},
     {id:'d15',type:'meal',date:ago(3),time:'07:30',mealType:'早餐',foods:[{name:'麥片',qty:1,cal:130,id:'fn'},{name:'牛奶',qty:1,cal:150,id:'fo'}],note:'',photos:[]},
-    {id:'d16',type:'exercise',date:ago(3),time:'08:00',exerciseType:'走路',duration:'40',distance:'3.0',calories:'150',note:'通勤步行',photos:[]},
+    {id:'d16',type:'exercise',date:ago(3),time:'08:00',exerciseType:'跑步',duration:'40',distance:'3.0',calories:'150',note:'通勤步行',photos:[]},
     {id:'d17',type:'meal',date:ago(3),time:'12:00',mealType:'午餐',foods:[{name:'義大利麵',qty:1,cal:350,id:'fp'},{name:'拿鐵',qty:1,cal:150,id:'fq'}],note:'',photos:[]},
     {id:'d18',type:'meal',date:ago(3),time:'18:30',mealType:'晚餐',foods:[{name:'滷肉飯',qty:1,cal:450,id:'fr'},{name:'味噌湯',qty:1,cal:40,id:'fs'}],note:'',photos:[]},
     {id:'d19',type:'meal',date:ago(4),time:'08:30',mealType:'早餐',foods:[{name:'包子',qty:2,cal:440,id:'ft'},{name:'豆漿',qty:1,cal:54,id:'fu'}],note:'',photos:[]},
-    {id:'d20',type:'exercise',date:ago(4),time:'17:00',exerciseType:'騎車',duration:'50',distance:'15.0',calories:'350',note:'騎到淡水河邊',photos:[]},
+    {id:'d20',type:'exercise',date:ago(4),time:'17:00',exerciseType:'跑步',duration:'50',distance:'15.0',calories:'350',note:'騎到淡水河邊',photos:[P.bike]},
     {id:'d21',type:'meal',date:ago(4),time:'12:00',mealType:'午餐',foods:[{name:'壽司',qty:1,cal:350,id:'fv'},{name:'味噌湯',qty:1,cal:40,id:'fw'}],note:'迴轉壽司',photos:[]},
     {id:'d22',type:'meal',date:ago(4),time:'19:00',mealType:'晚餐',foods:[{name:'雞腿便當',qty:1,cal:680,id:'fx'}],note:'',photos:[]},
   ];
@@ -830,5 +853,6 @@ renderChips();
 renderTimeline();
 setTimeout(scrollToToday,100);
 </script>
+
 </body>
 </html>
