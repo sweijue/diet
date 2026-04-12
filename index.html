@@ -6,9 +6,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="飲食日誌">
-<title>飲食運動日誌</title>
+<title>FOOD & LIFE LOG</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥗</text></svg>">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;background:#f7f4ef;overscroll-behavior:none}
@@ -21,118 +22,126 @@ button{cursor:pointer}
 @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.slide-up{animation:slideUp .28s ease forwards}
-.fade-in{animation:fadeIn .2s ease forwards}
-#app{max-width:480px;margin:0 auto;min-height:100vh;background:#f7f4ef;padding-bottom:80px}
-#header{background:#2c2416;color:#f7f4ef;position:sticky;top:0;z-index:100;padding:18px 18px 0}
-.header-top{display:flex;justify-content:space-between;align-items:center;padding-bottom:13px;border-bottom:1px solid #3d3020}
-.header-title-sub{font-size:11px;letter-spacing:3px;color:#c8a96e;margin-bottom:2px}
-.header-title{font-size:23px;font-weight:800;letter-spacing:-0.5px}
-.header-btns{display:flex;gap:6px;align-items:center}
-.btn-primary{background:#c8a96e;color:#2c2416;border:none;border-radius:8px;padding:8px 13px;font-weight:700;font-size:14px}
-.btn-outline{background:transparent;color:#c8a96e;border:1.5px solid #c8a96e;border-radius:8px;padding:7px 13px;font-weight:700;font-size:14px}
+#app{max-width:480px;margin:0 auto;min-height:100vh;background:#f7f4ef;padding-bottom:90px}
+#header{background:#2c2416;color:#f7f4ef;position:sticky;top:0;z-index:100;padding:16px 16px 0}
+.header-top{display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;border-bottom:1px solid #3d3020}
+.header-title-sub{font-size:10px;letter-spacing:3px;color:#c8a96e;margin-bottom:1px}
+.header-title{font-size:21px;font-weight:800;letter-spacing:-0.5px}
+.header-right{display:flex;gap:6px;align-items:center}
+.btn-today{background:#c8a96e;color:#2c2416;border:none;border-radius:8px;padding:8px 14px;font-weight:700;font-size:14px}
 .btn-dots{background:transparent;color:#c8a96e;border:1.5px solid #3d3020;border-radius:8px;padding:7px 10px;font-weight:700;font-size:17px;line-height:1}
 .tab-bar{display:flex}
-.tab-btn{flex:1;padding:11px 0;border:none;background:transparent;font-size:15px;font-weight:400;letter-spacing:1px;color:#5a4a35;border-bottom:2px solid transparent;transition:all .2s}
+.tab-btn{flex:1;padding:10px 0;border:none;background:transparent;font-size:15px;font-weight:400;letter-spacing:.5px;color:#5a4a35;border-bottom:2px solid transparent;transition:all .2s}
 .tab-btn.active{color:#c8a96e;font-weight:700;border-bottom:2px solid #c8a96e}
+#fab{position:fixed;bottom:28px;right:calc(50% - 220px);width:58px;height:58px;border-radius:50%;background:#c8a96e;color:#2c2416;border:none;font-size:30px;font-weight:300;box-shadow:0 4px 18px rgba(44,36,22,.35);z-index:150;display:flex;align-items:center;justify-content:center;transition:transform .15s}
+#fab:active{transform:scale(.93)}
+@media(max-width:480px){#fab{right:20px}}
 .dropdown{position:relative}
-.dropdown-menu{position:absolute;right:0;top:calc(100% + 6px);background:#2c2416;border:1px solid #3d3020;border-radius:12px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.45);min-width:160px;z-index:300;animation:slideUp .2s ease}
-.dropdown-item{display:block;width:100%;padding:14px 18px;background:none;border:none;color:#f7f4ef;font-size:15px;text-align:left;font-weight:600;border-bottom:1px solid #3d3020}
+.dropdown-menu{position:absolute;right:0;top:calc(100% + 6px);background:#2c2416;border:1px solid #3d3020;border-radius:12px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.45);min-width:170px;z-index:300;animation:slideUp .2s ease}
+.dropdown-item{display:block;width:100%;padding:13px 18px;background:none;border:none;color:#f7f4ef;font-size:15px;text-align:left;font-weight:600;border-bottom:1px solid #3d3020}
 .dropdown-item:last-child{border-bottom:none}
-.storage-bar-wrap{padding:12px 18px 14px;border-top:1px solid #3d3020}
+.storage-bar-wrap{padding:11px 16px 13px;border-top:1px solid #3d3020}
 .storage-label{display:flex;justify-content:space-between;font-size:12px;color:#8b6f47;margin-bottom:5px}
 .storage-track{height:5px;background:#3d3020;border-radius:99px;overflow:hidden}
 .storage-fill{height:100%;border-radius:99px;transition:width .4s}
-.day-header{display:flex;align-items:center;justify-content:space-between;padding:13px 18px 7px;position:sticky;top:89px;z-index:50;background:#f7f4ef;border-bottom:1px solid #e8e2d8}
+#fabMenu{position:fixed;bottom:100px;right:calc(50% - 220px);z-index:149;display:none;flex-direction:column;gap:10px;align-items:flex-end}
+@media(max-width:480px){#fabMenu{right:20px}}
+.fab-item{display:flex;align-items:center;gap:10px;animation:slideUp .2s ease}
+.fab-item-label{background:#2c2416;color:#f7f4ef;padding:6px 13px;border-radius:99px;font-size:14px;font-weight:600;white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,.3)}
+.fab-item-btn{width:46px;height:46px;border-radius:50%;border:none;font-size:20px;box-shadow:0 2px 10px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center}
+.day-header{display:flex;align-items:center;justify-content:space-between;padding:11px 16px 6px;position:sticky;top:83px;z-index:50;background:#f7f4ef;border-bottom:1px solid #e8e2d8}
 .day-title{display:flex;align-items:center;gap:7px}
-.day-dot{width:7px;height:7px;border-radius:50%;background:#c8a96e;animation:pulse 2s infinite}
-.day-name{font-weight:800;font-size:19px;color:#2c2416}
-.today-badge{font-size:11px;background:#2c2416;color:#c8a96e;padding:2px 7px;border-radius:99px}
-.day-cal{font-size:13px;text-align:right;line-height:1.7}
-.timeline-entries{padding:10px 18px;position:relative}
-.timeline-line{position:absolute;left:38px;top:0;bottom:0;width:1px;background:#e0d8cc}
-.tcard{display:flex;gap:0;margin-bottom:13px;cursor:pointer;position:relative}
-.tcard-time{width:52px;flex-shrink:0;text-align:right;padding-right:11px;padding-top:4px;font-size:15px;font-weight:800;color:#2c2416;letter-spacing:0.3px}
+.day-dot{width:7px;height:7px;border-radius:50%;background:#c8a96e;animation:pulse 2s infinite;flex-shrink:0}
+.day-name{font-weight:800;font-size:18px;color:#2c2416}
+.today-badge{font-size:11px;background:#c8a96e;color:#2c2416;padding:2px 8px;border-radius:99px;font-weight:700}
+.day-cal{font-size:12px;text-align:right;line-height:1.7}
+.timeline-entries{padding:8px 16px;position:relative}
+.timeline-line{position:absolute;left:36px;top:0;bottom:0;width:1px;background:#e0d8cc}
+.tcard{display:flex;gap:0;margin-bottom:11px;cursor:pointer;position:relative}
+.tcard-time{width:50px;flex-shrink:0;text-align:right;padding-right:10px;padding-top:4px;font-size:14px;font-weight:800;color:#2c2416;letter-spacing:0.3px}
 .tcard-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:5px;z-index:1;border:2px solid #f7f4ef}
-.tcard-body{flex:1;margin-left:10px;background:#fff;border-radius:12px;border:1px solid #ece6de;overflow:hidden;box-shadow:0 2px 8px rgba(44,36,22,.06);transition:box-shadow .2s,transform .2s}
+.tcard-body{flex:1;margin-left:10px;background:#fff;border-radius:12px;border:1px solid #ece6de;overflow:hidden;box-shadow:0 2px 8px rgba(44,36,22,.06);transition:box-shadow .15s,transform .15s}
 .tcard-body:active{box-shadow:0 4px 16px rgba(44,36,22,.13);transform:translateY(-1px)}
-.tcard-img{width:100%;height:118px;object-fit:cover;display:block}
-.tcard-content{padding:10px 13px}
+.tcard-imgs{display:flex;gap:2px;overflow:hidden}
+.tcard-img{flex:1;height:110px;object-fit:cover;display:block;min-width:0}
+.tcard-content{padding:9px 12px}
 .tcard-row{display:flex;justify-content:space-between;align-items:center}
-.tcard-name{font-weight:700;font-size:16px;color:#2c2416}
-.tcard-kcal{font-size:14px;color:#5a9a6a;font-weight:700}
-.tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:7px}
-.tag{display:inline-block;padding:3px 9px;border-radius:99px;background:#f5f0e8;color:#6b5230;font-size:13px;font-weight:600}
-.tcard-sub{font-size:13px;color:#999;margin-top:5px}
-.tcard-note{font-size:13px;color:#aaa;font-style:italic;margin-top:5px;border-top:1px solid #f5f0e8;padding-top:5px}
-.cal-nav{display:flex;align-items:center;justify-content:space-between;padding:15px 18px 11px;border-bottom:1px solid #e8e2d8}
+.tcard-name{font-weight:700;font-size:15px;color:#2c2416}
+.tcard-kcal{font-size:13px;color:#5a9a6a;font-weight:700}
+.tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.tag{display:inline-block;padding:3px 9px;border-radius:99px;background:#f5f0e8;color:#6b5230;font-size:12px;font-weight:600}
+.tcard-sub{font-size:12px;color:#999;margin-top:4px}
+.tcard-note{font-size:12px;color:#aaa;font-style:italic;margin-top:4px;border-top:1px solid #f5f0e8;padding-top:4px}
+.cal-nav{display:flex;align-items:center;justify-content:space-between;padding:13px 16px 10px;border-bottom:1px solid #e8e2d8}
 .cal-nav-btn{background:none;border:none;font-size:26px;color:#8b6f47;padding:4px 12px}
-.cal-month{font-weight:700;font-size:20px;color:#2c2416}
+.cal-month{font-weight:700;font-size:19px;color:#2c2416;text-align:center}
 .cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);background:#faf8f5;border-bottom:1px solid #e8e2d8}
-.cal-wd{text-align:center;padding:10px 0;font-size:13px;font-weight:700}
+.cal-wd{text-align:center;padding:8px 0;font-size:12px;font-weight:700}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:#e8e2d8}
-.cal-cell{background:#fff;min-height:66px;cursor:pointer;position:relative;overflow:hidden;transition:background .15s}
-.cal-cell.empty{background:#f7f4ef;cursor:default;min-height:32px}
+.cal-cell{background:#fff;min-height:58px;cursor:pointer;position:relative;overflow:hidden;transition:background .15s}
 .cal-cell.selected{background:#2c2416}
-.cal-cell-inner{position:relative;z-index:1;padding:5px 5px}
+.cal-cell-inner{position:relative;z-index:1;padding:4px 4px}
 .cal-cell-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.cal-day-num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px}
-.cal-dots{display:flex;gap:2px;margin-top:2px;flex-wrap:wrap}
-.cal-dot{width:5px;height:5px;border-radius:50%;display:inline-block}
-.cal-selected-header{padding:12px 18px 8px;display:flex;justify-content:space-between;align-items:center;background:#faf8f5;border-top:2px solid #2c2416}
-.cal-selected-date{font-weight:700;font-size:17px;color:#2c2416}
-.cal-selected-btns{display:flex;gap:6px}
-.cal-entries{padding:8px 18px 24px}
-.cal-entry{display:flex;gap:12px;padding:12px 13px;background:#fff;border-radius:12px;margin-bottom:8px;border:1px solid #ece6de;cursor:pointer;box-shadow:0 1px 4px rgba(44,36,22,.05);transition:box-shadow .2s}
+.cal-day-num{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px}
+.cal-dots{display:flex;gap:2px;margin-top:2px}
+.cal-dot{width:4px;height:4px;border-radius:50%;display:inline-block}
+.cal-selected-header{padding:10px 16px 7px;display:flex;justify-content:space-between;align-items:center;background:#faf8f5;border-top:2px solid #2c2416}
+.cal-selected-date{font-weight:700;font-size:16px;color:#2c2416}
+.cal-entries{padding:6px 16px 20px}
+.cal-entry{display:flex;gap:10px;padding:10px 12px;background:#fff;border-radius:11px;margin-bottom:6px;border:1px solid #ece6de;cursor:pointer;box-shadow:0 1px 4px rgba(44,36,22,.05);transition:box-shadow .15s}
 .cal-entry:active{box-shadow:0 3px 12px rgba(44,36,22,.12)}
-.cal-entry-thumb{width:58px;height:58px;border-radius:8px;object-fit:cover;flex-shrink:0}
+.cal-entry-thumb{width:52px;height:52px;border-radius:7px;object-fit:cover;flex-shrink:0}
 .cal-entry-info{flex:1;min-width:0}
 .cal-entry-row{display:flex;justify-content:space-between;align-items:center}
-.cal-entry-name{font-weight:700;font-size:15px;color:#2c2416}
-.cal-entry-time{font-size:14px;font-weight:700;color:#2c2416}
+.cal-entry-name{font-weight:700;font-size:14px;color:#2c2416}
+.cal-entry-time{font-size:13px;font-weight:700;color:#2c2416}
 .sheet-overlay{position:fixed;inset:0;background:rgba(44,36,22,.65);z-index:200;display:flex;align-items:flex-end;backdrop-filter:blur(4px);animation:fadeIn .2s ease}
 .sheet{width:100%;max-width:480px;margin:0 auto;background:#fdf9f4;border-radius:20px 20px 0 0;max-height:92vh;overflow-y:auto;animation:slideUp .28s ease}
-.sheet-header{display:flex;align-items:center;justify-content:space-between;padding:15px 18px;border-bottom:1px solid #e8e2d8;position:sticky;top:0;background:#fdf9f4;z-index:10;border-radius:20px 20px 0 0}
-.sheet-cancel{background:none;border:none;color:#8b6f47;font-size:16px}
-.sheet-save{background:#c8a96e;border:none;color:#2c2416;border-radius:8px;padding:9px 18px;font-weight:700;font-size:15px}
+.sheet-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #e8e2d8;position:sticky;top:0;background:#fdf9f4;z-index:10;border-radius:20px 20px 0 0}
+.sheet-cancel{background:none;border:none;color:#8b6f47;font-size:15px}
+.sheet-save{background:#c8a96e;border:none;color:#2c2416;border-radius:8px;padding:8px 16px;font-weight:700;font-size:14px}
 .type-toggle{display:flex;gap:2px;background:#ece6de;border-radius:8px;padding:3px}
-.type-btn{padding:7px 14px;border-radius:6px;border:none;font-weight:700;font-size:14px;transition:all .2s;background:transparent;color:#8b6f47}
+.type-btn{padding:6px 13px;border-radius:6px;border:none;font-weight:700;font-size:14px;transition:all .2s;background:transparent;color:#8b6f47}
 .type-btn.active{background:#2c2416;color:#f7f4ef}
-.sheet-body{padding:17px 18px 40px}
-.form-label{font-size:13px;color:#999;letter-spacing:.5px;margin-bottom:6px;margin-top:2px}
-.form-input{width:100%;padding:12px 14px;border-radius:10px;background:#faf8f5;border:1.5px solid #e0d8cc;color:#2c2416;font-size:16px}
-.form-textarea{width:100%;padding:12px 14px;border-radius:10px;background:#faf8f5;border:1.5px solid #e0d8cc;color:#2c2416;font-size:16px;resize:none;line-height:1.8}
-.datetime-group{background:#f5f0e8;border-radius:12px;padding:4px 0;margin-bottom:15px}
+.sheet-body{padding:15px 16px 40px}
+.form-label{font-size:12px;color:#999;letter-spacing:.5px;margin-bottom:5px;margin-top:2px}
+.form-input{width:100%;padding:11px 13px;border-radius:10px;background:#faf8f5;border:1.5px solid #e0d8cc;color:#2c2416;font-size:16px}
+.form-textarea{width:100%;padding:11px 13px;border-radius:10px;background:#faf8f5;border:1.5px solid #e0d8cc;color:#2c2416;font-size:16px;resize:none;line-height:1.8}
+.datetime-group{background:#f5f0e8;border-radius:12px;padding:4px 0;margin-bottom:14px}
 .datetime-row{display:flex;align-items:center}
 .datetime-row+.datetime-row{border-top:1px solid #e8e2d8}
-.datetime-label{padding:0 14px;font-size:15px;color:#8b6f47;font-weight:600;width:56px;flex-shrink:0}
-.datetime-input{flex:1;padding:13px 14px 13px 0;background:transparent;border:none;color:#2c2416;font-size:16px;font-weight:600;min-width:0}
-.chip-group{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:15px}
-.chip{padding:8px 15px;border-radius:20px;border:none;font-weight:600;font-size:15px;background:#f5f0e8;color:#8b6f47;transition:all .15s}
+.datetime-label{padding:0 13px;font-size:14px;color:#8b6f47;font-weight:600;width:52px;flex-shrink:0}
+.datetime-input{flex:1;padding:12px 13px 12px 0;background:transparent;border:none;color:#2c2416;font-size:16px;font-weight:600;min-width:0}
+.chip-group{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:13px}
+.chip{padding:7px 13px;border-radius:20px;border:none;font-weight:600;font-size:14px;background:#f5f0e8;color:#8b6f47;transition:all .15s}
 .chip.active{background:#2c2416;color:#f7f4ef}
-.photo-upload{border:2px dashed #d8cfc4;border-radius:12px;padding:26px;text-align:center;cursor:pointer;color:#c8b89a;transition:border-color .2s}
-.photo-upload:active{border-color:#c8a96e;background:#fdf9f4}
-.photo-preview{position:relative;border-radius:12px;overflow:hidden}
-.photo-preview img{width:100%;height:178px;object-fit:cover;display:block}
-.photo-remove{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.55);border:none;color:#fff;width:30px;height:30px;border-radius:50%;font-size:17px}
-.num-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:15px}
-.detail-photo{height:200px;overflow:hidden;border-radius:20px 20px 0 0}
-.detail-photo img{width:100%;height:100%;object-fit:cover}
-.detail-body{padding:20px 20px 36px}
-.detail-title{font-size:22px;font-weight:700;color:#2c2416}
-.detail-date{font-size:14px;color:#bbb;margin-top:3px}
-.detail-food-label{font-size:12px;color:#bbb;letter-spacing:1px;margin-bottom:8px;margin-top:14px}
-.stat-grid{display:flex;gap:10px;margin:14px 0}
-.stat-box{flex:1;border-radius:10px;padding:13px;text-align:center}
-.stat-val{font-weight:700;font-size:20px}
-.stat-unit{font-size:12px;color:#bbb;margin-top:2px}
-.detail-note{background:#faf8f5;border-radius:10px;padding:12px 14px;font-size:14px;color:#8b6f47;font-style:italic;margin:14px 0}
-.detail-btns{display:flex;gap:10px;margin-top:16px}
-.btn-edit{flex:1;padding:14px;border-radius:10px;background:#2c2416;color:#f7f4ef;border:none;font-weight:700;font-size:16px}
-.btn-delete{padding:14px 18px;border-radius:10px;background:#fff0f0;color:#d44;border:1.5px solid #ffd8d8;font-weight:600;font-size:16px}
+.photo-upload{border:2px dashed #d8cfc4;border-radius:12px;padding:22px;text-align:center;cursor:pointer;color:#c8b89a;transition:border-color .2s}
+.photo-upload:active{border-color:#c8a96e}
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.photo-thumb{position:relative;border-radius:8px;overflow:hidden;aspect-ratio:1}
+.photo-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.photo-thumb-remove{position:absolute;top:3px;right:3px;background:rgba(0,0,0,.55);border:none;color:#fff;width:22px;height:22px;border-radius:50%;font-size:13px;display:flex;align-items:center;justify-content:center}
+.num-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-bottom:13px}
+.detail-photo-grid{display:grid;gap:2px;border-radius:20px 20px 0 0;overflow:hidden}
+.detail-photo-grid img{width:100%;object-fit:cover;display:block}
+.detail-body{padding:18px 18px 32px}
+.detail-title{font-size:21px;font-weight:700;color:#2c2416}
+.detail-date{font-size:13px;color:#bbb;margin-top:3px}
+.detail-food-label{font-size:12px;color:#bbb;letter-spacing:1px;margin-bottom:7px;margin-top:12px}
+.stat-grid{display:flex;gap:9px;margin:12px 0}
+.stat-box{flex:1;border-radius:10px;padding:11px;text-align:center}
+.stat-val{font-weight:700;font-size:19px}
+.stat-unit{font-size:11px;color:#bbb;margin-top:2px}
+.detail-note{background:#faf8f5;border-radius:10px;padding:11px 13px;font-size:13px;color:#8b6f47;font-style:italic;margin:12px 0}
+.detail-btns{display:flex;gap:9px;margin-top:14px}
+.btn-edit{flex:1;padding:13px;border-radius:10px;background:#2c2416;color:#f7f4ef;border:none;font-weight:700;font-size:15px}
+.btn-delete{padding:13px 16px;border-radius:10px;background:#fff0f0;color:#d44;border:1.5px solid #ffd8d8;font-weight:600;font-size:15px}
 .empty{text-align:center;padding:80px 24px;color:#ccc}
 .empty-icon{font-size:48px;margin-bottom:12px}
-#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#2c2416;color:#c8a96e;padding:12px 24px;border-radius:99px;font-size:15px;font-weight:700;z-index:999;box-shadow:0 4px 16px rgba(0,0,0,.3);display:none;white-space:nowrap}
+#toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#2c2416;color:#c8a96e;padding:11px 22px;border-radius:99px;font-size:14px;font-weight:700;z-index:999;box-shadow:0 4px 16px rgba(0,0,0,.3);display:none;white-space:nowrap}
+.clear-date-input{width:100%;padding:13px 14px;border-radius:10px;background:#faf8f5;border:1.5px solid #e0d8cc;color:#2c2416;font-size:16px;margin-top:8px;margin-bottom:6px}
+.clear-info{font-size:13px;color:#999;margin-bottom:16px}
+.btn-clear-confirm{width:100%;padding:14px;border-radius:10px;background:#d44;color:#fff;border:none;font-weight:700;font-size:16px}
 </style>
 </head>
 <body>
@@ -141,26 +150,21 @@ button{cursor:pointer}
     <div class="header-top">
       <div>
         <div class="header-title-sub">FOOD &amp; LIFE LOG</div>
-        <div class="header-title">飲食運動日誌</div>
+        <div class="header-title">🥗 Daily Journal</div>
       </div>
-      <div class="header-btns">
-        <button class="btn-primary" onclick="openAdd('meal')">+ 用餐</button>
-        <button class="btn-outline" onclick="openAdd('exercise')">+ 運動</button>
+      <div class="header-right">
+        <button class="btn-today" onclick="goToday()">回到今天</button>
         <div class="dropdown" id="dataDropdown">
           <button class="btn-dots" onclick="toggleDropdown()">⋯</button>
           <div class="dropdown-menu" id="dropdownMenu" style="display:none">
             <div class="storage-bar-wrap">
-              <div class="storage-label">
-                <span>已用儲存空間</span>
-                <span id="storageText">計算中…</span>
-              </div>
-              <div class="storage-track">
-                <div class="storage-fill" id="storageFill" style="width:0%;background:#c8a96e"></div>
-              </div>
-              <div style="font-size:11px;color:#5a4a35;margin-top:5px">localStorage 上限約 50MB</div>
+              <div class="storage-label"><span>已用空間</span><span id="storageText">計算中…</span></div>
+              <div class="storage-track"><div class="storage-fill" id="storageFill" style="width:0%;background:#c8a96e"></div></div>
+              <div style="font-size:11px;color:#5a4a35;margin-top:4px">瀏覽器上限約 5-10MB</div>
             </div>
             <button class="dropdown-item" onclick="exportData()">📤 匯出備份</button>
             <button class="dropdown-item" onclick="document.getElementById('importInput').click()">📥 匯入資料</button>
+            <button class="dropdown-item" onclick="openClearSheet()">🗑 清除舊資料</button>
           </div>
         </div>
       </div>
@@ -172,6 +176,17 @@ button{cursor:pointer}
   </div>
   <div id="viewTimeline"></div>
   <div id="viewCalendar" style="display:none"></div>
+</div>
+<button id="fab" onclick="toggleFabMenu()">+</button>
+<div id="fabMenu">
+  <div class="fab-item">
+    <div class="fab-item-label">記錄用餐</div>
+    <button class="fab-item-btn" style="background:#c8a96e;color:#2c2416" onclick="openAdd('meal');closeFabMenu()">🍽</button>
+  </div>
+  <div class="fab-item">
+    <div class="fab-item-label">記錄運動</div>
+    <button class="fab-item-btn" style="background:#7aaa8a;color:#fff" onclick="openAdd('exercise');closeFabMenu()">🏃</button>
+  </div>
 </div>
 <div id="addSheet" class="sheet-overlay" style="display:none" onclick="closeAddIfBg(event)">
   <div class="sheet">
@@ -199,8 +214,8 @@ button{cursor:pointer}
         <div class="chip-group" id="mealTypeChips"></div>
         <div class="form-label">食物（空格分隔不同食物）</div>
         <textarea id="fFoodText" class="form-textarea" rows="3" placeholder="例如：雞胸肉 白飯 花椰菜&#10;用空格隔開不同食物" oninput="renderFoodPreview()"></textarea>
-        <div id="foodPreview" class="tags" style="margin-top:9px;margin-bottom:4px"></div>
-        <div class="form-label" style="margin-top:14px">備注</div>
+        <div id="foodPreview" class="tags" style="margin-top:8px;margin-bottom:3px"></div>
+        <div class="form-label" style="margin-top:12px">備注</div>
         <textarea id="fNote" class="form-textarea" rows="2" placeholder="用餐心得、地點…"></textarea>
       </div>
       <div id="exerciseFields" style="display:none">
@@ -214,16 +229,13 @@ button{cursor:pointer}
         <div class="form-label">備注</div>
         <textarea id="fExNote" class="form-textarea" rows="2" placeholder="運動感受、心率…"></textarea>
       </div>
-      <div style="margin-top:16px">
-        <div class="form-label">記錄照片（自動壓縮）</div>
+      <div style="margin-top:14px">
+        <div class="form-label">記錄照片（可多選，自動壓縮）</div>
         <div id="photoUploadArea" class="photo-upload" onclick="document.getElementById('photoInput').click()">
-          <div style="font-size:30px;margin-bottom:5px">📷</div>
-          <div style="font-size:15px">點擊上傳照片</div>
+          <div style="font-size:28px;margin-bottom:4px">📷</div>
+          <div style="font-size:14px">點擊上傳照片（可多選）</div>
         </div>
-        <div id="photoPreviewArea" class="photo-preview" style="display:none">
-          <img id="photoPreviewImg" src="" alt="">
-          <button class="photo-remove" onclick="removePhoto()">✕</button>
-        </div>
+        <div id="photoGrid" class="photo-grid"></div>
       </div>
     </div>
   </div>
@@ -231,7 +243,22 @@ button{cursor:pointer}
 <div id="detailSheet" class="sheet-overlay" style="display:none" onclick="closeDetailIfBg(event)">
   <div class="sheet" id="detailSheetInner"></div>
 </div>
-<input type="file" id="photoInput" accept="image/*" style="display:none" onchange="handlePhoto(event)">
+<div id="clearSheet" class="sheet-overlay" style="display:none" onclick="closeClearIfBg(event)">
+  <div class="sheet">
+    <div class="sheet-header">
+      <button class="sheet-cancel" onclick="closeClearSheet()">取消</button>
+      <span style="font-weight:700;font-size:16px;color:#2c2416">清除舊資料</span>
+      <span style="width:40px"></span>
+    </div>
+    <div class="sheet-body">
+      <div style="font-size:15px;color:#2c2416;font-weight:600;margin-bottom:6px">清除此日期之前的所有記錄</div>
+      <input type="date" id="clearDate" class="clear-date-input" oninput="updateClearInfo()">
+      <div class="clear-info" id="clearInfo">選擇日期後顯示將刪除的筆數</div>
+      <button class="btn-clear-confirm" onclick="confirmClear()">確認清除</button>
+    </div>
+  </div>
+</div>
+<input type="file" id="photoInput" accept="image/*" multiple style="display:none" onchange="handlePhotos(event)">
 <input type="file" id="importInput" accept=".json" style="display:none" onchange="importData(event)">
 <div id="toast"></div>
 <script>
@@ -243,29 +270,176 @@ const EX_TYPES=['跑步','走路','騎車','游泳','重訓','瑜伽','HIIT','�
 const WEEKDAYS=['日','一','二','三','四','五','六'];
 let entries=[],currentTab='timeline',currentType='meal',editId=null;
 let calYear=new Date().getFullYear(),calMonth=new Date().getMonth(),calSelected=todayDate();
-let pendingPhoto=null,selectedMealType='早餐',selectedExType='跑步';
-function todayDate(){return new Date().toISOString().slice(0,10);}
+let pendingPhotos=[],selectedMealType='早餐',selectedExType='跑步';
+let fabOpen=false,calDblTapTimer=null;
+const collapsedDays=new Set();
+
+function todayDate(){const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;}
 function nowTime(){const d=new Date();return pad(d.getHours())+':'+pad(d.getMinutes());}
 function pad(n){return String(n).padStart(2,'0');}
 function fmtDate(s){const d=new Date(s+'T00:00:00');return `${d.getMonth()+1}月${d.getDate()}日 週${WEEKDAYS[d.getDay()]}`;}
 function uid(){return Date.now()+Math.random();}
-function parseFoods(text){return text.trim().split(/[\s\u3000,，]+/).filter(Boolean).map(name=>({name,qty:1,cal:0,p:0,c:0,f:0,id:uid()}));}
+function parseFoods(t){return t.trim().split(/[\s\u3000,，]+/).filter(Boolean).map(name=>({name,qty:1,cal:0,p:0,c:0,f:0,id:uid()}));}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',2800);}
 function loadEntries(){try{entries=JSON.parse(localStorage.getItem(STORE_KEY))||[];}catch{entries=[];}}
-function saveEntries(){try{localStorage.setItem(STORE_KEY,JSON.stringify(entries));}catch(e){showToast('儲存失敗：空間不足');}}
-function calcStorage(){try{const raw=localStorage.getItem(STORE_KEY)||'';const bytes=new Blob([raw]).size;const mb=(bytes/1024/1024).toFixed(2);const pct=Math.min((bytes/(50*1024*1024))*100,100).toFixed(1);document.getElementById('storageText').textContent=mb+' MB / ~50 MB';const fill=document.getElementById('storageFill');fill.style.width=pct+'%';fill.style.background=pct>80?'#e06060':pct>60?'#e0a060':'#c8a96e';}catch{}}
+function saveEntries(){try{localStorage.setItem(STORE_KEY,JSON.stringify(entries));}catch{showToast('儲存失敗：空間不足');}}
+function calcStorage(){try{const raw=localStorage.getItem(STORE_KEY)||'';const bytes=new Blob([raw]).size;const mb=(bytes/1024/1024).toFixed(2);const pct=Math.min((bytes/(8*1024*1024))*100,100).toFixed(0);document.getElementById('storageText').textContent=mb+' MB';const fill=document.getElementById('storageFill');fill.style.width=pct+'%';fill.style.background=pct>80?'#e06060':pct>60?'#e0a060':'#c8a96e';}catch{}}
 function grouped(){const g={};entries.forEach(e=>{(g[e.date]=g[e.date]||[]).push(e);});Object.keys(g).forEach(d=>g[d].sort((a,b)=>a.time.localeCompare(b.time)));return g;}
-function sortedDates(g){return Object.keys(g).sort((a,b)=>b.localeCompare(a));}
-function renderTimeline(){const g=grouped();const dates=sortedDates(g);const el=document.getElementById('viewTimeline');if(!dates.length){el.innerHTML='<div class="empty"><div class="empty-icon">📓</div><div style="font-size:16px;color:#aaa">還沒有任何記錄</div><div style="font-size:13px;color:#ccc;margin-top:6px">點擊上方「+ 用餐」開始記錄</div></div>';return;}el.innerHTML=dates.map(date=>{const dayEntries=g[date];const dayCal=dayEntries.filter(e=>e.type==='meal').flatMap(e=>e.foods||[]).reduce((a,f)=>a+f.cal*f.qty,0);const dayBurn=dayEntries.filter(e=>e.type==='exercise').reduce((a,e)=>a+(+e.calories||0),0);const isToday=date===todayDate();const calHtml=dayCal>0?`<div style="color:#8b6f47;font-weight:600">${Math.round(dayCal)} kcal</div>`:'';const burnHtml=dayBurn>0?`<div style="color:#5a9a6a">−${dayBurn} kcal</div>`:'';return `<div><div class="day-header"><div class="day-title">${isToday?'<span class="day-dot"></span>':''}<span class="day-name">${fmtDate(date)}</span>${isToday?'<span class="today-badge">TODAY</span>':''}</div><div class="day-cal">${calHtml}${burnHtml}</div></div><div class="timeline-entries"><div class="timeline-line"></div>${dayEntries.map(e=>renderTimelineCard(e)).join('')}</div></div>`;}).join('');}
-function renderTimelineCard(e){const isMeal=e.type==='meal';const dotColor=isMeal?'#c8a96e':'#7aaa8a';const imgHtml=e.imageData?`<img class="tcard-img" src="${e.imageData}" loading="lazy">`:'';const tagsHtml=isMeal&&e.foods&&e.foods.length?`<div class="tags">${e.foods.map(f=>`<span class="tag">${esc(f.name)}</span>`).join('')}</div>`:'';const subHtml=!isMeal&&(e.duration||e.distance)?`<div class="tcard-sub">${e.duration?e.duration+'分鐘':''}${e.distance?' · '+e.distance+'km':''}</div>`:'';const noteHtml=e.note?`<div class="tcard-note">${esc(e.note)}</div>`:'';const rightHtml=!isMeal&&e.calories?`<span class="tcard-kcal">−${e.calories} kcal</span>`:'';const icon=isMeal?(MEAL_ICONS[e.mealType]||'🍽'):(EX_ICONS[e.exerciseType]||'⚡');const name=isMeal?e.mealType:e.exerciseType;return `<div class="tcard" onclick="openDetail('${e.id}')"><div class="tcard-time">${e.time}</div><div class="tcard-dot" style="background:${dotColor}"></div><div class="tcard-body">${imgHtml}<div class="tcard-content"><div class="tcard-row"><span class="tcard-name">${icon} ${esc(name)}</span>${rightHtml}</div>${tagsHtml}${subHtml}${noteHtml}</div></div></div>`;}
-function renderCalendar(){const el=document.getElementById('viewCalendar');const g=grouped();const firstDay=new Date(calYear,calMonth,1).getDay();const daysInMonth=new Date(calYear,calMonth+1,0).getDate();const today=new Date();function getPhoto(ds){const e=(g[ds]||[]).find(e=>e.imageData);return e?e.imageData:null;}function hasAct(ds){return !!(g[ds]&&g[ds].length);}let cells=[];for(let i=0;i<firstDay;i++)cells.push(null);for(let d=1;d<=daysInMonth;d++)cells.push(d);while(cells.length%7)cells.push(null);const gridCells=cells.map((day,i)=>{if(!day)return`<div class="cal-cell empty"></div>`;const ds=`${calYear}-${pad(calMonth+1)}-${pad(day)}`;const photo=getPhoto(ds);const active=hasAct(ds);const isSel=ds===calSelected;const isTd=day===today.getDate()&&calMonth===today.getMonth()&&calYear===today.getFullYear();const dow=(firstDay+day-1)%7;const numColor=isSel?'#f7f4ef':isTd?'#2c2416':dow===0?'#c0756a':dow===6?'#7090c0':'#2c2416';const numBg=isTd?'#c8a96e':'transparent';const photoEl=photo?`<img class="cal-cell-photo" src="${photo}" loading="lazy" style="opacity:${isSel?0.35:0.55}">` :'';let dots='';if(active&&!photo){const ents=(g[ds]||[]).slice(0,3);dots=`<div class="cal-dots">${ents.map(e=>`<span class="cal-dot" style="background:${e.type==='meal'?'#c8a96e':'#7aaa8a'}"></span>`).join('')}</div>`;}return`<div class="cal-cell${isSel?' selected':''}" onclick="selectCalDay('${ds}')">${photoEl}<div class="cal-cell-inner"><div class="cal-day-num" style="background:${numBg};color:${numColor};font-weight:${active?700:400}">${day}</div>${dots}</div></div>`;}).join('');const isThisMonth=calYear===new Date().getFullYear()&&calMonth===new Date().getMonth();const selEntries=g[calSelected]||[];const selHtml=selEntries.length?selEntries.map(e=>renderCalEntry(e)).join(''):`<div style="text-align:center;padding:26px 0;color:#ccc;font-size:14px">這天還沒有記錄</div>`;el.innerHTML=`<div class="cal-nav"><button class="cal-nav-btn" onclick="calPrev()">‹</button><div style="display:flex;flex-direction:column;align-items:center;gap:4px"><div class="cal-month">${calYear}年${calMonth+1}月</div>${!isThisMonth?`<button onclick="goToday()" style="background:#c8a96e;color:#2c2416;border:none;border-radius:99px;padding:3px 12px;font-size:12px;font-weight:700;cursor:pointer">回到今天</button>`:''}</div><button class="cal-nav-btn" onclick="calNext()">›</button></div><div class="cal-weekdays">${WEEKDAYS.map((d,i)=>`<div class="cal-wd" style="color:${i===0?'#c0756a':i===6?'#7090c0':'#8b6f47'}">${d}</div>`).join('')}</div><div class="cal-grid">${gridCells}</div><div class="cal-selected-header"><div class="cal-selected-date">${fmtDate(calSelected)}</div><div class="cal-selected-btns"><button class="btn-primary" onclick="openAdd('meal','${calSelected}')">+ 用餐</button><button class="btn-outline" onclick="openAdd('exercise','${calSelected}')">+ 運動</button></div></div><div class="cal-entries">${selHtml}</div>`;}
-function renderCalEntry(e){const isMeal=e.type==='meal';const icon=isMeal?(MEAL_ICONS[e.mealType]||'🍽'):(EX_ICONS[e.exerciseType]||'⚡');const name=isMeal?e.mealType:e.exerciseType;const thumb=e.imageData?`<img class="cal-entry-thumb" src="${e.imageData}" loading="lazy">`:'';const foods=isMeal&&e.foods&&e.foods.length?`<div class="tags" style="margin-top:6px">${e.foods.map(f=>`<span class="tag">${esc(f.name)}</span>`).join('')}</div>`:'';const sub=!isMeal?`<div style="font-size:13px;color:#888;margin-top:4px">${e.duration?e.duration+'分鐘':''}${e.distance?' · '+e.distance+'km':''}${e.calories?' · 消耗'+e.calories+'kcal':''}</div>`:'';const note=e.note?`<div style="font-size:13px;color:#aaa;font-style:italic;margin-top:4px">${esc(e.note)}</div>`:'';return`<div class="cal-entry" onclick="openDetail('${e.id}')">${thumb}<div class="cal-entry-info"><div class="cal-entry-row"><span class="cal-entry-name">${icon} ${esc(name)}</span><span class="cal-entry-time">${e.time}</span></div>${foods}${sub}${note}</div></div>`;}
-function switchTab(tab){currentTab=tab;document.getElementById('viewTimeline').style.display=tab==='timeline'?'block':'none';document.getElementById('viewCalendar').style.display=tab==='calendar'?'block':'none';document.getElementById('tabTimeline').className='tab-btn'+(tab==='timeline'?' active':'');document.getElementById('tabCalendar').className='tab-btn'+(tab==='calendar'?' active':'');if(tab==='calendar')renderCalendar();}
+function sortedDates(g){return Object.keys(g).sort((a,b)=>a.localeCompare(b));}
+
+function toggleDay(date){
+  if(collapsedDays.has(date))collapsedDays.delete(date);
+  else collapsedDays.add(date);
+  const body=document.getElementById('tbody-'+date);
+  const arrow=document.getElementById('tarrow-'+date);
+  const badge=document.getElementById('tbadge-'+date);
+  const collapsed=collapsedDays.has(date);
+  if(body)body.style.display=collapsed?'none':'block';
+  if(arrow)arrow.style.transform=collapsed?'rotate(-90deg)':'rotate(0deg)';
+  if(badge)badge.style.display=collapsed?'inline-block':'none';
+}
+
+function renderTimeline(){
+  const g=grouped();const dates=sortedDates(g);const el=document.getElementById('viewTimeline');
+  if(!dates.length){el.innerHTML='<div class="empty"><div class="empty-icon">📓</div><div style="font-size:16px;color:#aaa">還沒有任何記錄</div><div style="font-size:13px;color:#ccc;margin-top:6px">點右下角 + 開始記錄</div></div>';return;}
+  el.innerHTML=dates.map(date=>{
+    const de=g[date];
+    const dayCal=de.filter(e=>e.type==='meal').flatMap(e=>e.foods||[]).reduce((a,f)=>a+f.cal*f.qty,0);
+    const dayBurn=de.filter(e=>e.type==='exercise').reduce((a,e)=>a+(+e.calories||0),0);
+    const isToday=date===todayDate();
+    const collapsed=collapsedDays.has(date);
+    const calHtml=dayCal>0?`<div style="color:#8b6f47;font-weight:600">${Math.round(dayCal)} kcal</div>`:'';
+    const burnHtml=dayBurn>0?`<div style="color:#5a9a6a">−${dayBurn} kcal</div>`:'';
+    return `<div id="tday-${date}">
+      <div class="day-header" onclick="toggleDay('${date}')" style="cursor:pointer;user-select:none;-webkit-user-select:none">
+        <div class="day-title">
+          ${isToday?'<span class="day-dot"></span>':''}
+          <span class="day-name">${fmtDate(date)}</span>
+          ${isToday?'<span class="today-badge">今天</span>':''}
+          <span id="tbadge-${date}" style="display:${collapsed?'inline-block':'none'};font-size:11px;background:#e8e2d8;color:#8b6f47;padding:2px 8px;border-radius:99px;font-weight:600">${de.length}筆</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="day-cal">${calHtml}${burnHtml}</div>
+          <span id="tarrow-${date}" style="color:#c8b89a;font-size:16px;transition:transform .2s;transform:${collapsed?'rotate(-90deg)':'rotate(0deg)'}">▾</span>
+        </div>
+      </div>
+      <div id="tbody-${date}" style="display:${collapsed?'none':'block'}">
+        <div class="timeline-entries">
+          <div class="timeline-line"></div>
+          ${de.map(e=>renderTimelineCard(e)).join('')}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderTimelineCard(e){
+  const isMeal=e.type==='meal';const dotColor=isMeal?'#c8a96e':'#7aaa8a';
+  const photos=e.photos||[];
+  const imgHtml=photos.length?`<div class="tcard-imgs">${photos.slice(0,3).map(p=>`<img class="tcard-img" src="${p}" loading="lazy" style="flex:${photos.length===1?'unset;width:100%':'1'}">`).join('')}</div>`:'';
+  const tagsHtml=isMeal&&e.foods&&e.foods.length?`<div class="tags">${e.foods.map(f=>`<span class="tag">${esc(f.name)}</span>`).join('')}</div>`:'';
+  const subHtml=!isMeal&&(e.duration||e.distance)?`<div class="tcard-sub">${e.duration?e.duration+'分鐘':''}${e.distance?' · '+e.distance+'km':''}</div>`:'';
+  const noteHtml=e.note?`<div class="tcard-note">${esc(e.note)}</div>`:'';
+  const rightHtml=!isMeal&&e.calories?`<span class="tcard-kcal">−${e.calories} kcal</span>`:'';
+  const icon=isMeal?(MEAL_ICONS[e.mealType]||'🍽'):(EX_ICONS[e.exerciseType]||'⚡');
+  return `<div class="tcard" onclick="openDetail('${e.id}')"><div class="tcard-time">${e.time}</div><div class="tcard-dot" style="background:${dotColor}"></div><div class="tcard-body">${imgHtml}<div class="tcard-content"><div class="tcard-row"><span class="tcard-name">${icon} ${esc(isMeal?e.mealType:e.exerciseType)}</span>${rightHtml}</div>${tagsHtml}${subHtml}${noteHtml}</div></div></div>`;
+}
+
+function renderCalendar(){
+  const el=document.getElementById('viewCalendar');const g=grouped();
+  const firstDay=new Date(calYear,calMonth,1).getDay();
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  const prevMonthDays=new Date(calYear,calMonth,0).getDate();
+  const today=new Date();
+  function getPhoto(ds){const e=(g[ds]||[]).find(e=>e.photos&&e.photos.length);return e?e.photos[0]:null;}
+  function hasAct(ds){return !!(g[ds]&&g[ds].length);}
+  let cells=[];
+  for(let i=0;i<firstDay;i++){const d=prevMonthDays-firstDay+1+i;const m=calMonth===0?12:calMonth;const y=calMonth===0?calYear-1:calYear;cells.push({day:d,year:y,month:m,other:true});}
+  for(let d=1;d<=daysInMonth;d++)cells.push({day:d,year:calYear,month:calMonth+1,other:false});
+  let nextM=calMonth===11?1:calMonth+2,nextY=calMonth===11?calYear+1:calYear,nd=1;
+  while(cells.length%7)cells.push({day:nd++,year:nextY,month:nextM,other:true});
+  const gridCells=cells.map((cell,i)=>{
+    const{day,year,month,other}=cell;const ds=`${year}-${pad(month)}-${pad(day)}`;
+    const photo=other?null:getPhoto(ds);const active=other?false:hasAct(ds);
+    const isSel=!other&&ds===calSelected;
+    const isTd=!other&&day===today.getDate()&&month===(today.getMonth()+1)&&year===today.getFullYear();
+    const dow=i%7;
+    const numColor=other?'#ccc':isSel?'#f7f4ef':isTd?'#2c2416':dow===0?'#c0756a':dow===6?'#7090c0':'#2c2416';
+    const numBg=isTd?'#c8a96e':'transparent';
+    const photoEl=photo?`<img class="cal-cell-photo" src="${photo}" loading="lazy" style="opacity:${isSel?0.35:0.55}">` :'';
+    let dots='';if(active&&!photo){const ents=(g[ds]||[]).slice(0,3);dots=`<div class="cal-dots">${ents.map(e=>`<span class="cal-dot" style="background:${e.type==='meal'?'#c8a96e':'#7aaa8a'}"></span>`).join('')}</div>`;}
+    const cellStyle=`background:${isSel?'#2c2416':other?'#f3f0ea':'#fff'};cursor:${other?'default':'pointer'}`;
+    const clickFn=other?'':`onclick="handleCalCellClick('${ds}')"`;
+    return `<div class="cal-cell" style="${cellStyle}" ${clickFn}>${photoEl}<div class="cal-cell-inner"><div class="cal-day-num" style="background:${numBg};color:${numColor};font-weight:${active?700:400}">${day}</div>${dots}</div></div>`;
+  }).join('');
+  const isThisMonth=calYear===today.getFullYear()&&calMonth===today.getMonth();
+  const selEntries=g[calSelected]||[];
+  const selHtml=selEntries.length?selEntries.map(e=>renderCalEntry(e)).join(''):`<div style="text-align:center;padding:22px 0;color:#ccc;font-size:14px">這天還沒有記錄</div>`;
+  el.innerHTML=`<div class="cal-nav"><button class="cal-nav-btn" onclick="calPrev()">‹</button><div style="display:flex;flex-direction:column;align-items:center;gap:3px"><div class="cal-month">${calYear}年${calMonth+1}月</div>${!isThisMonth?`<button onclick="goToday()" style="background:#c8a96e;color:#2c2416;border:none;border-radius:99px;padding:3px 12px;font-size:12px;font-weight:700">回到今天</button>`:''}</div><button class="cal-nav-btn" onclick="calNext()">›</button></div><div class="cal-weekdays">${WEEKDAYS.map((d,i)=>`<div class="cal-wd" style="color:${i===0?'#c0756a':i===6?'#7090c0':'#8b6f47'}">${d}</div>`).join('')}</div><div class="cal-grid">${gridCells}</div><div class="cal-selected-header"><div class="cal-selected-date">${fmtDate(calSelected)}</div></div><div class="cal-entries">${selHtml}</div>`;
+}
+
+function renderCalEntry(e){
+  const isMeal=e.type==='meal';const icon=isMeal?(MEAL_ICONS[e.mealType]||'🍽'):(EX_ICONS[e.exerciseType]||'⚡');
+  const photos=e.photos||[];const thumb=photos.length?`<img class="cal-entry-thumb" src="${photos[0]}" loading="lazy">`:'';
+  const foods=isMeal&&e.foods&&e.foods.length?`<div class="tags" style="margin-top:5px">${e.foods.map(f=>`<span class="tag">${esc(f.name)}</span>`).join('')}</div>`:'';
+  const sub=!isMeal?`<div style="font-size:12px;color:#888;margin-top:3px">${e.duration?e.duration+'分鐘':''}${e.distance?' · '+e.distance+'km':''}${e.calories?' · 消耗'+e.calories+'kcal':''}</div>`:'';
+  const note=e.note?`<div style="font-size:12px;color:#aaa;font-style:italic;margin-top:3px">${esc(e.note)}</div>`:'';
+  return `<div class="cal-entry" onclick="openDetail('${e.id}')">${thumb}<div class="cal-entry-info"><div class="cal-entry-row"><span class="cal-entry-name">${icon} ${esc(isMeal?e.mealType:e.exerciseType)}</span><span class="cal-entry-time">${e.time}</span></div>${foods}${sub}${note}</div></div>`;
+}
+
+function handleCalCellClick(ds){
+  const now=Date.now();
+  if(calDblTapTimer&&now-calDblTapTimer<400){clearTimeout(calDblTapTimer);calDblTapTimer=null;openAdd('meal',ds);}
+  else{calDblTapTimer=now;setTimeout(()=>{if(calDblTapTimer===now){calDblTapTimer=null;selectCalDay(ds);}},420);}
+}
+function switchTab(tab){
+  currentTab=tab;
+  document.getElementById('viewTimeline').style.display=tab==='timeline'?'block':'none';
+  document.getElementById('viewCalendar').style.display=tab==='calendar'?'block':'none';
+  document.getElementById('tabTimeline').className='tab-btn'+(tab==='timeline'?' active':'');
+  document.getElementById('tabCalendar').className='tab-btn'+(tab==='calendar'?' active':'');
+  if(tab==='calendar'){calSelected=todayDate();renderCalendar();}
+  else scrollToToday();
+}
 function calPrev(){if(calMonth===0){calYear--;calMonth=11;}else calMonth--;renderCalendar();}
 function calNext(){if(calMonth===11){calYear++;calMonth=0;}else calMonth++;renderCalendar();}
 function selectCalDay(ds){calSelected=ds;renderCalendar();}
-function goToday(){calYear=new Date().getFullYear();calMonth=new Date().getMonth();calSelected=todayDate();renderCalendar();}
-function openAdd(type,date){editId=null;currentType=type||'meal';document.getElementById('fDate').value=date||todayDate();document.getElementById('fTime').value=nowTime();document.getElementById('fFoodText').value='';document.getElementById('fNote').value='';document.getElementById('fExNote').value='';document.getElementById('fDuration').value='';document.getElementById('fDistance').value='';document.getElementById('fCalories').value='';pendingPhoto=null;renderFoodPreview();showPhotoArea(null);selectedMealType='早餐';selectedExType='跑步';renderChips();setType(currentType);document.getElementById('addSheet').style.display='flex';document.getElementById('addSheet').querySelector('.sheet-save').textContent='儲存';closeDropdown();}
+function goToday(){
+  if(currentTab==='timeline')scrollToToday();
+  else{calYear=new Date().getFullYear();calMonth=new Date().getMonth();calSelected=todayDate();renderCalendar();}
+}
+function scrollToToday(){
+  const el=document.getElementById('tday-'+todayDate());
+  if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
+  else window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+}
+function toggleFabMenu(){
+  fabOpen=!fabOpen;
+  document.getElementById('fabMenu').style.display=fabOpen?'flex':'none';
+  document.getElementById('fab').style.transform=fabOpen?'rotate(45deg)':'none';
+}
+function closeFabMenu(){fabOpen=false;document.getElementById('fabMenu').style.display='none';document.getElementById('fab').style.transform='none';}
+document.addEventListener('click',e=>{
+  if(fabOpen&&!document.getElementById('fab').contains(e.target)&&!document.getElementById('fabMenu').contains(e.target))closeFabMenu();
+  if(!document.getElementById('dataDropdown').contains(e.target))closeDropdown();
+});
+function openAdd(type,date){
+  editId=null;currentType=type||'meal';
+  document.getElementById('fDate').value=date||todayDate();
+  document.getElementById('fTime').value=nowTime();
+  document.getElementById('fFoodText').value='';
+  document.getElementById('fNote').value='';
+  document.getElementById('fExNote').value='';
+  document.getElementById('fDuration').value='';
+  document.getElementById('fDistance').value='';
+  document.getElementById('fCalories').value='';
+  pendingPhotos=[];renderPhotoGrid();renderFoodPreview();
+  selectedMealType='早餐';selectedExType='跑步';
+  renderChips();setType(currentType);
+  document.getElementById('addSheet').style.display='flex';
+  document.getElementById('addSheet').querySelector('.sheet-save').textContent='儲存';
+  closeDropdown();
+}
 function closeAdd(){document.getElementById('addSheet').style.display='none';}
 function closeAddIfBg(e){if(e.target===document.getElementById('addSheet'))closeAdd();}
 function setType(t){currentType=t;document.getElementById('typeBtnMeal').className='type-btn'+(t==='meal'?' active':'');document.getElementById('typeBtnExercise').className='type-btn'+(t==='exercise'?' active':'');document.getElementById('mealFields').style.display=t==='meal'?'block':'none';document.getElementById('exerciseFields').style.display=t==='exercise'?'block':'none';}
@@ -273,24 +447,62 @@ function switchType(t){setType(t);}
 function renderChips(){document.getElementById('mealTypeChips').innerHTML=MEAL_TYPES.map(m=>`<button class="chip${m===selectedMealType?' active':''}" onclick="selectMealType('${m}')">${MEAL_ICONS[m]} ${m}</button>`).join('');document.getElementById('exTypeChips').innerHTML=EX_TYPES.map(t=>`<button class="chip${t===selectedExType?' active':''}" onclick="selectExType('${t}')">${EX_ICONS[t]} ${t}</button>`).join('');}
 function selectMealType(m){selectedMealType=m;renderChips();}
 function selectExType(t){selectedExType=t;renderChips();}
-function renderFoodPreview(){const text=document.getElementById('fFoodText').value;const tags=text.trim().split(/[\s\u3000,，]+/).filter(Boolean);document.getElementById('foodPreview').innerHTML=tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('');}
-function saveEntry(){const date=document.getElementById('fDate').value;const time=document.getElementById('fTime').value;if(!date||!time){showToast('請填寫日期與時間');return;}let entry;if(currentType==='meal'){const foodText=document.getElementById('fFoodText').value;const foods=parseFoods(foodText);entry={id:editId||uid(),type:'meal',date,time,mealType:selectedMealType,foods,note:document.getElementById('fNote').value,imageData:pendingPhoto};}else{entry={id:editId||uid(),type:'exercise',date,time,exerciseType:selectedExType,duration:document.getElementById('fDuration').value,distance:document.getElementById('fDistance').value,calories:document.getElementById('fCalories').value,note:document.getElementById('fExNote').value,imageData:pendingPhoto};}if(editId){entries=entries.map(e=>e.id==editId?entry:e);}else{entries.push(entry);}saveEntries();closeAdd();rerender();}
-function handlePhoto(event){const file=event.target.files[0];if(!file)return;const MAX=600,Q=0.60;const reader=new FileReader();reader.onload=ev=>{const img=new Image();img.onload=()=>{let w=img.width,h=img.height;if(w>h){if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}}else{if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}}const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;canvas.getContext('2d').drawImage(img,0,0,w,h);pendingPhoto=canvas.toDataURL('image/jpeg',Q);showPhotoArea(pendingPhoto);};img.src=ev.target.result;};reader.readAsDataURL(file);event.target.value='';}
-function showPhotoArea(src){document.getElementById('photoUploadArea').style.display=src?'none':'block';document.getElementById('photoPreviewArea').style.display=src?'block':'none';if(src)document.getElementById('photoPreviewImg').src=src;}
-function removePhoto(){pendingPhoto=null;showPhotoArea(null);}
-function openDetail(id){const e=entries.find(x=>x.id==id);if(!e)return;const isMeal=e.type==='meal';const icon=isMeal?(MEAL_ICONS[e.mealType]||'🍽'):(EX_ICONS[e.exerciseType]||'⚡');const name=isMeal?e.mealType:e.exerciseType;const photoHtml=e.imageData?`<div class="detail-photo"><img src="${e.imageData}"></div>`:'';const foodsHtml=isMeal&&e.foods&&e.foods.length?`<div class="detail-food-label">食物</div><div class="tags">${e.foods.map(f=>`<span class="tag">${esc(f.name)}</span>`).join('')}</div>`:'';const statsHtml=!isMeal?`<div class="stat-grid">${e.duration?`<div class="stat-box" style="background:#f5f0e8"><div class="stat-val">${e.duration}</div><div class="stat-unit">分鐘</div></div>`:''}${e.distance?`<div class="stat-box" style="background:#f5f0e8"><div class="stat-val">${e.distance}</div><div class="stat-unit">公里</div></div>`:''}${e.calories?`<div class="stat-box" style="background:#f0f8f2"><div class="stat-val" style="color:#5a9a6a">${e.calories}</div><div class="stat-unit">消耗kcal</div></div>`:''}</div>`:'';const noteHtml=e.note?`<div class="detail-note">${esc(e.note)}</div>`:'';document.getElementById('detailSheetInner').innerHTML=`${photoHtml}<div class="detail-body"><div class="detail-title">${icon} ${esc(name)}</div><div class="detail-date">${fmtDate(e.date)} · ${e.time}</div>${foodsHtml}${statsHtml}${noteHtml}<div class="detail-btns"><button class="btn-edit" onclick="editEntry('${e.id}')">編輯</button><button class="btn-delete" onclick="deleteEntry('${e.id}')">刪除</button></div></div>`;document.getElementById('detailSheet').style.display='flex';}
+function renderFoodPreview(){const text=document.getElementById('fFoodText').value;document.getElementById('foodPreview').innerHTML=text.trim().split(/[\s\u3000,，]+/).filter(Boolean).map(t=>`<span class="tag">${esc(t)}</span>`).join('');}
+function saveEntry(){
+  const date=document.getElementById('fDate').value;const time=document.getElementById('fTime').value;
+  if(!date||!time){showToast('請填寫日期與時間');return;}
+  let entry;
+  if(currentType==='meal'){entry={id:editId||uid(),type:'meal',date,time,mealType:selectedMealType,foods:parseFoods(document.getElementById('fFoodText').value),note:document.getElementById('fNote').value,photos:pendingPhotos};}
+  else{entry={id:editId||uid(),type:'exercise',date,time,exerciseType:selectedExType,duration:document.getElementById('fDuration').value,distance:document.getElementById('fDistance').value,calories:document.getElementById('fCalories').value,note:document.getElementById('fExNote').value,photos:pendingPhotos};}
+  if(editId)entries=entries.map(e=>e.id==editId?entry:e);else entries.push(entry);
+  saveEntries();closeAdd();rerender();
+}
+function handlePhotos(event){
+  const files=Array.from(event.target.files);if(!files.length)return;
+  const MAX=600,Q=0.60;
+  files.forEach(file=>{const reader=new FileReader();reader.onload=ev=>{const img=new Image();img.onload=()=>{let w=img.width,h=img.height;if(w>h){if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}}else{if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}}const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;canvas.getContext('2d').drawImage(img,0,0,w,h);pendingPhotos.push(canvas.toDataURL('image/jpeg',Q));renderPhotoGrid();};img.src=ev.target.result;};reader.readAsDataURL(file);});
+  event.target.value='';
+}
+function renderPhotoGrid(){const grid=document.getElementById('photoGrid');const upload=document.getElementById('photoUploadArea');grid.innerHTML=pendingPhotos.map((p,i)=>`<div class="photo-thumb"><img src="${p}"><button class="photo-thumb-remove" onclick="removePhoto(${i})">✕</button></div>`).join('');upload.style.display=pendingPhotos.length>=9?'none':'block';}
+function removePhoto(i){pendingPhotos.splice(i,1);renderPhotoGrid();}
+function openDetail(id){
+  const e=entries.find(x=>x.id==id);if(!e)return;
+  const isMeal=e.type==='meal';const icon=isMeal?(MEAL_ICONS[e.mealType]||'🍽'):(EX_ICONS[e.exerciseType]||'⚡');
+  const photos=e.photos||[];
+  let photoHtml='';
+  if(photos.length===1)photoHtml=`<div class="detail-photo-grid" style="grid-template-columns:1fr"><img src="${photos[0]}" style="height:200px"></div>`;
+  else if(photos.length===2)photoHtml=`<div class="detail-photo-grid" style="grid-template-columns:1fr 1fr">${photos.map(p=>`<img src="${p}" style="height:160px">`).join('')}</div>`;
+  else if(photos.length>=3)photoHtml=`<div class="detail-photo-grid" style="grid-template-columns:1fr 1fr 1fr">${photos.slice(0,3).map(p=>`<img src="${p}" style="height:120px">`).join('')}</div>`;
+  const foodsHtml=isMeal&&e.foods&&e.foods.length?`<div class="detail-food-label">食物</div><div class="tags">${e.foods.map(f=>`<span class="tag">${esc(f.name)}</span>`).join('')}</div>`:'';
+  const statsHtml=!isMeal?`<div class="stat-grid">${e.duration?`<div class="stat-box" style="background:#f5f0e8"><div class="stat-val">${e.duration}</div><div class="stat-unit">分鐘</div></div>`:''}${e.distance?`<div class="stat-box" style="background:#f5f0e8"><div class="stat-val">${e.distance}</div><div class="stat-unit">公里</div></div>`:''}${e.calories?`<div class="stat-box" style="background:#f0f8f2"><div class="stat-val" style="color:#5a9a6a">${e.calories}</div><div class="stat-unit">消耗kcal</div></div>`:''}</div>`:'';
+  const noteHtml=e.note?`<div class="detail-note">${esc(e.note)}</div>`:'';
+  document.getElementById('detailSheetInner').innerHTML=`${photoHtml}<div class="detail-body"><div class="detail-title">${icon} ${esc(isMeal?e.mealType:e.exerciseType)}</div><div class="detail-date">${fmtDate(e.date)} · ${e.time}</div>${foodsHtml}${statsHtml}${noteHtml}<div class="detail-btns"><button class="btn-edit" onclick="editEntry('${e.id}')">編輯</button><button class="btn-delete" onclick="deleteEntry('${e.id}')">刪除</button></div></div>`;
+  document.getElementById('detailSheet').style.display='flex';
+}
 function closeDetail(){document.getElementById('detailSheet').style.display='none';}
 function closeDetailIfBg(e){if(e.target===document.getElementById('detailSheet'))closeDetail();}
-function editEntry(id){const e=entries.find(x=>x.id==id);if(!e)return;closeDetail();editId=id;currentType=e.type;document.getElementById('fDate').value=e.date;document.getElementById('fTime').value=e.time;pendingPhoto=e.imageData||null;showPhotoArea(pendingPhoto);if(e.type==='meal'){selectedMealType=e.mealType||'早餐';document.getElementById('fFoodText').value=(e.foods||[]).map(f=>f.name).join(' ');document.getElementById('fNote').value=e.note||'';renderFoodPreview();}else{selectedExType=e.exerciseType||'跑步';document.getElementById('fDuration').value=e.duration||'';document.getElementById('fDistance').value=e.distance||'';document.getElementById('fCalories').value=e.calories||'';document.getElementById('fExNote').value=e.note||'';}renderChips();setType(currentType);document.getElementById('addSheet').style.display='flex';document.getElementById('addSheet').querySelector('.sheet-save').textContent='更新';}
+function editEntry(id){
+  const e=entries.find(x=>x.id==id);if(!e)return;closeDetail();editId=id;currentType=e.type;
+  document.getElementById('fDate').value=e.date;document.getElementById('fTime').value=e.time;
+  pendingPhotos=[...(e.photos||[])];renderPhotoGrid();
+  if(e.type==='meal'){selectedMealType=e.mealType||'早餐';document.getElementById('fFoodText').value=(e.foods||[]).map(f=>f.name).join(' ');document.getElementById('fNote').value=e.note||'';renderFoodPreview();}
+  else{selectedExType=e.exerciseType||'跑步';document.getElementById('fDuration').value=e.duration||'';document.getElementById('fDistance').value=e.distance||'';document.getElementById('fCalories').value=e.calories||'';document.getElementById('fExNote').value=e.note||'';}
+  renderChips();setType(currentType);document.getElementById('addSheet').style.display='flex';document.getElementById('addSheet').querySelector('.sheet-save').textContent='更新';
+}
 function deleteEntry(id){if(!confirm('確定刪除這筆記錄？'))return;entries=entries.filter(e=>e.id!=id);saveEntries();closeDetail();rerender();}
 function exportData(){const json=JSON.stringify(entries,null,2);const blob=new Blob([json],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');const d=new Date();a.href=url;a.download=`diet_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}.json`;a.click();URL.revokeObjectURL(url);closeDropdown();showToast('已匯出備份');}
-function importData(event){const file=event.target.files[0];if(!file)return;const r=new FileReader();r.onload=ev=>{try{const data=JSON.parse(ev.target.result);if(!Array.isArray(data))throw new Error();if(confirm(`匯入 ${data.length} 筆記錄？\n將與現有資料合併（依 ID 去重）`)){const ids=new Set(entries.map(e=>e.id));const merged=[...entries,...data.filter(e=>!ids.has(e.id))];entries=merged.sort((a,b)=>b.date.localeCompare(a.date));saveEntries();rerender();showToast(`✅ 成功匯入 ${data.length} 筆`);}}catch{showToast('❌ 檔案格式錯誤');}};r.readAsText(file);event.target.value='';}
-function toggleDropdown(){const m=document.getElementById('dropdownMenu');if(m.style.display==='none'){m.style.display='block';calcStorage();}else{m.style.display='none';}}
+function importData(event){const file=event.target.files[0];if(!file)return;const r=new FileReader();r.onload=ev=>{try{const data=JSON.parse(ev.target.result);if(!Array.isArray(data))throw new Error();if(confirm(`匯入 ${data.length} 筆記錄？\n將與現有資料合併`)){const ids=new Set(entries.map(e=>e.id));entries=[...entries,...data.filter(e=>!ids.has(e.id))];entries.sort((a,b)=>a.date.localeCompare(b.date));saveEntries();rerender();showToast(`✅ 成功匯入 ${data.length} 筆`);}}catch{showToast('❌ 檔案格式錯誤');}};r.readAsText(file);event.target.value='';}
+function openClearSheet(){document.getElementById('clearDate').value='';document.getElementById('clearInfo').textContent='選擇日期後顯示將刪除的筆數';document.getElementById('clearSheet').style.display='flex';closeDropdown();}
+function closeClearSheet(){document.getElementById('clearSheet').style.display='none';}
+function closeClearIfBg(e){if(e.target===document.getElementById('clearSheet'))closeClearSheet();}
+function updateClearInfo(){const d=document.getElementById('clearDate').value;if(!d)return;const count=entries.filter(en=>en.date<d).length;document.getElementById('clearInfo').textContent=`將刪除 ${count} 筆記錄（${d} 之前）`;}
+function confirmClear(){const d=document.getElementById('clearDate').value;if(!d){showToast('請選擇日期');return;}const count=entries.filter(en=>en.date<d).length;if(!count){showToast('沒有符合的記錄');return;}if(!confirm(`確定刪除 ${count} 筆 ${d} 之前的記錄？`))return;entries=entries.filter(en=>en.date>=d);saveEntries();rerender();closeClearSheet();showToast(`已刪除 ${count} 筆記錄`);}
+function toggleDropdown(){const m=document.getElementById('dropdownMenu');if(m.style.display==='none'){m.style.display='block';calcStorage();}else m.style.display='none';}
 function closeDropdown(){document.getElementById('dropdownMenu').style.display='none';}
-document.addEventListener('click',e=>{if(!document.getElementById('dataDropdown').contains(e.target))closeDropdown();});
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function rerender(){renderTimeline();if(currentTab==='calendar')renderCalendar();}
 loadEntries();renderChips();renderTimeline();
+setTimeout(scrollToToday,100);
 </script>
 </body>
 </html>
