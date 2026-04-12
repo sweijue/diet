@@ -889,6 +889,7 @@ const MET_TABLE={
   // 坡走（走路+坡度）
   '坡走 0%':3.5,'坡走 5%':5.0,'坡走 10%':6.5,
   '🚶 坡走 0%':3.5,'🚶 坡走 5%':5.0,'🚶 坡走 10%':6.5,
+  '坡走0%':3.5,'坡走5%':5.0,'坡走10%':6.5,
   // 球類
   '籃球':6.5,'🏀 籃球':6.5,'足球':7.0,'⚽ 足球':7.0,
   '羽球':5.5,'🏸 羽球':5.5,'網球':6.0,'🎾 網球':6.0,'桌球':4.0,
@@ -900,14 +901,19 @@ const MET_TABLE={
 
 function getMET(exType){
   if(!exType) return null;
-  // exact match（含 emoji 版本都已在 MET_TABLE 登記）
+  // 1. exact match
   if(MET_TABLE[exType]!=null) return MET_TABLE[exType];
-  // fallback：去掉 emoji 前綴後再比對
-  const stripped=exType.replace(/^[\p{Emoji}\s]+/u,'').trim();
+  // 2. 去掉開頭 emoji+空格後再查
+  const stripped=exType.replace(/^[^\u0000-\u007F\u4e00-\u9fff]+\s*/,'').trim();
   if(stripped&&MET_TABLE[stripped]!=null) return MET_TABLE[stripped];
-  // partial：只用無 emoji 的 key 做包含比對，避免 '坡走 5%' 誤中 '坡走 10%'
-  const plainKeys=Object.keys(MET_TABLE).filter(k=>!/[\p{Emoji}]/u.test(k));
-  const key=plainKeys.find(k=>exType===k||exType.includes(k)&&k.length>=4);
+  // 3. 空格正規化（全形→半形、多空格→一個）
+  const norm=exType.replace(/\s+/g,' ').trim();
+  if(MET_TABLE[norm]!=null) return MET_TABLE[norm];
+  const normStripped=stripped.replace(/\s+/g,' ').trim();
+  if(normStripped&&MET_TABLE[normStripped]!=null) return MET_TABLE[normStripped];
+  // 4. 對所有 key 做 includes，優先長 key 避免誤中
+  const keys=Object.keys(MET_TABLE).sort((a,b)=>b.length-a.length);
+  const key=keys.find(k=>exType===k||stripped===k||norm===k||normStripped===k);
   return key!=null?MET_TABLE[key]:null;
 }
 
