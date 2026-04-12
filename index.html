@@ -334,19 +334,17 @@ const STORE_KEY='diet_log_v3';
 const MEAL_ICONS={'早餐':'☀️','早午餐':'🍳','午餐':'🌤️','下午茶':'🧋','晚餐':'🌙','點心':'🍡','宵夜':'🌛'};
 const MEAL_TYPES=['早餐','早午餐','午餐','下午茶','晚餐','點心','宵夜'];
 // 只保留「跑步」作為原始類別，其餘改為自訂
-const EX_BASE=['跑步'];
-const EX_BASE_ICONS={'跑步':'🏃'};
 const WEEKDAYS=['日','一','二','三','四','五','六'];
 const SWIPE_W=136; // 兩個按鈕各68px
 
-function loadCustomEx(){try{return JSON.parse(localStorage.getItem('ex_custom')||'[]');}catch{return[];}}
+function loadCustomEx(){try{const a=JSON.parse(localStorage.getItem('ex_custom')||'[]');if(!a.length){a.push({name:'🏃 跑步',icon:''});saveCustomEx(a);}return a;}catch{return [{name:'🏃 跑步',icon:''}];}}
 function saveCustomEx(a){localStorage.setItem('ex_custom',JSON.stringify(a));}
-function allExTypes(){return [...EX_BASE,...loadCustomEx().map(x=>x.name)];}
-function allExIcons(){const m={...EX_BASE_ICONS};loadCustomEx().forEach(x=>m[x.name]=x.icon);return m;}
+function allExTypes(){return loadCustomEx().map(x=>x.name);}
+function allExIcons(){const m={};loadCustomEx().forEach(x=>m[x.name]=x.icon);return m;}
 
 let entries=[],currentTab='timeline',currentType='meal',editId=null;
 let calYear=new Date().getFullYear(),calMonth=new Date().getMonth(),calSelected=todayDate();
-let mealPhotos=[],exPhotos=[],selMealType='早餐',selExType='跑步';
+let mealPhotos=[],exPhotos=[],selMealType='早餐',selExType='';
 let fabOpen=false;
 const collapsedDays=new Set();
 let swipeTouches={},currentSwiped=null;
@@ -770,7 +768,7 @@ function openAdd(type,date){
   document.getElementById('fNote').value='';document.getElementById('fExNote').value='';
   document.getElementById('fDuration').value='';document.getElementById('fDistance').value='';document.getElementById('fCalories').value='';
   mealPhotos=[];exPhotos=[];renderPhotoGrid('meal');renderPhotoGrid('ex');
-  selMealType=guessMealType();selExType='跑步';
+  selMealType=guessMealType();selExType=allExTypes()[0]||'🏃 跑步';
   renderChips();setType(currentType);
   document.getElementById('addSheet').style.display='flex';
   document.getElementById('addSheet').querySelector('.sheet-save').textContent='儲存';
@@ -804,11 +802,10 @@ function renderChips(){
   const et=allExTypes(),ei=allExIcons();
   const chipsEl=document.getElementById('exTypeChips');
   chipsEl.innerHTML=et.map((t,idx)=>{
-    const isC=customNames.has(t);
-    const lp=isC?`oncontextmenu="delCustomEx(event,'${esc(t)}')" ontouchstart="exChipTouchStart(event,'${esc(t)}')" ontouchend="exChipTouchEnd(event,'${esc(t)}')" ontouchmove="exChipTouchMove(event,'${esc(t)}')"`:'' ;
-    const label=isC?t:`${ei[t]||'⚡'} ${t}`;
-    const drag=isC?`draggable="true" ondragstart="exDragStart(event,'${esc(t)}')" ondragover="exDragOver(event,'${esc(t)}')" ondrop="exDrop(event,'${esc(t)}')"`:'' ;
-    return `<button class="chip${t===selExType?' active':''}${isC?' chip-custom':''}" onclick="selEx('${esc(t)}')" ${lp} ${drag} data-name="${esc(t)}">${label}</button>`;
+    const lp=`oncontextmenu="delCustomEx(event,'${esc(t)}')" ontouchstart="exChipTouchStart(event,'${esc(t)}')" ontouchend="exChipTouchEnd(event,'${esc(t)}')" ontouchmove="exChipTouchMove(event,'${esc(t)}')"`;
+    const label=t;
+    const drag=`draggable="true" ondragstart="exDragStart(event,'${esc(t)}')" ondragover="exDragOver(event,'${esc(t)}')" ondrop="exDrop(event,'${esc(t)}')"` ;
+    return `<button class="chip${t===selExType?' active':''} chip-custom" onclick="selEx('${esc(t)}')" ${lp} ${drag} data-name="${esc(t)}">${label}</button>`;
   }).join('');
 }
 function selMeal(m){selMealType=m;renderChips();}
@@ -864,7 +861,7 @@ function delCustomEx(ev,name){
   if(ev)ev.preventDefault();
   if(!confirm(`刪除「${name}」？`))return;
   saveCustomEx(loadCustomEx().filter(x=>x.name!==name));
-  if(selExType===name)selExType='跑步';
+  if(selExType===name){const rem=loadCustomEx().filter(x=>x.name!==name);selExType=rem.length?rem[0].name:'';}
   renderChips();
 }
 function openAddExType(){
@@ -872,7 +869,7 @@ function openAddExType(){
   if(!input?.trim())return;
   const label=input.trim();
   const custom=loadCustomEx();
-  if(custom.find(x=>x.name===label)||EX_BASE.includes(label)){showToast('此名稱已存在');return;}
+  if(custom.find(x=>x.name===label)){showToast('此名稱已存在');return;}
   custom.push({name:label,icon:''});
   saveCustomEx(custom);selExType=label;renderChips();
 }
