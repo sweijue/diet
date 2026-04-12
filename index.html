@@ -352,6 +352,20 @@ const FOOD_DB=[
 
 function lookupCal(name){const m=FOOD_DB.find(f=>f.n===name||name.includes(f.n)||f.n.includes(name));return m?m.c:null;}
 
+// 自訂食物卡路里快取（localStorage）
+function loadCalCache(){try{return JSON.parse(localStorage.getItem('cal_cache')||'{}');}catch{return {};}}
+function saveCalCache(obj){localStorage.setItem('cal_cache',JSON.stringify(obj));}
+
+function lookupCalWithCache(name){
+  const db=lookupCal(name);
+  if(db!==null)return db;
+  const cache=loadCalCache();
+  return cache[name]??null;
+}
+
+let _aiQuerying=false;
+let _aiDebounce=null;
+
 function onFoodTextChange(){
   const text=document.getElementById('fFoodText').value;
   const tagsRow=document.getElementById('foodTagsRow');
@@ -359,23 +373,77 @@ function onFoodTextChange(){
   const calNum=document.getElementById('calEstNum');
   const names=text.trim().split(/[\s\u3000,，]+/).filter(Boolean);
   if(!names.length){tagsRow.innerHTML='';calRow.style.display='none';return;}
+
+  renderFoodTags(names);
+
+  // 找出未知食物，debounce 後查 AI
+  clearTimeout(_aiDebounce);
+  const unknown=names.filter(n=>lookupCalWithCache(n)===null);
+  if(unknown.length>0 && !_aiQuerying){
+    _aiDebounce=setTimeout(()=>queryAICal(names,unknown),900);
+  }
+}
+
+function renderFoodTags(names){
+  const tagsRow=document.getElementById('foodTagsRow');
+  const calRow=document.getElementById('calEstRow');
+  const calNum=document.getElementById('calEstNum');
   let total=0,known=0;
   const html=names.map(name=>{
-    const cal=lookupCal(name);
+    const cal=lookupCalWithCache(name);
     if(cal!==null){total+=cal;known++;}
-    const s=cal!==null?` <span style="color:#c8a96e;font-weight:700">${cal}</span>`:'';
+    const loading=cal===null?` <span style="color:#bbb;font-size:11px" id="caltag-${encodeURIComponent(name)}">…</span>`:'';
+    const s=cal!==null?` <span style="color:#c8a96e;font-weight:700">${cal}</span>`:loading;
     return `<span class="tag">${esc(name)}${s}</span>`;
   }).join('');
   tagsRow.innerHTML=`<div class="tags">${html}</div>`;
-  if(total>0){
+  if(total>0||known>0){
     const u=names.length-known;
-    calNum.innerHTML=`${total} kcal${u>0?` <span style="font-size:11px;color:#bbb">（${u}樣未知）</span>`:''}`;
+    calNum.innerHTML=`${total} kcal${u>0?` <span style="font-size:11px;color:#bbb">（${u}樣查詢中…）</span>`:''}`;
     calRow.style.display='flex';
-  } else calRow.style.display='none';
+  } else {
+    calNum.innerHTML=`<span style="font-size:12px;color:#bbb">查詢中…</span>`;
+    calRow.style.display='flex';
+  }
+}
+
+async function queryAICal(allNames,unknownNames){
+  _aiQuerying=true;
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:300,
+        system:'你是食物熱量專家。使用者輸入食物名稱，請回傳每樣食物的約略熱量（一份/一個/一碗的常見份量）。只回傳 JSON，格式：{"食物名":卡路里數字}，數字為整數kcal，不要任何解釋。如果真的不知道某食物，該食物值設為 null。',
+        messages:[{role:'user',content:`請估算這些食物的卡路里：${unknownNames.join('、')}`}]
+      })
+    });
+    const data=await resp.json();
+    const text=(data.content||[]).find(b=>b.type==='text')?.text||'';
+    const json=text.replace(/```json|```/g,'').trim();
+    const result=JSON.parse(json);
+    const cache=loadCalCache();
+    unknownNames.forEach(name=>{
+      if(result[name]!==undefined&&result[name]!==null){
+        cache[name]=result[name];
+      }
+    });
+    saveCalCache(cache);
+    // 重新渲染
+    const currentText=document.getElementById('fFoodText').value;
+    const currentNames=currentText.trim().split(/[\s\u3000,，]+/).filter(Boolean);
+    renderFoodTags(currentNames);
+  }catch(e){
+    console.warn('AI cal query failed',e);
+  }finally{
+    _aiQuerying=false;
+  }
 }
 
 function parseFoods(text){
-  return text.trim().split(/[\s\u3000,，]+/).filter(Boolean).map(name=>({name,qty:1,cal:lookupCal(name)||0,id:uid()}));
+  return text.trim().split(/[\s\u3000,，]+/).filter(Boolean).map(name=>({name,qty:1,cal:lookupCalWithCache(name)||0,id:uid()}));
 }
 
 function todayDate(){const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;}
