@@ -178,6 +178,7 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;gap
             </div>
             <button class="dropdown-item" onclick="exportData()">📤 匯出備份</button>
             <button class="dropdown-item" onclick="document.getElementById('importInput').click()">📥 匯入資料</button>
+            <button class="dropdown-item" onclick="openWeightSheet()">⚖️ 設定體重</button>
             <button class="dropdown-item" onclick="openClearSheet()">🗑 清除舊資料</button>
           </div>
         </div>
@@ -263,10 +264,11 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;gap
         <div class="chip-group" id="exTypeChips"></div>
         <button onclick="openAddExType()" style="margin-bottom:13px;background:#f5f0e8;color:#8b6f47;border:1.5px dashed #c8b89a;border-radius:20px;padding:6px 13px;font-size:13px;font-weight:600">＋ 自訂類別</button>
         <div class="num-grid">
-          <div><div class="form-label">時間(分)</div><input type="number" id="fDuration" class="form-input" placeholder="30"></div>
-          <div><div class="form-label">距離(km)</div><input type="number" id="fDistance" class="form-input" placeholder="5.0"></div>
-          <div><div class="form-label">消耗(kcal)</div><input type="number" id="fCalories" class="form-input" placeholder="300"></div>
+          <div><div class="form-label">時間(分)</div><input type="number" id="fDuration" class="form-input" placeholder="30" oninput="autoCalcExCal()"></div>
+          <div><div class="form-label">距離(km)</div><input type="number" id="fDistance" class="form-input" placeholder="5.0" oninput="autoCalcExCal()"></div>
+          <div><div class="form-label">消耗(kcal)</div><input type="number" id="fCalories" class="form-input" placeholder="自動估算" id="fCalories"></div>
         </div>
+        <div id="calAutoHint" style="display:none;font-size:11px;color:#8b6f47;margin-bottom:10px"></div>
         <div class="form-label">記錄照片（可多選，自動壓縮）</div>
         <div style="display:flex;gap:8px">
           <div id="exPhotoUploadArea" class="photo-upload" style="flex:1" onclick="document.getElementById('exPhotoInput').click()">
@@ -309,6 +311,21 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;gap
       </div>
       <input type="hidden" id="pEditId" value="">
       <div id="periodList" style="margin-top:4px"></div>
+    </div>
+  </div>
+</div>
+
+<div id="weightSheet" class="sheet-overlay" style="display:none" onclick="closeWeightIfBg(event)">
+  <div class="sheet">
+    <div class="sheet-header">
+      <button class="sheet-cancel" onclick="closeWeightSheet()">取消</button>
+      <span style="font-weight:700;font-size:16px;color:#2c2416">⚖️ 設定體重</span>
+      <button class="sheet-save" onclick="saveWeight()">儲存</button>
+    </div>
+    <div class="sheet-body">
+      <div class="form-label">體重（公斤）</div>
+      <input type="number" id="weightInput" class="form-input" placeholder="例如：60" step="0.1" style="margin-bottom:10px">
+      <div style="font-size:12px;color:#bbb;margin-top:4px">用於自動估算運動消耗熱量</div>
     </div>
   </div>
 </div>
@@ -797,6 +814,73 @@ function setType(t){
 }
 function switchType(t){setType(t);}
 
+// ── 體重設定 ──────────────────────────────────────────────────────
+function loadWeight(){return parseFloat(localStorage.getItem('user_weight')||'0');}
+function saveWeightVal(w){localStorage.setItem('user_weight',String(w));}
+function openWeightSheet(){
+  const w=loadWeight();
+  document.getElementById('weightInput').value=w||'';
+  document.getElementById('weightSheet').style.display='flex';
+  closeDropdown();
+}
+function closeWeightSheet(){document.getElementById('weightSheet').style.display='none';}
+function closeWeightIfBg(ev){if(ev.target===document.getElementById('weightSheet'))closeWeightSheet();}
+function saveWeight(){
+  const v=parseFloat(document.getElementById('weightInput').value);
+  if(!v||v<20||v>300){showToast('請輸入合理體重（20–300 kg）');return;}
+  saveWeightVal(v);closeWeightSheet();showToast(`體重已設定為 ${v} kg`);
+}
+
+// ── 運動 MET 表 ──────────────────────────────────────────────────
+// MET 值參考 Compendium of Physical Activities
+const MET_TABLE={
+  '跑步':9.8,'🏃 跑步':9.8,
+  '走路':3.5,'🚶 走路':3.5,
+  '快走':5.0,
+  '騎車':6.8,'🚴 騎車':6.8,'腳踏車':6.8,
+  '游泳':7.0,'🏊 游泳':7.0,
+  '重訓':4.5,'💪 重訓':4.5,'健身':4.5,
+  '瑜伽':3.0,'🧘 瑜伽':3.0,'瑜珈':3.0,
+  'HIIT':9.0,'🔥 HIIT':9.0,
+  '籃球':6.5,'足球':7.0,'羽球':5.5,'網球':6.0,
+  '跳繩':10.0,'有氧':6.5,'舞蹈':5.5,'爬山':6.0,'爬樓梯':8.0,
+  '滑板':5.0,'衝浪':5.0,'攀岩':8.0,'拳擊':9.0,
+};
+
+function getMET(exType){
+  if(!exType) return null;
+  // exact match first
+  if(MET_TABLE[exType]) return MET_TABLE[exType];
+  // partial match
+  const key=Object.keys(MET_TABLE).find(k=>exType.includes(k)||k.includes(exType));
+  return key?MET_TABLE[key]:null;
+}
+
+function autoCalcExCal(){
+  const dur=parseFloat(document.getElementById('fDuration').value);
+  const calField=document.getElementById('fCalories');
+  const hint=document.getElementById('calAutoHint');
+  if(!dur||dur<=0){hint.style.display='none';return;}
+  const weight=loadWeight();
+  const met=getMET(selExType);
+  if(!met){
+    if(weight){
+      hint.style.display='none';
+    }
+    return;
+  }
+  if(!weight){
+    hint.innerHTML='⚖️ <a href="#" onclick="openWeightSheet();return false" style="color:#c8a96e">設定體重</a> 可自動計算消耗熱量';
+    hint.style.display='block';
+    return;
+  }
+  // calories = MET × weight(kg) × duration(hr)
+  const kcal=Math.round(met * weight * (dur/60));
+  calField.value=kcal;
+  hint.innerHTML=`🔥 自動估算（${selExType}，MET=${met}，${weight}kg）`;
+  hint.style.display='block';
+}
+
 function guessMealType(){
   const h=new Date().getHours();
   if(h>=4&&h<9) return '早餐';
@@ -821,7 +905,7 @@ function renderChips(){
   }).join('');
 }
 function selMeal(m){selMealType=m;renderChips();}
-function selEx(t){selExType=t;renderChips();}
+function selEx(t){selExType=t;renderChips();autoCalcExCal();}
 function lpStart(ev,name){_lpTimer=setTimeout(()=>{_lpTimer=null;delCustomEx(null,name);},600);}
 function lpEnd(){if(_lpTimer){clearTimeout(_lpTimer);_lpTimer=null;}}
 
