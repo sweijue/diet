@@ -202,6 +202,10 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;gap
     <div class="fab-item-label">記錄運動</div>
     <button class="fab-item-btn" style="background:#7aaa8a;color:#fff" onclick="openAdd('exercise');closeFabMenu()">🏃</button>
   </div>
+  <div class="fab-item">
+    <div class="fab-item-label">經期紀錄</div>
+    <button class="fab-item-btn" style="background:#e8a0a0;color:#fff" onclick="openPeriodSheet();closeFabMenu()">🩸</button>
+  </div>
 </div>
 
 <div id="addSheet" class="sheet-overlay" style="display:none" onclick="closeAddIfBg(event)">
@@ -265,6 +269,33 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;gap
         <div class="form-label" style="margin-top:12px">備注</div>
         <textarea id="fExNote" class="form-textarea" rows="2" placeholder="運動感受、心率…"></textarea>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Period Sheet -->
+
+<div id="periodSheet" class="sheet-overlay" style="display:none" onclick="closePeriodIfBg(event)">
+  <div class="sheet">
+    <div class="sheet-header">
+      <button class="sheet-cancel" onclick="closePeriodSheet()">取消</button>
+      <span style="font-weight:700;font-size:16px;color:#2c2416">🩸 經期紀錄</span>
+      <button class="sheet-save" id="pSaveBtn" onclick="savePeriod()">新增</button>
+    </div>
+    <div class="sheet-body">
+      <div class="form-label" id="pFormLabel">新增經期區間</div>
+      <div class="datetime-group" style="margin-bottom:10px">
+        <div class="datetime-row">
+          <span class="datetime-label">開始</span>
+          <input type="date" id="pStart" class="datetime-input">
+        </div>
+        <div class="datetime-row">
+          <span class="datetime-label">結束</span>
+          <input type="date" id="pEnd" class="datetime-input">
+        </div>
+      </div>
+      <input type="hidden" id="pEditId" value="">
+      <div id="periodList" style="margin-top:4px"></div>
     </div>
   </div>
 </div>
@@ -360,7 +391,9 @@ function lookupCalWithCache(name){
   const db=lookupCal(name);
   if(db!==null)return db;
   const cache=loadCalCache();
-  return cache[name]??null;
+  const v=cache[name];
+  // -1 = 查過但找不到，回傳 -1 讓顯示層處理
+  return v!==undefined?v:null;
 }
 
 let _aiQuerying=false;
@@ -391,26 +424,35 @@ function renderFoodTags(names){
   let total=0,known=0;
   const html=names.map(name=>{
     const cal=lookupCalWithCache(name);
-    if(cal!==null){total+=cal;known++;}
-    const loading=cal===null?` <span style="color:#bbb;font-size:11px" id="caltag-${encodeURIComponent(name)}">…</span>`:'';
-    const s=cal!==null?` <span style="color:#c8a96e;font-weight:700">${cal}</span>`:loading;
-    return `<span class="tag">${esc(name)}${s}</span>`;
+    const isNotFound=cal===-1;
+    const isLoading=cal===null;
+    if(cal!==null&&cal!==-1){total+=cal;known++;}
+    let badge='';
+    if(isLoading) badge=` <span style="color:#bbb;font-size:11px">…</span>`;
+    else if(isNotFound) badge=` <span style="color:#e0a060;font-size:11px" title="查無熱量">?</span>`;
+    else badge=` <span style="color:#c8a96e;font-weight:700">${cal}</span>`;
+    return `<span class="tag">${esc(name)}${badge}</span>`;
   }).join('');
   tagsRow.innerHTML=`<div class="tags">${html}</div>`;
-  if(total>0||known>0){
-    const u=names.length-known;
-    calNum.innerHTML=`${total} kcal${u>0?` <span style="font-size:11px;color:#bbb">（${u}樣查詢中…）</span>`:''}`;
+  const loading=names.filter(n=>lookupCalWithCache(n)===null).length;
+  const notFound=names.filter(n=>lookupCalWithCache(n)===-1).length;
+  if(total>0||loading>0||notFound>0){
+    let hint='';
+    if(loading>0) hint+=` <span style="font-size:11px;color:#bbb">（${loading}樣查詢中…）</span>`;
+    else if(notFound>0) hint+=` <span style="font-size:11px;color:#e0a060">（${notFound}樣查無熱量）</span>`;
+    calNum.innerHTML=`${total} kcal${hint}`;
     calRow.style.display='flex';
-  } else {
-    calNum.innerHTML=`<span style="font-size:12px;color:#bbb">查詢中…</span>`;
-    calRow.style.display='flex';
-  }
+  } else calRow.style.display='none';
 }
 
 async function queryAICal(allNames,unknownNames){
   _aiQuerying=true;
+  // 逾時 8 秒
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),8000);
   try{
     const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      signal:controller.signal,
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
@@ -420,23 +462,37 @@ async function queryAICal(allNames,unknownNames){
         messages:[{role:'user',content:`請估算這些食物的卡路里：${unknownNames.join('、')}`}]
       })
     });
+    clearTimeout(timeout);
     const data=await resp.json();
     const text=(data.content||[]).find(b=>b.type==='text')?.text||'';
     const json=text.replace(/```json|```/g,'').trim();
     const result=JSON.parse(json);
     const cache=loadCalCache();
+    let gotAny=false;
     unknownNames.forEach(name=>{
       if(result[name]!==undefined&&result[name]!==null){
-        cache[name]=result[name];
+        cache[name]=result[name];gotAny=true;
+      } else {
+        // 查不到就存 -1，避免重複查
+        cache[name]=-1;
       }
     });
     saveCalCache(cache);
-    // 重新渲染
     const currentText=document.getElementById('fFoodText').value;
     const currentNames=currentText.trim().split(/[\s\u3000,，]+/).filter(Boolean);
     renderFoodTags(currentNames);
+    if(!gotAny) showToast('⚠️ 無法估算部分食物熱量');
   }catch(e){
-    console.warn('AI cal query failed',e);
+    clearTimeout(timeout);
+    const isTimeout=e.name==='AbortError';
+    // 查詢失敗：把未知食物標記為 -1（本次查詢過，不再重試）
+    const cache=loadCalCache();
+    unknownNames.forEach(name=>{if(cache[name]===undefined||cache[name]===null)cache[name]=-1;});
+    saveCalCache(cache);
+    const currentText=document.getElementById('fFoodText').value;
+    const currentNames=currentText.trim().split(/[\s\u3000,，]+/).filter(Boolean);
+    renderFoodTags(currentNames);
+    showToast(isTimeout?'⏱ 查詢逾時，熱量以 0 計算':'⚠️ 查詢失敗，熱量以 0 計算');
   }finally{
     _aiQuerying=false;
   }
@@ -499,6 +555,7 @@ function renderTimeline(){
     ${isToday?'<span class="day-dot"></span>':''}
     <span class="day-name">${fmtDate(date)}</span>
     ${isToday?'<span class="today-badge">今天</span>':''}
+    ${isInPeriod(date)?'<span style="font-size:15px;line-height:1">🩸</span>':''}
     <span id="tbadge-${date}" style="display:${col?'inline-block':'none'};font-size:11px;background:#e8e2d8;color:#8b6f47;padding:2px 8px;border-radius:99px;font-weight:600">${de.length}筆</span>
   </div>
   <div style="display:flex;align-items:center;gap:8px">
@@ -523,12 +580,15 @@ function renderCard(e,ctx){
   const imgHtml=photos.length?`<div class="tcard-imgs">${photos.slice(0,3).map((p,i)=>`<img class="tcard-img" src="${p}" loading="lazy" style="flex:${photos.length===1?'unset;width:100%':'1'}" onclick="openLightboxEntry(event,'${e.id}',${i})">`).join('')}</div>`:'';
   const tagsHtml=isMeal&&e.foods?.length?`<div class="tags">${e.foods.map(f=>`<span class="tag">${esc(f.name)}</span>`).join('')}</div>`:'';
   const mealCal=isMeal?(e.foods||[]).reduce((a,f)=>a+Math.round((f.cal||0)*(f.qty||1)),0):0;
-  const rightHtml=isMeal&&mealCal>0?`<span class="tcard-kcal">${mealCal} kcal</span>`:!isMeal&&e.calories?`<span class="tcard-kcal">−${e.calories} kcal</span>`:'';
+  const hasUnknown=isMeal&&(e.foods||[]).some(f=>f.cal===0||f.cal===-1);
+  const calLabel=isMeal&&mealCal>0
+    ?`${mealCal} kcal${hasUnknown?'<span style="font-size:10px;opacity:.7">+?</span>':''}`
+    :null;
+  const rightHtml=isMeal&&mealCal>0?`<span class="tcard-kcal">${calLabel}</span>`:!isMeal&&e.calories?`<span class="tcard-kcal">−${e.calories} kcal</span>`:''
   const subHtml=!isMeal&&(e.duration||e.distance)?`<div class="tcard-sub">${e.duration?e.duration+'分鐘':''}${e.distance?' · '+e.distance+'km':''}</div>`:'';
   const noteHtml=e.note?`<div class="tcard-note">${esc(e.note)}</div>`:'';
   const _ei=allExIcons();const icon=isMeal?(MEAL_ICONS[e.mealType]||'🍽'):(_ei[e.exerciseType]?_ei[e.exerciseType]+' ':'')+e.exerciseType;
   const pid=ctx+'-'+e.id;
-  // 運動加綠色框線 class
   const bodyClass='tcard-body'+(isMeal?'':' exercise');
   return `<div class="tcard-wrap" id="wrap-${pid}">
   <div class="tcard-inner" id="inn-${pid}"
@@ -637,7 +697,8 @@ function renderCalendar(){
     let dots='';if(active&&!photo){const en=(g[ds]||[]).slice(0,3);dots=`<div class="cal-dots">${en.map(e=>`<span class="cal-dot" style="background:${e.type==='meal'?'#c8a96e':'#7aaa8a'}"></span>`).join('')}</div>`;}
     const cs=`background:${isSel?'#2c2416':other?'#f3f0ea':'#fff'};cursor:${other?'default':'pointer'}`;
     const cf=other?'':`onclick="calClick('${ds}')"`;
-    return `<div class="cal-cell" style="${cs}" ${cf}>${pe}<div class="cal-cell-inner"><div class="cal-day-num" style="background:${nb};color:${nc};font-weight:${active?700:400}">${day}</div>${dots}</div></div>`;
+    const pMark=!other&&isInPeriod(ds)?'<span style="position:absolute;top:3px;right:4px;font-size:10px;line-height:1;z-index:2">🩸</span>':'';
+    return `<div class="cal-cell" style="${cs}" ${cf}>${pe}<div class="cal-cell-inner" style="position:relative">${pMark}<div class="cal-day-num" style="background:${nb};color:${nc};font-weight:${active?700:400}">${day}</div>${dots}</div></div>`;
   }).join('');
   const se=g[calSelected]||[];
   const cardsHtml=se.length
@@ -917,6 +978,94 @@ function buildDemo(){
     {id:'d21',type:'meal',date:ago(4),time:'12:00',mealType:'午餐',foods:[{name:'壽司',qty:1,cal:350,id:'fv'},{name:'味噌湯',qty:1,cal:40,id:'fw'}],note:'迴轉壽司',photos:[]},
     {id:'d22',type:'meal',date:ago(4),time:'19:00',mealType:'晚餐',foods:[{name:'雞腿便當',qty:1,cal:680,id:'fx'}],note:'',photos:[]},
   ];
+}
+
+/* ── 經期 ── */
+function loadPeriods(){try{return JSON.parse(localStorage.getItem('periods')||'[]');}catch{return[];}}
+function savePeriods(a){localStorage.setItem('periods',JSON.stringify(a));}
+
+function isInPeriod(dateStr){
+  return loadPeriods().some(p=>dateStr>=p.start&&dateStr<=p.end);
+}
+
+function openPeriodSheet(){
+  // reset to add mode
+  document.getElementById('pEditId').value='';
+  document.getElementById('pSaveBtn').textContent='新增';
+  document.getElementById('pFormLabel').textContent='新增經期區間';
+  const today=todayDate();
+  document.getElementById('pStart').value=today;
+  document.getElementById('pEnd').value=today;
+  renderPeriodList();
+  document.getElementById('periodSheet').style.display='flex';
+}
+function closePeriodSheet(){document.getElementById('periodSheet').style.display='none';}
+function closePeriodIfBg(ev){if(ev.target===document.getElementById('periodSheet'))closePeriodSheet();}
+
+function editPeriod(id){
+  const p=loadPeriods().find(x=>x.id===id);if(!p)return;
+  document.getElementById('pEditId').value=id;
+  document.getElementById('pStart').value=p.start;
+  document.getElementById('pEnd').value=p.end;
+  document.getElementById('pSaveBtn').textContent='更新';
+  document.getElementById('pFormLabel').textContent='修改經期區間';
+  // scroll to top of sheet
+  document.querySelector('#periodSheet .sheet').scrollTo({top:0,behavior:'smooth'});
+}
+
+function cancelEditPeriod(){
+  document.getElementById('pEditId').value='';
+  document.getElementById('pSaveBtn').textContent='新增';
+  document.getElementById('pFormLabel').textContent='新增經期區間';
+  const today=todayDate();
+  document.getElementById('pStart').value=today;
+  document.getElementById('pEnd').value=today;
+}
+
+function savePeriod(){
+  const start=document.getElementById('pStart').value;
+  const end=document.getElementById('pEnd').value;
+  const editId=document.getElementById('pEditId').value;
+  if(!start||!end){showToast('請選擇日期');return;}
+  if(end<start){showToast('結束日期不能早於開始');return;}
+  let periods=loadPeriods();
+  if(editId){
+    periods=periods.map(p=>p.id===editId?{...p,start,end}:p);
+    showToast('已更新 🩸');
+  } else {
+    periods.push({id:uid(),start,end});
+    showToast('已記錄 🩸');
+  }
+  periods.sort((a,b)=>b.start.localeCompare(a.start));
+  savePeriods(periods);
+  cancelEditPeriod();
+  renderPeriodList();
+  rerender();
+}
+
+function deletePeriod(id){
+  if(!confirm('確定刪除這筆經期記錄？'))return;
+  savePeriods(loadPeriods().filter(p=>p.id!==id));
+  if(document.getElementById('pEditId').value===id)cancelEditPeriod();
+  renderPeriodList();
+  rerender();
+}
+
+function renderPeriodList(){
+  const periods=loadPeriods();
+  const el=document.getElementById('periodList');
+  if(!periods.length){
+    el.innerHTML='<div style="text-align:center;padding:18px 0;color:#ccc;font-size:13px">尚無記錄</div>';
+    return;
+  }
+  el.innerHTML='<div class="form-label" style="margin-bottom:8px">已記錄</div>'+periods.map(p=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#fff;border-radius:10px;margin-bottom:6px;border:1px solid #ece6de">
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:700;color:#2c2416">🩸 ${p.start}${p.start!==p.end?' → '+p.end:''}</div>
+      </div>
+      <button onclick="editPeriod('${p.id}')" style="background:#f5f0e8;border:none;border-radius:7px;color:#8b6f47;font-size:12px;font-weight:600;padding:5px 10px;margin-right:6px">修改</button>
+      <button onclick="deletePeriod('${p.id}')" style="background:#fff0f0;border:none;border-radius:7px;color:#d44;font-size:12px;font-weight:600;padding:5px 10px">刪除</button>
+    </div>`).join('');
 }
 
 loadEntries();
