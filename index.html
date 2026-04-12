@@ -242,9 +242,15 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;gap
         </div>
         <div style="margin-top:14px">
           <div class="form-label">記錄照片（可多選，自動壓縮）</div>
-          <div id="photoUploadArea" class="photo-upload" onclick="document.getElementById('photoInput').click()">
-            <div style="font-size:26px;margin-bottom:3px">📷</div>
-            <div style="font-size:13px">點擊上傳 或 貼上圖片</div>
+          <div style="display:flex;gap:8px">
+            <div id="photoUploadArea" class="photo-upload" style="flex:1" onclick="document.getElementById('photoInput').click()">
+              <div style="font-size:24px;margin-bottom:3px">📷</div>
+              <div style="font-size:12px">上傳</div>
+            </div>
+            <button type="button" onclick="pasteFromClipboard('meal')" style="flex:1;border:2px dashed #d8cfc4;border-radius:12px;background:none;color:#c8b89a;cursor:pointer;padding:16px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px">
+              <div style="font-size:24px">📋</div>
+              <div style="font-size:12px">貼上</div>
+            </button>
           </div>
           <div id="photoGrid" class="photo-grid"></div>
         </div>
@@ -262,9 +268,15 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;gap
           <div><div class="form-label">消耗(kcal)</div><input type="number" id="fCalories" class="form-input" placeholder="300"></div>
         </div>
         <div class="form-label">記錄照片（可多選，自動壓縮）</div>
-        <div id="exPhotoUploadArea" class="photo-upload" onclick="document.getElementById('exPhotoInput').click()">
-          <div style="font-size:26px;margin-bottom:3px">📷</div>
-          <div style="font-size:13px">點擊上傳 或 貼上圖片</div>
+        <div style="display:flex;gap:8px">
+          <div id="exPhotoUploadArea" class="photo-upload" style="flex:1" onclick="document.getElementById('exPhotoInput').click()">
+            <div style="font-size:24px;margin-bottom:3px">📷</div>
+            <div style="font-size:12px">上傳</div>
+          </div>
+          <button type="button" onclick="pasteFromClipboard('ex')" style="flex:1;border:2px dashed #d8cfc4;border-radius:12px;background:none;color:#c8b89a;cursor:pointer;padding:16px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px">
+            <div style="font-size:24px">📋</div>
+            <div style="font-size:12px">貼上</div>
+          </button>
         </div>
         <div id="exPhotoGrid" class="photo-grid"></div>
         <div class="form-label" style="margin-top:12px">備注</div>
@@ -899,6 +911,34 @@ function handlePhotos(event,kind){
   event.target.value='';
 }
 // ── Paste image support ──────────────────────────────────────────
+async function pasteFromClipboard(kind){
+  try{
+    // Try modern Clipboard API first (works on iOS 16.4+)
+    if(navigator.clipboard && navigator.clipboard.read){
+      const items = await navigator.clipboard.read();
+      let found = false;
+      for(const item of items){
+        const imgType = item.types.find(t=>t.startsWith('image/'));
+        if(imgType){
+          const blob = await item.getType(imgType);
+          const file = new File([blob], 'paste.jpg', {type:imgType});
+          compressAndAdd(file, kind);
+          found = true;
+        }
+      }
+      if(!found) showToast('剪貼簿沒有圖片');
+    } else {
+      showToast('請直接用 Cmd/Ctrl+V 貼上');
+    }
+  } catch(e){
+    if(e.name==='NotAllowedError'){
+      showToast('請允許存取剪貼簿權限');
+    } else {
+      showToast('無法讀取剪貼簿');
+    }
+  }
+}
+
 document.addEventListener('paste', ev=>{
   // Only when add sheet is open
   const sheet=document.getElementById('addSheet');
