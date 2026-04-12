@@ -62,7 +62,7 @@ button{cursor:pointer}
 .tcard-actions{position:absolute;right:0;top:0;bottom:0;display:flex;align-items:stretch;opacity:0;pointer-events:none;transition:opacity .15s}
 .tcard-action-edit{background:#c8a96e;color:#2c2416;border:none;padding:0 18px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px}
 .tcard-action-del{background:#e06060;color:#fff;border:none;padding:0 18px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;border-radius:0 12px 12px 0}
-.tcard-inner{transition:transform .2s;display:flex;gap:0;cursor:pointer;position:relative}
+.tcard-inner{transition:transform .2s;display:flex;gap:0;cursor:pointer;position:relative;background:transparent}
 .tcard-inner.swiped{transform:translateX(-132px)}
 .tcard-wrap.swiped .tcard-actions{opacity:1;pointer-events:auto}
 .tcard-time{width:50px;flex-shrink:0;text-align:right;padding-right:10px;padding-top:4px;font-size:14px;font-weight:800;color:#2c2416;letter-spacing:0.3px}
@@ -91,14 +91,7 @@ button{cursor:pointer}
 .cal-dot{width:4px;height:4px;border-radius:50%;display:inline-block}
 .cal-selected-header{padding:10px 16px 7px;display:flex;justify-content:space-between;align-items:center;background:#faf8f5;border-top:2px solid #2c2416}
 .cal-selected-date{font-weight:700;font-size:16px;color:#2c2416}
-.cal-entries{padding:6px 16px 20px}
-.cal-entry{display:flex;gap:10px;padding:10px 12px;background:#fff;border-radius:11px;margin-bottom:6px;border:1px solid #ece6de;cursor:pointer;box-shadow:0 1px 4px rgba(44,36,22,.05);transition:box-shadow .15s}
-.cal-entry:active{box-shadow:0 3px 12px rgba(44,36,22,.12)}
-.cal-entry-thumb{width:52px;height:52px;border-radius:7px;object-fit:cover;flex-shrink:0}
-.cal-entry-info{flex:1;min-width:0}
-.cal-entry-row{display:flex;justify-content:space-between;align-items:center}
-.cal-entry-name{font-weight:700;font-size:14px;color:#2c2416}
-.cal-entry-time{font-size:13px;font-weight:700;color:#2c2416}
+.cal-entries{padding:8px 16px 20px; background:#f7f4ef; position:relative;}
 .sheet-overlay{position:fixed;inset:0;background:rgba(44,36,22,.65);z-index:200;display:flex;align-items:flex-end;backdrop-filter:blur(4px);animation:fadeIn .2s ease}
 .sheet{width:100%;max-width:480px;margin:0 auto;background:#fdf9f4;border-radius:20px 20px 0 0;max-height:92vh;overflow-y:auto;animation:slideUp .28s ease}
 .sheet-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #e8e2d8;position:sticky;top:0;background:#fdf9f4;z-index:10;border-radius:20px 20px 0 0}
@@ -117,7 +110,7 @@ button{cursor:pointer}
 .datetime-label{padding:0 13px;font-size:14px;color:#8b6f47;font-weight:600;width:52px;flex-shrink:0}
 .datetime-input{flex:1;padding:12px 13px 12px 0;background:transparent;border:none;color:#2c2416;font-size:16px;font-weight:600;min-width:0}
 .chip-group{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:13px}
-.chip{padding:7px 13px;border-radius:20px;border:none;font-weight:600;font-size:14px;background:#f5f0e8;color:#8b6f47;transition:all .15s}
+.chip{padding:7px 13px;border-radius:20px;border:none;font-weight:600;font-size:14px;background:#f5f0e8;color:#8b6f47;transition:all .15s;user-select:none;-webkit-user-select:none}
 .chip.active{background:#2c2416;color:#f7f4ef}
 .photo-upload{border:2px dashed #d8cfc4;border-radius:12px;padding:22px;text-align:center;cursor:pointer;color:#c8b89a;transition:border-color .2s}
 .photo-upload:active{border-color:#c8a96e}
@@ -126,34 +119,15 @@ button{cursor:pointer}
 .photo-thumb img{width:100%;height:100%;object-fit:cover;display:block}
 .photo-thumb-remove{position:absolute;top:3px;right:3px;background:rgba(0,0,0,.55);border:none;color:#fff;width:22px;height:22px;border-radius:50%;font-size:13px;display:flex;align-items:center;justify-content:center}
 .num-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-bottom:13px}
-.detail-overlay{position:fixed;inset:0;background:rgba(44,36,22,.7);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);animation:fadeIn .2s ease}
-.detail-modal{width:100%;max-width:440px;background:#fdf9f4;border-radius:18px;max-height:88vh;overflow-y:auto;animation:popIn .25s ease}
-.detail-photo-grid{display:grid;gap:2px;border-radius:18px 18px 0 0;overflow:hidden}
-.detail-photo-grid img{width:100%;object-fit:cover;display:block}
-.detail-body{padding:18px 18px 32px}
-.detail-title{font-size:21px;font-weight:700;color:#2c2416}
-.detail-date{font-size:13px;color:#bbb;margin-top:3px}
-.detail-food-label{font-size:12px;color:#bbb;letter-spacing:1px;margin-bottom:7px;margin-top:12px}
-.stat-grid{display:flex;gap:9px;margin:12px 0}
-.stat-box{flex:1;border-radius:10px;padding:11px;text-align:center}
-.stat-val{font-weight:700;font-size:19px}
-.stat-unit{font-size:11px;color:#bbb;margin-top:2px}
-.detail-note{background:#faf8f5;border-radius:10px;padding:11px 13px;font-size:13px;color:#8b6f47;font-style:italic;margin:12px 0}
-.detail-btns{display:flex;gap:9px;margin-top:14px}
-.btn-edit{flex:1;padding:13px;border-radius:10px;background:#2c2416;color:#f7f4ef;border:none;font-weight:700;font-size:15px}
-.btn-delete{padding:13px 16px;border-radius:10px;background:#fff0f0;color:#d44;border:1.5px solid #ffd8d8;font-weight:600;font-size:15px}
-.empty{text-align:center;padding:80px 24px;color:#ccc}
-.empty-icon{font-size:48px;margin-bottom:12px}
 #toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#2c2416;color:#c8a96e;padding:11px 22px;border-radius:99px;font-size:14px;font-weight:700;z-index:999;box-shadow:0 4px 16px rgba(0,0,0,.3);display:none;white-space:nowrap}
-.clear-date-input{width:100%;padding:13px 14px;border-radius:10px;background:#faf8f5;border:1.5px solid #e0d8cc;color:#2c2416;font-size:16px;margin-top:8px;margin-bottom:6px}
-.clear-info{font-size:13px;color:#999;margin-bottom:16px}
-.btn-clear-confirm{width:100%;padding:14px;border-radius:10px;background:#d44;color:#fff;border:none;font-weight:700;font-size:16px}
 #lightbox{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:500;display:none;align-items:center;justify-content:center;animation:fadeIn .2s ease}
 #lightbox img{max-width:100%;max-height:100vh;object-fit:contain;border-radius:4px}
 #lightbox-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,.15);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 #lightbox-prev,#lightbox-next{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);border:none;color:#fff;width:40px;height:40px;border-radius:50%;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 #lightbox-prev{left:12px}
 #lightbox-next{right:12px}
+.empty{text-align:center;padding:80px 24px;color:#ccc}
+.empty-icon{font-size:48px;margin-bottom:12px}
 </style>
 </head>
 <body>
@@ -172,11 +146,10 @@ button{cursor:pointer}
             <div class="storage-bar-wrap">
               <div class="storage-label"><span>已用空間</span><span id="storageText">計算中…</span></div>
               <div class="storage-track"><div class="storage-fill" id="storageFill" style="width:0%;background:#c8a96e"></div></div>
-              <div style="font-size:11px;color:#5a4a35;margin-top:4px">瀏覽器上限約 5-10MB</div>
             </div>
             <button class="dropdown-item" onclick="exportData()">📤 匯出備份</button>
             <button class="dropdown-item" onclick="document.getElementById('importInput').click()">📥 匯入資料</button>
-            <button class="dropdown-item" onclick="openClearSheet()">🗑 清除舊資料</button>
+            <button class="dropdown-item" onclick="clearAllData()">🗑 全部清除</button>
           </div>
         </div>
       </div>
@@ -189,6 +162,7 @@ button{cursor:pointer}
   <div id="viewTimeline"></div>
   <div id="viewCalendar" style="display:none"></div>
 </div>
+
 <button id="fab" onclick="toggleFabMenu()">+</button>
 <div id="fabMenu">
   <div class="fab-item">
@@ -200,6 +174,7 @@ button{cursor:pointer}
     <button class="fab-item-btn" style="background:#7aaa8a;color:#fff" onclick="openAdd('exercise');closeFabMenu()">🏃</button>
   </div>
 </div>
+
 <div id="addSheet" class="sheet-overlay" style="display:none" onclick="closeAddIfBg(event)">
   <div class="sheet">
     <div class="sheet-header">
@@ -225,454 +200,422 @@ button{cursor:pointer}
         <div class="form-label">餐別</div>
         <div class="chip-group" id="mealTypeChips"></div>
         <div class="form-label">食物（空格分隔不同食物）</div>
-        <textarea id="fFoodText" class="form-textarea" rows="3"
-          placeholder="例如：雞胸肉 白飯 花椰菜 荷包蛋&#10;用空格隔開，自動估算卡路里"
-          oninput="onFoodTextChange()"></textarea>
-        <div id="foodTagsRow" style="margin-top:8px;margin-bottom:4px"></div>
-        <div id="calEstRow" style="display:none;background:#f5f0e8;border-radius:10px;padding:9px 14px;margin-top:6px;display:flex;justify-content:space-between;align-items:center">
+        <textarea id="fFoodText" class="form-textarea" rows="3" placeholder="例如：雞胸肉 白飯 花椰菜" oninput="onFoodTextChange()"></textarea>
+        <div id="foodTagsRow" style="margin-top:8px"></div>
+        <div id="calEstRow" style="display:none;background:#f5f0e8;border-radius:10px;padding:9px 14px;margin-top:6px;justify-content:space-between;align-items:center">
           <span style="font-size:12px;color:#8b6f47">估算熱量</span>
           <span id="calEstNum" style="font-size:17px;font-weight:800;color:#2c2416"></span>
         </div>
         <div style="margin-top:14px">
-          <div class="form-label">記錄照片（可多選，自動壓縮）</div>
+          <div class="form-label">記錄照片</div>
           <div id="photoUploadArea" class="photo-upload" onclick="document.getElementById('photoInput').click()">
-            <div style="font-size:28px;margin-bottom:4px">📷</div>
-            <div style="font-size:14px">點擊上傳照片（可多選）</div>
+            <div style="font-size:28px">📷</div>
           </div>
           <div id="photoGrid" class="photo-grid"></div>
         </div>
         <div class="form-label" style="margin-top:12px">備注</div>
-        <textarea id="fNote" class="form-textarea" rows="2" placeholder="用餐心得、地點…"></textarea>
+        <textarea id="fNote" class="form-textarea" rows="2" placeholder="備注..."></textarea>
       </div>
       <div id="exerciseFields" style="display:none">
-        <div class="form-label">運動類型</div>
+        <div class="form-label">運動類型 (長按自訂項可刪除)</div>
         <div class="chip-group" id="exTypeChips"></div>
         <button onclick="openAddExType()" style="margin-bottom:13px;background:#f5f0e8;color:#8b6f47;border:1.5px dashed #c8b89a;border-radius:20px;padding:7px 13px;font-size:13px;font-weight:600">＋ 自訂類別</button>
         <div class="num-grid">
-          <div><div class="form-label">時間(分)</div><input type="number" id="fDuration" class="form-input" placeholder="30"></div>
-          <div><div class="form-label">距離(km)</div><input type="number" id="fDistance" class="form-input" placeholder="5.0"></div>
-          <div><div class="form-label">消耗(kcal)</div><input type="number" id="fCalories" class="form-input" placeholder="300"></div>
+          <div><div class="form-label">時間(分)</div><input type="number" id="fDuration" class="form-input"></div>
+          <div><div class="form-label">距離(km)</div><input type="number" id="fDistance" class="form-input"></div>
+          <div><div class="form-label">消耗(kcal)</div><input type="number" id="fCalories" class="form-input"></div>
         </div>
-        <div class="form-label">記錄照片（可多選，自動壓縮）</div>
+        <div class="form-label">記錄照片</div>
         <div id="exPhotoUploadArea" class="photo-upload" onclick="document.getElementById('exPhotoInput').click()">
-          <div style="font-size:28px;margin-bottom:4px">📷</div>
-          <div style="font-size:14px">點擊上傳照片（可多選）</div>
+          <div style="font-size:28px">📷</div>
         </div>
         <div id="exPhotoGrid" class="photo-grid"></div>
         <div class="form-label" style="margin-top:12px">備注</div>
-        <textarea id="fExNote" class="form-textarea" rows="2" placeholder="運動感受、心率…"></textarea>
+        <textarea id="fExNote" class="form-textarea" rows="2"></textarea>
       </div>
     </div>
   </div>
 </div>
-<div id="detailSheet" class="detail-overlay" style="display:none" onclick="closeDetailIfBg(event)">
-  <div class="detail-modal" id="detailSheetInner"></div>
-</div>
-<div id="clearSheet" class="sheet-overlay" style="display:none" onclick="closeClearIfBg(event)">
-  <div class="sheet">
-    <div class="sheet-header">
-      <button class="sheet-cancel" onclick="closeClearSheet()">取消</button>
-      <span style="font-weight:700;font-size:16px;color:#2c2416">清除舊資料</span>
-      <span style="width:40px"></span>
-    </div>
-    <div class="sheet-body">
-      <div style="font-size:15px;color:#2c2416;font-weight:600;margin-bottom:6px">清除此日期之前的所有記錄</div>
-      <input type="date" id="clearDate" class="clear-date-input">
-      <div class="clear-info" id="clearInfo">選擇日期後顯示將刪除的筆數</div>
-      <button class="btn-clear-confirm" onclick="confirmClear()">確認清除</button>
-    </div>
-  </div>
-</div>
+
 <div id="lightbox" onclick="closeLightboxBg(event)">
   <button id="lightbox-close" onclick="document.getElementById('lightbox').style.display='none'">✕</button>
   <button id="lightbox-prev" onclick="lightboxPrev(event)">‹</button>
   <img id="lightbox-img" src="" alt="">
   <button id="lightbox-next" onclick="lightboxNext(event)">›</button>
 </div>
-<input type="file" id="photoInput" accept="image/*" multiple style="display:none" onchange="handlePhotos(event)">
-<input type="file" id="exPhotoInput" accept="image/*" multiple style="display:none" onchange="handleExPhotos(event)">
+
+<input type="file" id="photoInput" accept="image/*" multiple style="display:none" onchange="handlePhotos(event, 'meal')">
+<input type="file" id="exPhotoInput" accept="image/*" multiple style="display:none" onchange="handlePhotos(event, 'exercise')">
 <input type="file" id="importInput" accept=".json" style="display:none" onchange="importData(event)">
 <div id="toast"></div>
+
 <script>
-const STORE_KEY='diet_log_v3';
+const STORE_KEY='diet_log_v3_demo';
 const MEAL_ICONS={'早餐':'☀️','午餐':'🌤️','晚餐':'🌙','點心':'🍡','宵夜':'🌛'};
 const MEAL_TYPES=['早餐','午餐','晚餐','點心','宵夜'];
-const EX_TYPES_DEFAULT=['跑步','走路','騎車','游泳','重訓','瑜伽','HIIT','其他'];
-const EX_ICONS_DEFAULT={'跑步':'🏃','走路':'🚶','騎車':'🚴','游泳':'🏊','重訓':'💪','瑜伽':'🧘','HIIT':'🔥','其他':'⚡'};
-function loadExTypes(){try{const s=localStorage.getItem('ex_custom_types');return s?JSON.parse(s):[];}catch{return [];}}
-function saveExTypes(arr){localStorage.setItem('ex_custom_types',JSON.stringify(arr));}
-function getExTypes(){return [...EX_TYPES_DEFAULT,...loadExTypes().map(t=>t.name)];}
-function getExIcons(){const m={...EX_ICONS_DEFAULT};loadExTypes().forEach(t=>m[t.name]=t.icon);return m;}
+const EX_TYPES_DEFAULT=['跑步','走路','騎車','游泳','重訓','瑜伽','其他'];
+const EX_ICONS_DEFAULT={'跑步':'🏃','走路':'🚶','騎車':'🚴','游泳':'🏊','重訓':'💪','瑜伽':'🧘','其他':'⚡'};
 const WEEKDAYS=['日','一','二','三','四','五','六'];
-let entries=[],currentTab='timeline',currentType='meal',editId=null;
-let calYear=new Date().getFullYear(),calMonth=new Date().getMonth(),calSelected=todayDate();
-let pendingPhotos=[],exPendingPhotos=[],selectedMealType='早餐',selectedExType='跑步';
-let fabOpen=false,calDblTapTimer=null;
-const collapsedDays=new Set();
-const FOOD_DB=[
-  {name:'白飯',cal:180},{name:'糙米飯',cal:165},{name:'麵條',cal:220},{name:'烏龍麵',cal:200},
-  {name:'拉麵',cal:450},{name:'炒飯',cal:380},{name:'泡麵',cal:400},{name:'稀飯',cal:100},
-  {name:'吐司',cal:70},{name:'全麥吐司',cal:65},{name:'饅頭',cal:200},{name:'包子',cal:220},
-  {name:'蛋餅',cal:280},{name:'蔥油餅',cal:320},{name:'燒餅',cal:280},{name:'油條',cal:230},
-  {name:'水餃',cal:350},{name:'小籠包',cal:280},{name:'鍋貼',cal:320},{name:'湯包',cal:70},
-  {name:'雞胸肉',cal:165},{name:'雞腿',cal:220},{name:'雞蛋',cal:78},{name:'荷包蛋',cal:90},
-  {name:'炒蛋',cal:110},{name:'水煮蛋',cal:78},{name:'溫泉蛋',cal:70},{name:'茶葉蛋',cal:80},
-  {name:'豬排',cal:280},{name:'排骨',cal:250},{name:'牛排',cal:320},{name:'羊肉',cal:300},
-  {name:'鮭魚',cal:200},{name:'鯖魚',cal:190},{name:'鱸魚',cal:120},{name:'蝦子',cal:100},
-  {name:'豆腐',cal:80},{name:'豆漿',cal:54},{name:'牛奶',cal:150},{name:'優格',cal:100},
-  {name:'起司',cal:90},{name:'奶油',cal:100},{name:'花椰菜',cal:35},{name:'高麗菜',cal:25},
-  {name:'菠菜',cal:23},{name:'番茄',cal:35},{name:'小黃瓜',cal:16},{name:'紅蘿蔔',cal:41},
-  {name:'地瓜',cal:130},{name:'馬鈴薯',cal:130},{name:'玉米',cal:90},{name:'南瓜',cal:50},
-  {name:'香蕉',cal:90},{name:'蘋果',cal:80},{name:'橘子',cal:47},{name:'葡萄',cal:70},
-  {name:'西瓜',cal:50},{name:'芭樂',cal:40},{name:'鳳梨',cal:55},{name:'芒果',cal:65},
-  {name:'沙拉',cal:50},{name:'凱薩沙拉',cal:180},{name:'生菜沙拉',cal:30},{name:'水果沙拉',cal:80},
-  {name:'味噌湯',cal:40},{name:'玉米濃湯',cal:120},{name:'雞湯',cal:80},{name:'排骨湯',cal:150},
-  {name:'咖啡',cal:5},{name:'黑咖啡',cal:5},{name:'拿鐵',cal:150},{name:'卡布奇諾',cal:100},
-  {name:'紅茶',cal:5},{name:'綠茶',cal:3},{name:'奶茶',cal:200},{name:'珍珠奶茶',cal:450},
-  {name:'珍奶',cal:450},{name:'果汁',cal:120},{name:'柳橙汁',cal:110},{name:'可樂',cal:140},{name:'汽水',cal:120},
-  {name:'燕麥',cal:150},{name:'麥片',cal:130},{name:'穀片',cal:160},{name:'便當',cal:650},
-  {name:'排骨便當',cal:700},{name:'雞腿便當',cal:680},{name:'控肉飯',cal:600},{name:'滷肉飯',cal:450},
-  {name:'雞肉飯',cal:420},{name:'牛肉麵',cal:550},{name:'鹹粥',cal:200},{name:'漢堡',cal:450},
-  {name:'大麥克',cal:550},{name:'三明治',cal:280},{name:'薯條',cal:300},{name:'炸雞',cal:320},
-  {name:'薯片',cal:150},{name:'披薩',cal:280},{name:'義大利麵',cal:350},{name:'火鍋',cal:500},
-  {name:'麻辣鍋',cal:600},{name:'壽司',cal:350},{name:'生魚片',cal:150},{name:'燒肉',cal:400},
-  {name:'關東煮',cal:200},{name:'天婦羅',cal:300},{name:'巧克力',cal:150},{name:'蛋糕',cal:300},
-  {name:'餅乾',cal:130},{name:'冰淇淋',cal:200},{name:'布丁',cal:120},{name:'麻糬',cal:180},
-  {name:'地瓜球',cal:180},{name:'章魚燒',cal:200},{name:'鹽酥雞',cal:350},{name:'臭豆腐',cal:280},
-];
-function lookupCal(name){const m=FOOD_DB.find(f=>f.name===name||name.includes(f.name)||f.name.includes(name));return m?m.cal:null;}
-function onFoodTextChange(){
-  const text=document.getElementById('fFoodText').value;
-  const tagsRow=document.getElementById('foodTagsRow');
-  const calRow=document.getElementById('calEstRow');
-  const calNum=document.getElementById('calEstNum');
-  const names=text.trim().split(/[\s\u3000,，]+/).filter(Boolean);
-  if(!names.length){tagsRow.innerHTML='';calRow.style.display='none';return;}
-  let total=0,known=0;
-  const tags=names.map(name=>{
-    const cal=lookupCal(name);
-    if(cal!==null){total+=cal;known++;}
-    const calStr=cal!==null?` <span style="color:#c8a96e;font-weight:700">${cal}</span>`:'';
-    return `<span class="tag" style="background:#f5f0e8">${esc(name)}${calStr}</span>`;
-  }).join('');
-  tagsRow.innerHTML=`<div class="tags">${tags}</div>`;
-  if(total>0){
-    const unknownCount=names.length-known;
-    const note=unknownCount>0?`（${unknownCount}樣未知）`:'';
-    calNum.innerHTML=`${total} kcal <span style="font-size:11px;color:#bbb;font-weight:400">${note}</span>`;
-    calRow.style.display='flex';
-  } else {calRow.style.display='none';}
-}
-function parseFoods(text){
-  return text.trim().split(/[\s\u3000,，]+/).filter(Boolean).map(name=>{
-    const cal=lookupCal(name)||0;
-    return {name,qty:1,cal,unit:'份',id:uid()};
-  });
-}
+const FOOD_DB=[{name:'白飯',cal:180},{name:'雞胸肉',cal:165},{name:'雞蛋',cal:78},{name:'地瓜',cal:130},{name:'拿鐵',cal:150},{name:'蘋果',cal:80},{name:'沙拉',cal:50},{name:'便當',cal:650},{name:'漢堡',cal:450},{name:'麵條',cal:220}];
+
+let entries=[], currentTab='timeline', currentType='meal', editId=null;
+let calYear=new Date().getFullYear(), calMonth=new Date().getMonth(), calSelected=todayDate();
+let pendingPhotos=[], exPendingPhotos=[], selectedMealType='早餐', selectedExType='跑步';
+let fabOpen=false, swipeData={}, currentSwipedId=null, calDblTapTimer=null;
+
+// --- 初始化與數據 ---
 function todayDate(){const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;}
-function nowTime(){const d=new Date();return pad(d.getHours())+':'+pad(d.getMinutes());}
 function pad(n){return String(n).padStart(2,'0');}
+function nowTime(){const d=new Date();return pad(d.getHours())+':'+pad(d.getMinutes());}
 function fmtDate(s){const d=new Date(s+'T00:00:00');return `${d.getMonth()+1}月${d.getDate()}日 週${WEEKDAYS[d.getDay()]}`;}
 function uid(){return Date.now()+Math.random();}
-function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',2800);}
-function loadEntries(){try{entries=JSON.parse(localStorage.getItem(STORE_KEY))||[];}catch{entries=[];}}
-function saveEntries(){try{localStorage.setItem(STORE_KEY,JSON.stringify(entries));}catch{showToast('儲存失敗：空間不足');}}
-function calcStorage(){try{const raw=localStorage.getItem(STORE_KEY)||'';const bytes=new Blob([raw]).size;const mb=(bytes/1024/1024).toFixed(2);const pct=Math.min((bytes/(8*1024*1024))*100,100).toFixed(0);document.getElementById('storageText').textContent=mb+' MB';const fill=document.getElementById('storageFill');fill.style.width=pct+'%';fill.style.background=pct>80?'#e06060':pct>60?'#e0a060':'#c8a96e';}catch{}}
-function grouped(){const g={};entries.forEach(e=>{(g[e.date]=g[e.date]||[]).push(e);});Object.keys(g).forEach(d=>g[d].sort((a,b)=>a.time.localeCompare(b.time)));return g;}
-function sortedDates(g){return Object.keys(g).sort((a,b)=>a.localeCompare(b));}
-function toggleDay(date){
-  if(collapsedDays.has(date))collapsedDays.delete(date);else collapsedDays.add(date);
-  const body=document.getElementById('tbody-'+date),arrow=document.getElementById('tarrow-'+date),badge=document.getElementById('tbadge-'+date);
-  const collapsed=collapsedDays.has(date);
-  if(body)body.style.display=collapsed?'none':'block';
-  if(arrow)arrow.style.transform=collapsed?'rotate(-90deg)':'rotate(0deg)';
-  if(badge)badge.style.display=collapsed?'inline-block':'none';
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function loadData(){
+  const saved = localStorage.getItem(STORE_KEY);
+  if(saved){ entries=JSON.parse(saved); } else { injectDemoData(); }
 }
-function renderTimeline(){
-  const g=grouped();const dates=sortedDates(g);const el=document.getElementById('viewTimeline');
-  if(!dates.length){el.innerHTML='<div class="empty"><div class="empty-icon">📓</div><div style="font-size:16px;color:#aaa">還沒有任何記錄</div><div style="font-size:13px;color:#ccc;margin-top:6px">點右下角 + 開始記錄</div></div>';return;}
-  el.innerHTML=dates.map(date=>{
-    const de=g[date];
-    const dayCal=de.filter(e=>e.type==='meal').flatMap(e=>e.foods||[]).reduce((a,f)=>a+(f.cal||0)*(f.qty||1),0);
-    const dayBurn=de.filter(e=>e.type==='exercise').reduce((a,e)=>a+(+e.calories||0),0);
-    const isToday=date===todayDate();const collapsed=collapsedDays.has(date);
-    const calHtml=dayCal>0?`<div style="color:#8b6f47;font-weight:600">${Math.round(dayCal)} kcal</div>`:'';
-    const burnHtml=dayBurn>0?`<div style="color:#5a9a6a">−${dayBurn} kcal</div>`:'';
-    return `<div id="tday-${date}"><div class="day-header" onclick="toggleDay('${date}')" style="cursor:pointer;user-select:none;-webkit-user-select:none"><div class="day-title">${isToday?'<span class="day-dot"></span>':''}<span class="day-name">${fmtDate(date)}</span>${isToday?'<span class="today-badge">今天</span>':''}<span id="tbadge-${date}" style="display:${collapsed?'inline-block':'none'};font-size:11px;background:#e8e2d8;color:#8b6f47;padding:2px 8px;border-radius:99px;font-weight:600">${de.length}筆</span></div><div style="display:flex;align-items:center;gap:8px"><div class="day-cal">${calHtml}${burnHtml}</div><span id="tarrow-${date}" style="color:#c8b89a;font-size:16px;transition:transform .2s;transform:${collapsed?'rotate(-90deg)':'rotate(0deg)'}">▾</span></div></div><div id="tbody-${date}" style="display:${collapsed?'none':'block'}"><div class="timeline-entries"><div class="timeline-line"></div>${de.map(e=>renderTimelineCard(e)).join('')}</div></div></div>`;
-  }).join('');
+function injectDemoData(){
+  const t = new Date();
+  const d = (offset) => {
+    const target = new Date(t);
+    target.setDate(t.getDate() - offset);
+    return `${target.getFullYear()}-${pad(target.getMonth()+1)}-${pad(target.getDate())}`;
+  };
+  entries = [
+    {id:1, type:'meal', date:d(0), time:'08:30', mealType:'早餐', foods:[{name:'地瓜',cal:130},{name:'雞蛋',cal:78}], note:'健康早餐', photos:[]},
+    {id:2, type:'exercise', date:d(0), time:'18:00', exerciseType:'跑步', duration:'30', distance:'5', calories:'300', note:'公園慢跑', photos:[]},
+    {id:3, type:'meal', date:d(1), time:'12:00', mealType:'午餐', foods:[{name:'便當',cal:650}], note:'排骨便當', photos:[]},
+    {id:4, type:'meal', date:d(2), time:'19:30', mealType:'晚餐', foods:[{name:'沙拉',cal:150},{name:'雞胸肉',cal:165}], note:'輕食', photos:[]},
+    {id:5, type:'exercise', date:d(3), time:'07:00', exerciseType:'走路', duration:'45', distance:'3', calories:'150', note:'上班通勤', photos:[]},
+    {id:6, type:'meal', date:d(4), time:'15:00', mealType:'點心', foods:[{name:'蘋果',cal:80}], note:'下午茶', photos:[]}
+  ];
+  saveEntries();
 }
-function renderTimelineCard(e){
-  const isMeal=e.type==='meal';const dotColor=isMeal?'#c8a96e':'#7aaa8a';
-  const photos=e.photos||[];
-  const imgHtml=photos.length?`<div class="tcard-imgs">${photos.slice(0,3).map((p,i)=>`<img class="tcard-img" src="${p}" loading="lazy" style="flex:${photos.length===1?'unset;width:100%':'1'};cursor:zoom-in" onclick="tcardLightbox(event,'${e.id}',${i})">`).join('')}</div>`:'';
-  const tagsHtml=isMeal&&e.foods&&e.foods.length?`<div class="tags">${e.foods.map(f=>`<span class="tag">${esc(f.name)}</span>`).join('')}</div>`:'';
-  const subHtml=!isMeal&&(e.duration||e.distance)?`<div class="tcard-sub">${e.duration?e.duration+'分鐘':''}${e.distance?' · '+e.distance+'km':''}</div>`:'';
-  const noteHtml=e.note?`<div class="tcard-note">${esc(e.note)}</div>`:'';
-  const mealCal=isMeal?(e.foods||[]).reduce((a,f)=>a+Math.round((f.cal||0)*(f.qty||1)),0):0;
-  const rightHtml=isMeal&&mealCal>0?`<span class="tcard-kcal">${mealCal} kcal</span>`:!isMeal&&e.calories?`<span class="tcard-kcal">−${e.calories} kcal</span>`:'';
-  const icon=isMeal?(MEAL_ICONS[e.mealType]||'🍽'):(getExIcons()[e.exerciseType]||'⚡');
-  const name=isMeal?e.mealType:e.exerciseType;
-  return `<div class="tcard-wrap" id="twrap-${e.id}"><div class="tcard-inner" id="tinner-${e.id}" data-id="${e.id}" ontouchstart="swipeStart(event,'${e.id}')" ontouchmove="swipeMove(event,'${e.id}')" ontouchend="swipeEnd(event,'${e.id}')"><div class="tcard-time">${e.time}</div><div style="width:10px;height:10px;border-radius:50%;background:${dotColor};flex-shrink:0;margin-top:5px;z-index:1;border:2px solid #f7f4ef"></div><div class="tcard-body">${imgHtml}<div class="tcard-content"><div class="tcard-row"><span class="tcard-name">${icon} ${esc(name)}</span>${rightHtml}</div>${tagsHtml}${subHtml}${noteHtml}</div></div></div><div class="tcard-actions"><button class="tcard-action-edit" onclick="swipeEdit('${e.id}')">✏️<span>編輯</span></button><button class="tcard-action-del" onclick="swipeDel('${e.id}')">🗑<span>刪除</span></button></div></div>`;
+function saveEntries(){localStorage.setItem(STORE_KEY,JSON.stringify(entries));calcStorage();}
+function calcStorage(){
+  const bytes = new Blob([JSON.stringify(entries)]).size;
+  document.getElementById('storageText').textContent = (bytes/1024).toFixed(1) + ' KB';
+  document.getElementById('storageFill').style.width = Math.min((bytes/5242880)*100, 100) + '%';
 }
-// ── Custom exercise types ─────────────────────────────────────────
-function openAddExType(){
-  const name=prompt('輸入自訂運動名稱（例如：攀岩）');
-  if(!name||!name.trim())return;
-  const icon=prompt('選擇 emoji 圖示（例如：🧗）','⚡');
-  const custom=loadExTypes();
-  custom.push({name:name.trim(),icon:icon||'⚡'});
-  saveExTypes(custom);
-  selectedExType=name.trim();
-  renderChips();
-}
-// ── Swipe logic ───────────────────────────────────────────────────
-let swipeData={},currentSwipedId=null;
-function swipeStart(ev,id){const t=ev.touches[0];swipeData[id]={x:t.clientX,y:t.clientY,moved:false};}
-function swipeMove(ev,id){
-  const d=swipeData[id];if(!d)return;
-  const dx=ev.touches[0].clientX-d.x;const dy=Math.abs(ev.touches[0].clientY-d.y);
-  if(dy>18&&Math.abs(dx)<dy)return;
-  if(Math.abs(dx)>8){d.moved=true;ev.preventDefault();}
-  const el=document.getElementById('tinner-'+id);const wrap=document.getElementById('twrap-'+id);if(!el)return;
-  const offset=Math.max(-132,Math.min(0,dx+(currentSwipedId===id?-132:0)));
-  el.style.transition='none';el.style.transform=`translateX(${offset}px)`;
-  wrap.querySelector('.tcard-actions').style.opacity=Math.min(1,-offset/132);
-  wrap.querySelector('.tcard-actions').style.pointerEvents='none';
-}
-function swipeEnd(ev,id){
-  const d=swipeData[id];if(!d)return;
-  const dx=ev.changedTouches[0].clientX-d.x;
-  const el=document.getElementById('tinner-'+id);const wrap=document.getElementById('twrap-'+id);
-  if(!el){delete swipeData[id];return;}
-  el.style.transition='';
-  if(!d.moved){if(currentSwipedId&&currentSwipedId!==id)closeSwipe(currentSwipedId);delete swipeData[id];return;}
-  const isSwiped=currentSwipedId===id;
-  if(dx<-50||(!isSwiped&&dx<-20)){
-    if(currentSwipedId&&currentSwipedId!==id)closeSwipe(currentSwipedId);
-    el.classList.add('swiped');wrap.classList.add('swiped');
-    wrap.querySelector('.tcard-actions').style.opacity='1';
-    wrap.querySelector('.tcard-actions').style.pointerEvents='auto';
-    currentSwipedId=id;
-  } else {closeSwipe(id);}
-  delete swipeData[id];
-}
-function closeSwipe(id){
-  const el=document.getElementById('tinner-'+id);const wrap=document.getElementById('twrap-'+id);if(!el)return;
-  el.classList.remove('swiped');el.style.transform='';
-  if(wrap){wrap.classList.remove('swiped');const a=wrap.querySelector('.tcard-actions');if(a){a.style.opacity='0';a.style.pointerEvents='none';}}
-  if(currentSwipedId===id)currentSwipedId=null;
-}
-function swipeEdit(id){closeSwipe(id);editEntry(id);}
-function swipeDel(id){if(!confirm('確定刪除？'))return;entries=entries.filter(e=>e.id!=id);saveEntries();rerender();}
-function tcardLightbox(ev,id,idx){ev.stopPropagation();const e=entries.find(x=>x.id==id);if(!e)return;currentDetailId=id;openLightbox(idx);}
-function renderCalendar(){
-  const el=document.getElementById('viewCalendar');const g=grouped();
-  const firstDay=new Date(calYear,calMonth,1).getDay();
-  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
-  const prevMonthDays=new Date(calYear,calMonth,0).getDate();
-  const today=new Date();
-  function getPhoto(ds){const e=(g[ds]||[]).find(e=>e.photos&&e.photos.length);return e?e.photos[0]:null;}
-  function hasAct(ds){return !!(g[ds]&&g[ds].length);}
-  let cells=[];
-  for(let i=0;i<firstDay;i++){const d=prevMonthDays-firstDay+1+i;const m=calMonth===0?12:calMonth;const y=calMonth===0?calYear-1:calYear;cells.push({day:d,year:y,month:m,other:true});}
-  for(let d=1;d<=daysInMonth;d++)cells.push({day:d,year:calYear,month:calMonth+1,other:false});
-  let nextM=calMonth===11?1:calMonth+2,nextY=calMonth===11?calYear+1:calYear,nd=1;
-  while(cells.length%7)cells.push({day:nd++,year:nextY,month:nextM,other:true});
-  const gridCells=cells.map((cell,i)=>{
-    const{day,year,month,other}=cell;const ds=`${year}-${pad(month)}-${pad(day)}`;
-    const photo=other?null:getPhoto(ds);const active=other?false:hasAct(ds);
-    const isSel=!other&&ds===calSelected;
-    const isTd=!other&&day===today.getDate()&&month===(today.getMonth()+1)&&year===today.getFullYear();
-    const dow=i%7;
-    const numColor=other?'#ccc':isSel?'#f7f4ef':isTd?'#2c2416':dow===0?'#c0756a':dow===6?'#7090c0':'#2c2416';
-    const numBg=isTd?'#c8a96e':'transparent';
-    const photoEl=photo?`<img class="cal-cell-photo" src="${photo}" loading="lazy" style="opacity:${isSel?0.35:0.55}">` :'';
-    let dots='';if(active&&!photo){const ents=(g[ds]||[]).slice(0,3);dots=`<div class="cal-dots">${ents.map(e=>`<span class="cal-dot" style="background:${e.type==='meal'?'#c8a96e':'#7aaa8a'}"></span>`).join('')}</div>`;}
-    const cellStyle=`background:${isSel?'#2c2416':other?'#f3f0ea':'#fff'};cursor:${other?'default':'pointer'}`;
-    const clickFn=other?'':`onclick="handleCalCellClick('${ds}')"`;
-    return `<div class="cal-cell" style="${cellStyle}" ${clickFn}>${photoEl}<div class="cal-cell-inner"><div class="cal-day-num" style="background:${numBg};color:${numColor};font-weight:${active?700:400}">${day}</div>${dots}</div></div>`;
-  }).join('');
-  const selEntries=g[calSelected]||[];
-  const selHtml=selEntries.length?selEntries.map(e=>renderCalEntry(e)).join(''):`<div style="text-align:center;padding:22px 0;color:#ccc;font-size:14px">這天還沒有記錄</div>`;
-  el.innerHTML=`<div class="cal-nav"><button class="cal-nav-btn" onclick="calPrev()">‹</button><div class="cal-month">${calYear}年${calMonth+1}月</div><button class="cal-nav-btn" onclick="calNext()">›</button></div><div class="cal-weekdays">${WEEKDAYS.map((d,i)=>`<div class="cal-wd" style="color:${i===0?'#c0756a':i===6?'#7090c0':'#8b6f47'}">${d}</div>`).join('')}</div><div class="cal-grid">${gridCells}</div><div class="cal-selected-header"><div class="cal-selected-date">${fmtDate(calSelected)}</div></div><div class="cal-entries">${selHtml}</div>`;
-}
-function renderCalEntry(e){
-  const isMeal=e.type==='meal';const icon=isMeal?(MEAL_ICONS[e.mealType]||'🍽'):(getExIcons()[e.exerciseType]||'⚡');
-  const photos=e.photos||[];const thumb=photos.length?`<img class="cal-entry-thumb" src="${photos[0]}" loading="lazy">`:'';
-  const mealCal=isMeal?(e.foods||[]).reduce((a,f)=>a+(f.cal||0)*(f.qty||1),0):0;
-  const foods=isMeal&&e.foods&&e.foods.length?`<div class="tags" style="margin-top:5px">${e.foods.map(f=>`<span class="tag">${esc(f.name)}</span>`).join('')}</div>${mealCal>0?`<div style="font-size:12px;color:#c8a96e;font-weight:700;margin-top:4px">${Math.round(mealCal)} kcal</div>`:''}`:'';
-  const sub=!isMeal?`<div style="font-size:12px;color:#888;margin-top:3px">${e.duration?e.duration+'分鐘':''}${e.distance?' · '+e.distance+'km':''}${e.calories?' · 消耗'+e.calories+'kcal':''}</div>`:'';
-  const note=e.note?`<div style="font-size:12px;color:#aaa;font-style:italic;margin-top:3px">${esc(e.note)}</div>`:'';
-  return `<div class="cal-entry" onclick="openDetail('${e.id}')">${thumb}<div class="cal-entry-info"><div class="cal-entry-row"><span class="cal-entry-name">${icon} ${esc(isMeal?e.mealType:e.exerciseType)}</span><span class="cal-entry-time">${e.time}</span></div>${foods}${sub}${note}</div></div>`;
-}
-function handleCalCellClick(ds){
-  const now=Date.now();
-  if(calDblTapTimer&&now-calDblTapTimer<350){calDblTapTimer=null;openAdd('meal',ds);}
-  else{calDblTapTimer=now;selectCalDay(ds);setTimeout(()=>{calDblTapTimer=null;},380);}
-}
+
+// --- 渲染邏輯 ---
 function switchTab(tab){
   currentTab=tab;
   document.getElementById('viewTimeline').style.display=tab==='timeline'?'block':'none';
   document.getElementById('viewCalendar').style.display=tab==='calendar'?'block':'none';
-  document.getElementById('tabTimeline').className='tab-btn'+(tab==='timeline'?' active':'');
-  document.getElementById('tabCalendar').className='tab-btn'+(tab==='calendar'?' active':'');
-  if(tab==='calendar')renderCalendar();else scrollToDate(calSelected);
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');
+  if(tab==='calendar') renderCalendar(); else renderTimeline();
 }
-function calPrev(){if(calMonth===0){calYear--;calMonth=11;}else calMonth--;renderCalendar();}
-function calNext(){if(calMonth===11){calYear++;calMonth=0;}else calMonth++;renderCalendar();}
-function selectCalDay(ds){calSelected=ds;renderCalendar();}
-function goToday(){
-  if(currentTab==='timeline'){calSelected=todayDate();scrollToToday();}
-  else{calYear=new Date().getFullYear();calMonth=new Date().getMonth();calSelected=todayDate();renderCalendar();}
+
+function renderTimeline(){
+  const el = document.getElementById('viewTimeline');
+  const g = grouped();
+  const dates = Object.keys(g).sort((a,b)=>b.localeCompare(a));
+  if(!dates.length){ el.innerHTML='<div class="empty">📓 尚無記錄</div>'; return; }
+  el.innerHTML = dates.map(date => {
+    const isTd = date === todayDate();
+    const dayCal = g[date].reduce((sum,e)=>sum + (e.type==='meal'?(e.foods||[]).reduce((s,f)=>s+f.cal,0):0),0);
+    return `<div class="day-header"><div class="day-title">${isTd?'<span class="day-dot"></span>':''}<span class="day-name">${fmtDate(date)}</span></div><div class="day-cal">${dayCal} kcal</div></div>
+            <div class="timeline-entries"><div class="timeline-line"></div>${g[date].sort((a,b)=>a.time.localeCompare(b.time)).map(e=>renderCard(e)).join('')}</div>`;
+  }).join('');
 }
-function scrollToDate(date){
-  if(collapsedDays.has(date)){collapsedDays.delete(date);renderTimeline();}
-  setTimeout(()=>{
-    const el=document.getElementById('tday-'+date);
-    if(el){el.scrollIntoView({behavior:'smooth',block:'start'});return;}
-    const g=grouped();const dates=sortedDates(g);
-    if(!dates.length){window.scrollTo({top:0,behavior:'smooth'});return;}
-    let closest=dates[0];for(const d of dates){if(d<=date)closest=d;}
-    const el2=document.getElementById('tday-'+closest);
-    if(el2)el2.scrollIntoView({behavior:'smooth',block:'start'});
-    else window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
-  },60);
+
+function renderCard(e){
+  const isMeal = e.type==='meal';
+  const icon = isMeal ? (MEAL_ICONS[e.mealType]||'🍽') : (getExIcons()[e.exerciseType]||'⚡');
+  const name = isMeal ? e.mealType : e.exerciseType;
+  const kcal = isMeal ? (e.foods||[]).reduce((s,f)=>s+f.cal,0) : e.calories;
+  const kcalText = kcal ? `<span class="tcard-kcal">${isMeal?'':'−'}${kcal} kcal</span>` : '';
+  const photoHtml = (e.photos&&e.photos.length) ? `<div class="tcard-imgs">${e.photos.slice(0,3).map((p,i)=>`<img class="tcard-img" src="${p}" onclick="openLightboxFromCard('${e.id}',${i})">`).join('')}</div>` : '';
+  
+  return `<div class="tcard-wrap" id="twrap-${e.id}">
+            <div class="tcard-inner" id="tinner-${e.id}" ontouchstart="swipeStart(event,'${e.id}')" ontouchmove="swipeMove(event,'${e.id}')" ontouchend="swipeEnd(event,'${e.id}')">
+              <div class="tcard-time">${e.time}</div>
+              <div style="width:10px;height:10px;border-radius:50%;background:${isMeal?'#c8a96e':'#7aaa8a'};margin-top:6px;z-index:1;border:2px solid #f7f4ef"></div>
+              <div class="tcard-body" onclick="editEntry('${e.id}')">
+                ${photoHtml}
+                <div class="tcard-content">
+                  <div class="tcard-row"><span class="tcard-name">${icon} ${name}</span>${kcalText}</div>
+                  ${isMeal?`<div class="tags">${(e.foods||[]).map(f=>`<span class="tag">${f.name}</span>`).join('')}</div>`:`<div class="tcard-sub">${e.duration?e.duration+'分':''}${e.distance?' · '+e.distance+'km':''}</div>`}
+                  ${e.note?`<div class="tcard-note">${esc(e.note)}</div>`:''}
+                </div>
+              </div>
+            </div>
+            <div class="tcard-actions">
+              <button class="tcard-action-edit" onclick="editEntry('${e.id}')">✏️</button>
+              <button class="tcard-action-del" onclick="deleteEntry('${e.id}')">🗑</button>
+            </div>
+          </div>`;
 }
-function scrollToToday(){
-  const el=document.getElementById('tday-'+todayDate());
-  if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
-  else window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+
+function renderCalendar(){
+  const el = document.getElementById('viewCalendar');
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  let cells = [];
+  for(let i=0; i<firstDay; i++) cells.push('<div class="cal-cell" style="background:#f3f0ea"></div>');
+  for(let d=1; d<=daysInMonth; d++){
+    const ds = `${calYear}-${pad(calMonth+1)}-${pad(d)}`;
+    const isSel = ds === calSelected;
+    const g = grouped()[ds];
+    const photo = g && g.find(e=>e.photos?.length)?.photos[0];
+    const hasData = g && g.length > 0;
+    cells.push(`<div class="cal-cell" onclick="selectCalDay('${ds}')" style="${isSel?'background:#2c2416;color:#fff':''}">
+                  ${photo?`<img src="${photo}" class="cal-cell-photo" style="opacity:${isSel?0.3:0.6}">`:''}
+                  <div class="cal-cell-inner">
+                    <div class="cal-day-num">${d}</div>
+                    ${(hasData&&!photo)?`<div class="cal-dots">${g.slice(0,3).map(e=>`<span class="cal-dot" style="background:${e.type==='meal'?'#c8a96e':'#7aaa8a'}"></span>`).join('')}</div>`:''}
+                  </div>
+                </div>`);
+  }
+  el.innerHTML = `<div class="cal-nav"><button onclick="calShift(-1)">‹</button><div>${calYear}年 ${calMonth+1}月</div><button onclick="calShift(1)">›</button></div>
+                  <div class="cal-weekdays">${WEEKDAYS.map(w=>`<div class="cal-wd">${w}</div>`).join('')}</div>
+                  <div class="cal-grid">${cells.join('')}</div>
+                  <div class="cal-selected-header"><div class="cal-selected-date">${fmtDate(calSelected)}</div></div>
+                  <div class="cal-entries">${(grouped()[calSelected]||[]).sort((a,b)=>a.time.localeCompare(b.time)).map(e=>renderCard(e)).join('')}</div>`;
 }
-function toggleFabMenu(){fabOpen=!fabOpen;document.getElementById('fabMenu').style.display=fabOpen?'flex':'none';document.getElementById('fab').style.transform=fabOpen?'rotate(45deg)':'none';}
-function closeFabMenu(){fabOpen=false;document.getElementById('fabMenu').style.display='none';document.getElementById('fab').style.transform='none';}
-document.addEventListener('click',e=>{
-  if(fabOpen&&!document.getElementById('fab').contains(e.target)&&!document.getElementById('fabMenu').contains(e.target))closeFabMenu();
-  if(!document.getElementById('dataDropdown').contains(e.target))closeDropdown();
-  if(currentSwipedId){const wrap=document.getElementById('twrap-'+currentSwipedId);if(wrap&&!wrap.contains(e.target))closeSwipe(currentSwipedId);}
-});
-function openAdd(type,date){
-  editId=null;currentType=type||'meal';
-  document.getElementById('fDate').value=date||todayDate();
+
+function grouped(){
+  const g = {};
+  entries.forEach(e => { (g[e.date] = g[e.date] || []).push(e); });
+  return g;
+}
+
+// --- 操作邏輯 ---
+function calShift(n){ calMonth+=n; if(calMonth<0){calMonth=11;calYear--;} if(calMonth>11){calMonth=0;calYear++;} renderCalendar(); }
+function selectCalDay(ds){ calSelected=ds; renderCalendar(); }
+function goToday(){ calYear=new Date().getFullYear(); calMonth=new Date().getMonth(); calSelected=todayDate(); if(currentTab==='calendar') renderCalendar(); else renderTimeline(); }
+
+function toggleFabMenu(){ fabOpen=!fabOpen; document.getElementById('fabMenu').style.display=fabOpen?'flex':'none'; document.getElementById('fab').style.transform=fabOpen?'rotate(45deg)':'none'; }
+function closeFabMenu(){ fabOpen=false; document.getElementById('fabMenu').style.display='none'; document.getElementById('fab').style.transform='none'; }
+
+function openAdd(type){
+  editId=null; currentType=type;
+  document.getElementById('fDate').value=calSelected;
   document.getElementById('fTime').value=nowTime();
   document.getElementById('fFoodText').value='';
-  document.getElementById('foodTagsRow').innerHTML='';
-  document.getElementById('calEstRow').style.display='none';
   document.getElementById('fNote').value='';
   document.getElementById('fExNote').value='';
-  document.getElementById('fDuration').value='';
-  document.getElementById('fDistance').value='';
-  document.getElementById('fCalories').value='';
-  pendingPhotos=[];renderPhotoGrid();
-  exPendingPhotos=[];renderExPhotoGrid();
-  selectedMealType='早餐';selectedExType='跑步';
-  renderChips();setType(currentType);
+  pendingPhotos=[]; exPendingPhotos=[];
+  renderPhotoGrid(); setType(type); renderChips();
   document.getElementById('addSheet').style.display='flex';
-  document.getElementById('addSheet').querySelector('.sheet-save').textContent='儲存';
-  closeDropdown();
 }
-function closeAdd(){document.getElementById('addSheet').style.display='none';}
-function closeAddIfBg(e){if(e.target===document.getElementById('addSheet'))closeAdd();}
-function setType(t){currentType=t;document.getElementById('typeBtnMeal').className='type-btn'+(t==='meal'?' active':'');document.getElementById('typeBtnExercise').className='type-btn'+(t==='exercise'?' active':'');document.getElementById('mealFields').style.display=t==='meal'?'block':'none';document.getElementById('exerciseFields').style.display=t==='exercise'?'block':'none';}
-function switchType(t){setType(t);}
+function closeAdd(){ document.getElementById('addSheet').style.display='none'; }
+function setType(t){
+  currentType=t;
+  document.getElementById('typeBtnMeal').className='type-btn'+(t==='meal'?' active':'');
+  document.getElementById('typeBtnExercise').className='type-btn'+(t==='exercise'?' active':'');
+  document.getElementById('mealFields').style.display=t==='meal'?'block':'none';
+  document.getElementById('exerciseFields').style.display=t==='exercise'?'block':'none';
+}
+function switchType(t){ setType(t); renderChips(); }
+
 function renderChips(){
-  document.getElementById('mealTypeChips').innerHTML=MEAL_TYPES.map(m=>`<button class="chip${m===selectedMealType?' active':''}" onclick="selectMealType('${m}')">${MEAL_ICONS[m]} ${m}</button>`).join('');
-  const exTypes=getExTypes();const exIcons=getExIcons();
-  document.getElementById('exTypeChips').innerHTML=exTypes.map(t=>`<button class="chip${t===selectedExType?' active':''}" onclick="selectExType('${t}')">${exIcons[t]||'⚡'} ${t}</button>`).join('');
+  document.getElementById('mealTypeChips').innerHTML=MEAL_TYPES.map(m=>`<button class="chip${m===selectedMealType?' active':''}" onclick="selectedMealType='${m}';renderChips()">${m}</button>`).join('');
+  const exIcons = getExIcons();
+  document.getElementById('exTypeChips').innerHTML=getExTypes().map(t=>`
+    <button class="chip${t===selectedExType?' active':''}" 
+      onclick="selectedExType='${t}';renderChips()" 
+      oncontextmenu="deleteExType(event,'${t}')" 
+      ontouchstart="handleExTouchStart(event,'${t}')" 
+      ontouchend="handleExTouchEnd()">
+      ${exIcons[t]||'⚡'} ${t}
+    </button>`).join('');
 }
-function selectMealType(m){selectedMealType=m;renderChips();}
-function selectExType(t){selectedExType=t;renderChips();}
+
+let exTouchTimer;
+function handleExTouchStart(e, t){ exTouchTimer = setTimeout(()=>deleteExType(null, t), 800); }
+function handleExTouchEnd(){ clearTimeout(exTouchTimer); }
+function deleteExType(e, t){
+  if(e) e.preventDefault();
+  if(EX_TYPES_DEFAULT.includes(t)) return;
+  if(confirm(`刪除自訂類別「${t}」？`)){
+    const customs = JSON.parse(localStorage.getItem('ex_customs')||'[]');
+    localStorage.setItem('ex_customs', JSON.stringify(customs.filter(c=>c.name!==t)));
+    renderChips();
+  }
+}
+
+function openAddExType(){
+  const n = prompt('輸入名稱'); if(!n) return;
+  const i = prompt('輸入圖標(Emoji)', '⚡');
+  const customs = JSON.parse(localStorage.getItem('ex_customs')||'[]');
+  customs.push({name:n, icon:i});
+  localStorage.setItem('ex_customs', JSON.stringify(customs));
+  selectedExType=n; renderChips();
+}
+function getExTypes(){ return [...EX_TYPES_DEFAULT, ...JSON.parse(localStorage.getItem('ex_customs')||'[]').map(c=>c.name)]; }
+function getExIcons(){ 
+  const icons = {...EX_ICONS_DEFAULT}; 
+  JSON.parse(localStorage.getItem('ex_customs')||'[]').forEach(c=>icons[c.name]=c.icon);
+  return icons;
+}
+
+function onFoodTextChange(){
+  const val = document.getElementById('fFoodText').value;
+  const foods = val.split(/\s+/).filter(x=>x);
+  let total = 0;
+  const tags = foods.map(f=>{
+    const match = FOOD_DB.find(d=>d.name===f);
+    if(match) total+=match.cal;
+    return `<span class="tag" style="${match?'background:#e8f0e8':''}">${f}</span>`;
+  });
+  document.getElementById('foodTagsRow').innerHTML = `<div class="tags">${tags.join('')}</div>`;
+  if(total){
+    document.getElementById('calEstRow').style.display='flex';
+    document.getElementById('calEstNum').textContent = total + ' kcal';
+  } else {
+    document.getElementById('calEstRow').style.display='none';
+  }
+}
+
 function saveEntry(){
-  const date=document.getElementById('fDate').value;const time=document.getElementById('fTime').value;
-  if(!date||!time){showToast('請填寫日期與時間');return;}
-  let entry;
-  if(currentType==='meal'){entry={id:editId||uid(),type:'meal',date,time,mealType:selectedMealType,foods:parseFoods(document.getElementById('fFoodText').value),note:document.getElementById('fNote').value,photos:pendingPhotos};}
-  else{entry={id:editId||uid(),type:'exercise',date,time,exerciseType:selectedExType,duration:document.getElementById('fDuration').value,distance:document.getElementById('fDistance').value,calories:document.getElementById('fCalories').value,note:document.getElementById('fExNote').value,photos:exPendingPhotos};}
-  if(editId)entries=entries.map(e=>e.id==editId?entry:e);else entries.push(entry);
-  saveEntries();closeAdd();rerender();
+  const date = document.getElementById('fDate').value;
+  const time = document.getElementById('fTime').value;
+  if(!date || !time) return;
+  
+  let entry = {
+    id: editId || uid(),
+    date, time, type: currentType
+  };
+  
+  if(currentType==='meal'){
+    entry.mealType = selectedMealType;
+    entry.note = document.getElementById('fNote').value;
+    entry.photos = pendingPhotos;
+    entry.foods = document.getElementById('fFoodText').value.split(/\s+/).filter(x=>x).map(f=>{
+      const m = FOOD_DB.find(d=>d.name===f);
+      return {name:f, cal: m?m.cal:0};
+    });
+  } else {
+    entry.exerciseType = selectedExType;
+    entry.duration = document.getElementById('fDuration').value;
+    entry.distance = document.getElementById('fDistance').value;
+    entry.calories = document.getElementById('fCalories').value;
+    entry.note = document.getElementById('fExNote').value;
+    entry.photos = exPendingPhotos;
+  }
+  
+  if(editId) entries = entries.map(e=>e.id==editId?entry:e);
+  else entries.push(entry);
+  
+  saveEntries(); closeAdd(); 
+  if(currentTab==='calendar') renderCalendar(); else renderTimeline();
 }
-function handlePhotos(event){
-  const files=Array.from(event.target.files);if(!files.length)return;const MAX=900,Q=0.82;
-  files.forEach(file=>{const reader=new FileReader();reader.onload=ev=>{const img=new Image();img.onload=()=>{let w=img.width,h=img.height;if(w>h){if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}}else{if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}}const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;canvas.getContext('2d').drawImage(img,0,0,w,h);pendingPhotos.push(canvas.toDataURL('image/jpeg',Q));renderPhotoGrid();};img.src=ev.target.result;};reader.readAsDataURL(file);});
-  event.target.value='';
+
+function deleteEntry(id){
+  if(confirm('確定刪除？')){
+    entries = entries.filter(e=>e.id!=id);
+    saveEntries();
+    if(currentTab==='calendar') renderCalendar(); else renderTimeline();
+  }
 }
-function renderPhotoGrid(){const grid=document.getElementById('photoGrid');const upload=document.getElementById('photoUploadArea');grid.innerHTML=pendingPhotos.map((p,i)=>`<div class="photo-thumb"><img src="${p}"><button class="photo-thumb-remove" onclick="removePhoto(${i})">✕</button></div>`).join('');upload.style.display=pendingPhotos.length>=9?'none':'block';}
-function removePhoto(i){pendingPhotos.splice(i,1);renderPhotoGrid();}
-function handleExPhotos(event){
-  const files=Array.from(event.target.files);if(!files.length)return;const MAX=900,Q=0.82;
-  files.forEach(file=>{const reader=new FileReader();reader.onload=ev=>{const img=new Image();img.onload=()=>{let w=img.width,h=img.height;if(w>h){if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}}else{if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}}const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;canvas.getContext('2d').drawImage(img,0,0,w,h);exPendingPhotos.push(canvas.toDataURL('image/jpeg',Q));renderExPhotoGrid();};img.src=ev.target.result;};reader.readAsDataURL(file);});
-  event.target.value='';
+
+function editEntry(id){
+  const e = entries.find(x=>x.id==id); if(!e) return;
+  editId = id; setType(e.type);
+  document.getElementById('fDate').value = e.date;
+  document.getElementById('fTime').value = e.time;
+  if(e.type==='meal'){
+    selectedMealType = e.mealType;
+    document.getElementById('fFoodText').value = e.foods.map(f=>f.name).join(' ');
+    document.getElementById('fNote').value = e.note;
+    pendingPhotos = [...e.photos]; renderPhotoGrid(); onFoodTextChange();
+  } else {
+    selectedExType = e.exerciseType;
+    document.getElementById('fDuration').value = e.duration;
+    document.getElementById('fDistance').value = e.distance;
+    document.getElementById('fCalories').value = e.calories;
+    document.getElementById('fExNote').value = e.note;
+    exPendingPhotos = [...e.photos]; renderPhotoGrid();
+  }
+  renderChips();
+  document.getElementById('addSheet').style.display='flex';
 }
-function renderExPhotoGrid(){const grid=document.getElementById('exPhotoGrid');const upload=document.getElementById('exPhotoUploadArea');if(!grid)return;grid.innerHTML=exPendingPhotos.map((p,i)=>`<div class="photo-thumb"><img src="${p}"><button class="photo-thumb-remove" onclick="removeExPhoto(${i})">✕</button></div>`).join('');if(upload)upload.style.display=exPendingPhotos.length>=9?'none':'block';}
-function removeExPhoto(i){exPendingPhotos.splice(i,1);renderExPhotoGrid();}
-let currentDetailId=null,lightboxPhotos=[],lightboxIdx=0;
-function openDetail(id){
-  const e=entries.find(x=>x.id==id);if(!e)return;
-  currentDetailId=id;
-  const isMeal=e.type==='meal';const icon=isMeal?(MEAL_ICONS[e.mealType]||'🍽'):(getExIcons()[e.exerciseType]||'⚡');
-  const photos=e.photos||[];
-  let photoHtml='';
-  if(photos.length===1)photoHtml=`<div class="detail-photo-grid" style="grid-template-columns:1fr"><img src="${photos[0]}" style="height:200px;cursor:zoom-in" onclick="openLightbox(0)"></div>`;
-  else if(photos.length===2)photoHtml=`<div class="detail-photo-grid" style="grid-template-columns:1fr 1fr">${photos.map((p,i)=>`<img src="${p}" style="height:160px;cursor:zoom-in" onclick="openLightbox(${i})">`).join('')}</div>`;
-  else if(photos.length>=3)photoHtml=`<div class="detail-photo-grid" style="grid-template-columns:1fr 1fr 1fr">${photos.slice(0,3).map((p,i)=>`<img src="${p}" style="height:120px;cursor:zoom-in" onclick="openLightbox(${i})">`).join('')}</div>`;
-  const totalMealCal=(e.foods||[]).reduce((a,f)=>a+(f.cal||0)*(f.qty||1),0);
-  const foodsHtml=isMeal&&e.foods&&e.foods.length?`<div class="detail-food-label">食物</div><div class="tags" style="gap:6px">${e.foods.map(f=>`<span class="tag">${esc(f.name)}${f.cal>0?` <span style="color:#c8a96e;font-weight:700">${f.cal} kcal</span>`:''}</span>`).join('')}</div>${totalMealCal>0?`<div style="margin-top:10px;background:#f5f0e8;border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between"><span style="font-size:13px;color:#8b6f47;font-weight:600">合計</span><span style="font-size:17px;font-weight:800;color:#2c2416">${Math.round(totalMealCal)} kcal</span></div>`:''}`:'' ;
-  const statsHtml=!isMeal?`<div class="stat-grid">${e.duration?`<div class="stat-box" style="background:#f5f0e8"><div class="stat-val">${e.duration}</div><div class="stat-unit">分鐘</div></div>`:''}${e.distance?`<div class="stat-box" style="background:#f5f0e8"><div class="stat-val">${e.distance}</div><div class="stat-unit">公里</div></div>`:''}${e.calories?`<div class="stat-box" style="background:#f0f8f2"><div class="stat-val" style="color:#5a9a6a">${e.calories}</div><div class="stat-unit">消耗kcal</div></div>`:''}</div>`:'';
-  const noteHtml=e.note?`<div class="detail-note">${esc(e.note)}</div>`:'';
-  document.getElementById('detailSheetInner').innerHTML=`${photoHtml}<div class="detail-body"><div class="detail-title">${icon} ${esc(isMeal?e.mealType:e.exerciseType)}</div><div class="detail-date">${fmtDate(e.date)} · ${e.time}</div>${foodsHtml}${statsHtml}${noteHtml}<div class="detail-btns"><button class="btn-edit" onclick="editEntry('${e.id}')">編輯</button><button class="btn-delete" onclick="deleteEntry('${e.id}')">刪除</button></div></div>`;
-  document.getElementById('detailSheet').style.display='flex';
+
+function handlePhotos(ev, type){
+  const files = Array.from(ev.target.files);
+  files.forEach(file=>{
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let w=img.width, h=img.height, max=800;
+        if(w>h){ if(w>max){h*=max/w; w=max;} } else { if(h>max){w*=max/h; h=max;} }
+        canvas.width=w; canvas.height=h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        const data = canvas.toDataURL('image/jpeg', 0.8);
+        if(type==='meal') { pendingPhotos.push(data); renderPhotoGrid(); }
+        else { exPendingPhotos.push(data); renderPhotoGrid(); }
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
 }
-function closeDetail(){document.getElementById('detailSheet').style.display='none';}
-function closeDetailIfBg(e){if(e.target===document.getElementById('detailSheet'))closeDetail();}
-function openLightbox(idx){
-  const e=entries.find(x=>x.id==currentDetailId);if(!e)return;
-  lightboxPhotos=e.photos||[];lightboxIdx=idx;
-  document.getElementById('lightbox-img').src=lightboxPhotos[lightboxIdx];
-  document.getElementById('lightbox-prev').style.display=lightboxPhotos.length>1?'flex':'none';
-  document.getElementById('lightbox-next').style.display=lightboxPhotos.length>1?'flex':'none';
+function renderPhotoGrid(){
+  const target = currentType==='meal' ? 'photoGrid' : 'exPhotoGrid';
+  const photos = currentType==='meal' ? pendingPhotos : exPendingPhotos;
+  document.getElementById(target).innerHTML = photos.map((p,i)=>`<div class="photo-thumb"><img src="${p}"><button class="photo-thumb-remove" onclick="removePhoto(${i})">✕</button></div>`).join('');
+}
+function removePhoto(i){
+  if(currentType==='meal') pendingPhotos.splice(i,1); else exPendingPhotos.splice(i,1);
+  renderPhotoGrid();
+}
+
+// --- 側滑編輯 ---
+function swipeStart(ev,id){ const t=ev.touches[0]; swipeData[id]={x:t.clientX, y:t.clientY, moved:false}; }
+function swipeMove(ev,id){
+  const d=swipeData[id]; if(!d) return;
+  const dx=ev.touches[0].clientX-d.x; const dy=Math.abs(ev.touches[0].clientY-d.y);
+  if(dy>20) return;
+  if(Math.abs(dx)>10){ d.moved=true; ev.preventDefault(); }
+  const el=document.getElementById('tinner-'+id);
+  const offset = Math.max(-132, Math.min(0, dx + (currentSwipedId===id?-132:0)));
+  el.style.transform = `translateX(${offset}px)`;
+  el.style.transition = 'none';
+}
+function swipeEnd(ev,id){
+  const el=document.getElementById('tinner-'+id); const d=swipeData[id]; if(!el||!d) return;
+  el.style.transition = 'transform 0.2s';
+  const dx = ev.changedTouches[0].clientX - d.x;
+  if(dx < -50){ el.classList.add('swiped'); currentSwipedId=id; }
+  else { el.classList.remove('swiped'); el.style.transform=''; currentSwipedId=null; }
+}
+
+// --- 其他功能 ---
+function toggleDropdown(){ const m=document.getElementById('dropdownMenu'); m.style.display=m.style.display==='none'?'block':'none'; }
+function exportData(){
+  const blob = new Blob([JSON.stringify(entries)], {type:'application/json'});
+  const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='log.json'; a.click();
+}
+function importData(ev){
+  const reader = new FileReader();
+  reader.onload = e => { entries=JSON.parse(e.target.result); saveEntries(); renderTimeline(); };
+  reader.readAsText(ev.target.files[0]);
+}
+function clearAllData(){ if(confirm('確定清除全部？')){ entries=[]; saveEntries(); renderTimeline(); } }
+function showToast(m){ const t=document.getElementById('toast'); t.textContent=m; t.style.display='block'; setTimeout(()=>t.style.display='none',2000); }
+
+// --- Lightbox ---
+let lbPhotos=[], lbIdx=0;
+function openLightboxFromCard(id, idx){
+  const e = entries.find(x=>x.id==id); if(!e) return;
+  lbPhotos = e.photos; lbIdx = idx;
+  document.getElementById('lightbox-img').src = lbPhotos[lbIdx];
   document.getElementById('lightbox').style.display='flex';
 }
-function lightboxPrev(e){e&&e.stopPropagation();lightboxIdx=(lightboxIdx-1+lightboxPhotos.length)%lightboxPhotos.length;document.getElementById('lightbox-img').src=lightboxPhotos[lightboxIdx];}
-function lightboxNext(e){e&&e.stopPropagation();lightboxIdx=(lightboxIdx+1)%lightboxPhotos.length;document.getElementById('lightbox-img').src=lightboxPhotos[lightboxIdx];}
-function closeLightboxBg(e){if(e.target===document.getElementById('lightbox'))document.getElementById('lightbox').style.display='none';}
-function editEntry(id){
-  const e=entries.find(x=>x.id==id);if(!e)return;
-  if(currentSwipedId)closeSwipe(currentSwipedId);
-  editId=id;currentType=e.type;
-  document.getElementById('fDate').value=e.date;
-  document.getElementById('fTime').value=e.time;
-  pendingPhotos=[];exPendingPhotos=[];
-  if(e.type==='meal'){
-    selectedMealType=e.mealType||'早餐';
-    document.getElementById('fFoodText').value=(e.foods||[]).map(f=>f.name).join(' ');
-    onFoodTextChange();
-    document.getElementById('fNote').value=e.note||'';
-    pendingPhotos=[...(e.photos||[])];renderPhotoGrid();
-  } else {
-    selectedExType=e.exerciseType||'跑步';
-    document.getElementById('fDuration').value=e.duration||'';
-    document.getElementById('fDistance').value=e.distance||'';
-    document.getElementById('fCalories').value=e.calories||'';
-    document.getElementById('fExNote').value=e.note||'';
-    exPendingPhotos=[...(e.photos||[])];renderExPhotoGrid();
-  }
-  renderChips();setType(currentType);
-  document.getElementById('addSheet').style.display='flex';
-  document.getElementById('addSheet').querySelector('.sheet-save').textContent='更新';
-}
-function deleteEntry(id){if(!confirm('確定刪除這筆記錄？'))return;entries=entries.filter(e=>e.id!=id);saveEntries();closeDetail();rerender();}
-function exportData(){const json=JSON.stringify(entries,null,2);const blob=new Blob([json],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');const d=new Date();a.href=url;a.download=`diet_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}.json`;a.click();URL.revokeObjectURL(url);closeDropdown();showToast('已匯出備份');}
-function importData(event){const file=event.target.files[0];if(!file)return;const r=new FileReader();r.onload=ev=>{try{const data=JSON.parse(ev.target.result);if(!Array.isArray(data))throw new Error();if(confirm(`匯入 ${data.length} 筆記錄？\n將與現有資料合併`)){const ids=new Set(entries.map(e=>e.id));entries=[...entries,...data.filter(e=>!ids.has(e.id))];entries.sort((a,b)=>a.date.localeCompare(b.date));saveEntries();rerender();showToast(`✅ 成功匯入 ${data.length} 筆`);}}catch{showToast('❌ 檔案格式錯誤');}};r.readAsText(file);event.target.value='';}
-function openClearSheet(){document.getElementById('clearDate').value='';document.getElementById('clearInfo').textContent='選擇日期後顯示將刪除的筆數';document.getElementById('clearSheet').style.display='flex';closeDropdown();}
-function closeClearSheet(){document.getElementById('clearSheet').style.display='none';}
-function closeClearIfBg(e){if(e.target===document.getElementById('clearSheet'))closeClearSheet();}
-document.addEventListener('change',e=>{if(e.target.id==='clearDate'){const d=e.target.value;if(!d)return;const count=entries.filter(en=>en.date<d).length;document.getElementById('clearInfo').textContent=`將刪除 ${count} 筆記錄（${d} 之前）`;}});
-function confirmClear(){const d=document.getElementById('clearDate').value;if(!d){showToast('請選擇日期');return;}const count=entries.filter(en=>en.date<d).length;if(!count){showToast('沒有符合的記錄');return;}if(!confirm(`確定刪除 ${count} 筆 ${d} 之前的記錄？`))return;entries=entries.filter(en=>en.date>=d);saveEntries();rerender();closeClearSheet();showToast(`已刪除 ${count} 筆記錄`);}
-function toggleDropdown(){const m=document.getElementById('dropdownMenu');if(m.style.display==='none'){m.style.display='block';calcStorage();}else m.style.display='none';}
-function closeDropdown(){document.getElementById('dropdownMenu').style.display='none';}
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function rerender(){renderTimeline();if(currentTab==='calendar')renderCalendar();}
-loadEntries();renderChips();renderTimeline();
-setTimeout(scrollToToday,100);
+function lightboxPrev(e){ e.stopPropagation(); lbIdx=(lbIdx-1+lbPhotos.length)%lbPhotos.length; document.getElementById('lightbox-img').src=lbPhotos[lbIdx]; }
+function lightboxNext(e){ e.stopPropagation(); lbIdx=(lbIdx+1)%lbPhotos.length; document.getElementById('lightbox-img').src=lbPhotos[lbIdx]; }
+function closeLightboxBg(e){ if(e.target.id==='lightbox') document.getElementById('lightbox').style.display='none'; }
+function closeAddIfBg(e){ if(e.target.id==='addSheet') closeAdd(); }
+
+// --- Init ---
+loadData();
+renderTimeline();
 </script>
 </body>
 </html>
