@@ -21,6 +21,7 @@ button{cursor:pointer}
 ::-webkit-scrollbar-thumb{background:#c8b89a;border-radius:99px}
 @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes popIn{from{transform:scale(.94);opacity:0}to{transform:scale(1);opacity:1}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 #app{max-width:480px;margin:0 auto;min-height:100vh;background:#f7f4ef;padding-bottom:90px}
 #header{background:#2c2416;color:#f7f4ef;position:sticky;top:0;z-index:100;padding:16px 16px 0}
@@ -121,7 +122,10 @@ button{cursor:pointer}
 .photo-thumb img{width:100%;height:100%;object-fit:cover;display:block}
 .photo-thumb-remove{position:absolute;top:3px;right:3px;background:rgba(0,0,0,.55);border:none;color:#fff;width:22px;height:22px;border-radius:50%;font-size:13px;display:flex;align-items:center;justify-content:center}
 .num-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-bottom:13px}
-.detail-photo-grid{display:grid;gap:2px;border-radius:20px 20px 0 0;overflow:hidden}
+/* Centered detail modal */
+.detail-overlay{position:fixed;inset:0;background:rgba(44,36,22,.7);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);animation:fadeIn .2s ease}
+.detail-modal{width:100%;max-width:440px;background:#fdf9f4;border-radius:18px;max-height:88vh;overflow-y:auto;animation:popIn .25s ease}
+.detail-photo-grid{display:grid;gap:2px;border-radius:18px 18px 0 0;overflow:hidden}
 .detail-photo-grid img{width:100%;object-fit:cover;display:block}
 .detail-body{padding:18px 18px 32px}
 .detail-title{font-size:21px;font-weight:700;color:#2c2416}
@@ -141,6 +145,13 @@ button{cursor:pointer}
 .clear-date-input{width:100%;padding:13px 14px;border-radius:10px;background:#faf8f5;border:1.5px solid #e0d8cc;color:#2c2416;font-size:16px;margin-top:8px;margin-bottom:6px}
 .clear-info{font-size:13px;color:#999;margin-bottom:16px}
 .btn-clear-confirm{width:100%;padding:14px;border-radius:10px;background:#d44;color:#fff;border:none;font-weight:700;font-size:16px}
+/* Lightbox */
+#lightbox{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:500;display:none;align-items:center;justify-content:center;animation:fadeIn .2s ease}
+#lightbox img{max-width:100%;max-height:100vh;object-fit:contain;border-radius:4px}
+#lightbox-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,.15);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+#lightbox-prev,#lightbox-next{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);border:none;color:#fff;width:40px;height:40px;border-radius:50%;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+#lightbox-prev{left:12px}
+#lightbox-next{right:12px}
 </style>
 </head>
 <body>
@@ -220,6 +231,14 @@ button{cursor:pointer}
           <span style="font-size:12px;color:#8b6f47">估算熱量</span>
           <span id="calEstNum" style="font-size:17px;font-weight:800;color:#2c2416"></span>
         </div>
+        <div style="margin-top:14px">
+          <div class="form-label">記錄照片（可多選，自動壓縮）</div>
+          <div id="photoUploadArea" class="photo-upload" onclick="document.getElementById('photoInput').click()">
+            <div style="font-size:28px;margin-bottom:4px">📷</div>
+            <div style="font-size:14px">點擊上傳照片（可多選）</div>
+          </div>
+          <div id="photoGrid" class="photo-grid"></div>
+        </div>
         <div class="form-label" style="margin-top:12px">備注</div>
         <textarea id="fNote" class="form-textarea" rows="2" placeholder="用餐心得、地點…"></textarea>
       </div>
@@ -234,19 +253,11 @@ button{cursor:pointer}
         <div class="form-label">備注</div>
         <textarea id="fExNote" class="form-textarea" rows="2" placeholder="運動感受、心率…"></textarea>
       </div>
-      <div style="margin-top:14px">
-        <div class="form-label">記錄照片（可多選，自動壓縮）</div>
-        <div id="photoUploadArea" class="photo-upload" onclick="document.getElementById('photoInput').click()">
-          <div style="font-size:28px;margin-bottom:4px">📷</div>
-          <div style="font-size:14px">點擊上傳照片（可多選）</div>
-        </div>
-        <div id="photoGrid" class="photo-grid"></div>
-      </div>
     </div>
   </div>
 </div>
-<div id="detailSheet" class="sheet-overlay" style="display:none" onclick="closeDetailIfBg(event)">
-  <div class="sheet" id="detailSheetInner"></div>
+<div id="detailSheet" class="detail-overlay" style="display:none" onclick="closeDetailIfBg(event)">
+  <div class="detail-modal" id="detailSheetInner"></div>
 </div>
 <div id="clearSheet" class="sheet-overlay" style="display:none" onclick="closeClearIfBg(event)">
   <div class="sheet">
@@ -262,6 +273,12 @@ button{cursor:pointer}
       <button class="btn-clear-confirm" onclick="confirmClear()">確認清除</button>
     </div>
   </div>
+</div>
+<div id="lightbox" onclick="closeLightbox(event)">
+  <button id="lightbox-close" onclick="document.getElementById('lightbox').style.display='none'">✕</button>
+  <button id="lightbox-prev" onclick="lightboxPrev(event)">‹</button>
+  <img id="lightbox-img" src="" alt="">
+  <button id="lightbox-next" onclick="lightboxNext(event)">›</button>
 </div>
 <input type="file" id="photoInput" accept="image/*" multiple style="display:none" onchange="handlePhotos(event)">
 <input type="file" id="importInput" accept=".json" style="display:none" onchange="importData(event)">
@@ -427,8 +444,14 @@ function renderCalEntry(e){
 }
 function handleCalCellClick(ds){
   const now=Date.now();
-  if(calDblTapTimer&&now-calDblTapTimer<400){calDblTapTimer=null;openAdd('meal',ds);}
-  else{calDblTapTimer=now;setTimeout(()=>{if(calDblTapTimer===now){calDblTapTimer=null;selectCalDay(ds);}},420);}
+  if(calDblTapTimer&&now-calDblTapTimer<350){
+    calDblTapTimer=null;
+    openAdd('meal',ds);
+  } else {
+    calDblTapTimer=now;
+    selectCalDay(ds);
+    setTimeout(()=>{calDblTapTimer=null;},380);
+  }
 }
 function switchTab(tab){
   currentTab=tab;
@@ -514,14 +537,17 @@ function handlePhotos(event){
 }
 function renderPhotoGrid(){const grid=document.getElementById('photoGrid');const upload=document.getElementById('photoUploadArea');grid.innerHTML=pendingPhotos.map((p,i)=>`<div class="photo-thumb"><img src="${p}"><button class="photo-thumb-remove" onclick="removePhoto(${i})">✕</button></div>`).join('');upload.style.display=pendingPhotos.length>=9?'none':'block';}
 function removePhoto(i){pendingPhotos.splice(i,1);renderPhotoGrid();}
+let currentDetailId=null;
+let lightboxPhotos=[],lightboxIdx=0;
 function openDetail(id){
   const e=entries.find(x=>x.id==id);if(!e)return;
+  currentDetailId=id;
   const isMeal=e.type==='meal';const icon=isMeal?(MEAL_ICONS[e.mealType]||'🍽'):(EX_ICONS[e.exerciseType]||'⚡');
   const photos=e.photos||[];
   let photoHtml='';
-  if(photos.length===1)photoHtml=`<div class="detail-photo-grid" style="grid-template-columns:1fr"><img src="${photos[0]}" style="height:200px"></div>`;
-  else if(photos.length===2)photoHtml=`<div class="detail-photo-grid" style="grid-template-columns:1fr 1fr">${photos.map(p=>`<img src="${p}" style="height:160px">`).join('')}</div>`;
-  else if(photos.length>=3)photoHtml=`<div class="detail-photo-grid" style="grid-template-columns:1fr 1fr 1fr">${photos.slice(0,3).map(p=>`<img src="${p}" style="height:120px">`).join('')}</div>`;
+  if(photos.length===1)photoHtml=`<div class="detail-photo-grid" style="grid-template-columns:1fr"><img src="${photos[0]}" style="height:200px;cursor:zoom-in" onclick="openLightbox(0)"></div>`;
+  else if(photos.length===2)photoHtml=`<div class="detail-photo-grid" style="grid-template-columns:1fr 1fr">${photos.map((p,i)=>`<img src="${p}" style="height:160px;cursor:zoom-in" onclick="openLightbox(${i})">`).join('')}</div>`;
+  else if(photos.length>=3)photoHtml=`<div class="detail-photo-grid" style="grid-template-columns:1fr 1fr 1fr">${photos.slice(0,3).map((p,i)=>`<img src="${p}" style="height:120px;cursor:zoom-in" onclick="openLightbox(${i})">`).join('')}</div>`;
   const totalMealCal=(e.foods||[]).reduce((a,f)=>a+(f.cal||0)*(f.qty||1),0);
   const foodsHtml=isMeal&&e.foods&&e.foods.length?`<div class="detail-food-label">食物</div><div class="tags" style="gap:6px">${e.foods.map(f=>`<span class="tag">${esc(f.name)}${f.cal>0?` <span style="color:#c8a96e;font-weight:700">${f.cal} kcal</span>`:''}</span>`).join('')}</div>${totalMealCal>0?`<div style="margin-top:10px;background:#f5f0e8;border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between"><span style="font-size:13px;color:#8b6f47;font-weight:600">合計</span><span style="font-size:17px;font-weight:800;color:#2c2416">${Math.round(totalMealCal)} kcal</span></div>`:''}`:'' ;
   const statsHtml=!isMeal?`<div class="stat-grid">${e.duration?`<div class="stat-box" style="background:#f5f0e8"><div class="stat-val">${e.duration}</div><div class="stat-unit">分鐘</div></div>`:''}${e.distance?`<div class="stat-box" style="background:#f5f0e8"><div class="stat-val">${e.distance}</div><div class="stat-unit">公里</div></div>`:''}${e.calories?`<div class="stat-box" style="background:#f0f8f2"><div class="stat-val" style="color:#5a9a6a">${e.calories}</div><div class="stat-unit">消耗kcal</div></div>`:''}</div>`:'';
@@ -531,6 +557,16 @@ function openDetail(id){
 }
 function closeDetail(){document.getElementById('detailSheet').style.display='none';}
 function closeDetailIfBg(e){if(e.target===document.getElementById('detailSheet'))closeDetail();}
+function openLightbox(idx){
+  const e=entries.find(x=>x.id==currentDetailId);if(!e)return;
+  lightboxPhotos=e.photos||[];lightboxIdx=idx;
+  document.getElementById('lightbox-img').src=lightboxPhotos[lightboxIdx];
+  document.getElementById('lightbox-prev').style.display=lightboxPhotos.length>1?'flex':'none';
+  document.getElementById('lightbox-next').style.display=lightboxPhotos.length>1?'flex':'none';
+  document.getElementById('lightbox').style.display='flex';
+}
+function lightboxPrev(e){e&&e.stopPropagation();lightboxIdx=(lightboxIdx-1+lightboxPhotos.length)%lightboxPhotos.length;document.getElementById('lightbox-img').src=lightboxPhotos[lightboxIdx];}
+function lightboxNext(e){e&&e.stopPropagation();lightboxIdx=(lightboxIdx+1)%lightboxPhotos.length;document.getElementById('lightbox-img').src=lightboxPhotos[lightboxIdx];}
 function editEntry(id){
   const e=entries.find(x=>x.id==id);if(!e)return;closeDetail();editId=id;currentType=e.type;
   document.getElementById('fDate').value=e.date;document.getElementById('fTime').value=e.time;
