@@ -862,7 +862,7 @@ function closeWeightIfBg(ev){if(ev.target===document.getElementById('weightSheet
 function saveWeight(){
   const v=parseFloat(document.getElementById('weightInput').value);
   if(!v||v<20||v>300){showToast('請輸入合理體重（20–300 kg）');return;}
-  saveWeightVal(v);closeWeightSheet();showToast(`體重已設定為 ${v} kg`);
+  saveWeightVal(v);closeWeightSheet();showToast(`體重已設定為 ${v} kg`);autoCalcExCal();
 }
 
 // ── 運動 MET 表 ──────────────────────────────────────────────────
@@ -915,9 +915,8 @@ function autoCalcExCal(){
   const weight=loadWeight();
   const met=getMET(selExType);
   if(!met){
-    if(weight){
-      hint.style.display='none';
-    }
+    hint.innerHTML=`⚠️ 找不到「${selExType}」的 MET 值，請手動輸入消耗`;
+    hint.style.display=weight?'block':'none';
     return;
   }
   if(!weight){
@@ -1193,7 +1192,9 @@ function lbNext(ev){ev.stopPropagation();lbIdx=(lbIdx+1)%lbPhotos.length;showLb(
 
 function exportData(){
   const periods=JSON.parse(localStorage.getItem('periods')||'[]');
-  const backup={version:2,entries,periods};
+  const customEx=loadCustomEx();
+  const weight=loadWeight()||undefined;
+  const backup={version:3,entries,periods,customEx,weight};
   const json=JSON.stringify(backup,null,2);const blob=new Blob([json],{type:'application/json'});
   const url=URL.createObjectURL(blob);const a=document.createElement('a');const d=new Date();
   a.href=url;a.download=`diet_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}.json`;
@@ -1203,13 +1204,16 @@ function importData(event){
   const file=event.target.files[0];if(!file)return;const r=new FileReader();
   r.onload=ev=>{try{
     const raw=JSON.parse(ev.target.result);
-    // support both old format (array) and new format ({version,entries,periods})
-    let data,pdata;
-    if(Array.isArray(raw)){data=raw;pdata=[];}
-    else if(raw.entries){data=raw.entries||[];pdata=raw.periods||[];}
-    else throw new Error();
+    // support old format (array), v2 ({entries,periods}), v3 (+customEx,weight)
+    let data,pdata,exdata,wdata;
+    if(Array.isArray(raw)){data=raw;pdata=[];exdata=[];wdata=null;}
+    else if(raw.entries!=null){
+      data=raw.entries||[];pdata=raw.periods||[];
+      exdata=raw.customEx||[];wdata=raw.weight||null;
+    } else throw new Error();
     const pInfo=pdata.length?`、${pdata.length} 筆經期`:'';
-    if(confirm(`匯入 ${data.length} 筆記錄${pInfo}？\n將與現有資料合併`)){
+    const exInfo=exdata.length?`、${exdata.length} 個運動類別`:'';
+    if(confirm(`匯入 ${data.length} 筆記錄${pInfo}${exInfo}？\n將與現有資料合併`)){
       // merge entries
       const ids=new Set(entries.map(e=>e.id));
       entries=[...entries,...data.filter(e=>!ids.has(e.id))];
@@ -1221,7 +1225,16 @@ function importData(event){
         const merged=[...existing,...pdata.filter(p=>!pids.has(p.id))];
         localStorage.setItem('periods',JSON.stringify(merged));
       }
-      rerender();showToast(`✅ 成功匯入 ${data.length} 筆記錄${pInfo}`);
+      // merge customEx（以名稱去重，保留現有順序，新的加在後面）
+      if(exdata.length){
+        const existing=loadCustomEx();
+        const names=new Set(existing.map(x=>x.name));
+        const merged=[...existing,...exdata.filter(x=>!names.has(x.name))];
+        saveCustomEx(merged);renderChips();
+      }
+      // 體重：只在本機未設定時才帶入
+      if(wdata&&!loadWeight()){saveWeightVal(wdata);}
+      rerender();showToast(`✅ 成功匯入 ${data.length} 筆記錄${pInfo}${exInfo}`);
     }}catch{showToast('❌ 檔案格式錯誤');}};r.readAsText(file);event.target.value='';
 }
 function openClearSheet(){
