@@ -260,10 +260,6 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;gap
               <div style="font-size:24px">📋</div>
               <div style="font-size:12px">貼上</div>
             </button>
-            <button type="button" id="mealAiBtn" onclick="analyzeMealPhoto()" style="flex:1;border:2px dashed #c8a96e;border-radius:12px;background:none;color:#a07030;cursor:pointer;padding:16px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;display:none">
-              <div style="font-size:24px">🤖</div>
-              <div style="font-size:12px">AI 辨識</div>
-            </button>
           </div>
           <div id="photoGrid" class="photo-grid"></div>
         </div>
@@ -290,10 +286,6 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;gap
           <button type="button" onclick="pasteFromClipboard('ex')" style="flex:1;border:2px dashed #d8cfc4;border-radius:12px;background:none;color:#c8b89a;cursor:pointer;padding:16px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px">
             <div style="font-size:24px">📋</div>
             <div style="font-size:12px">貼上</div>
-          </button>
-          <button type="button" id="exAiBtn" onclick="analyzeExPhoto()" style="flex:1;border:2px dashed #a8c8a0;border-radius:12px;background:none;color:#6a9e62;cursor:pointer;padding:16px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;display:none">
-            <div style="font-size:24px">🤖</div>
-            <div style="font-size:12px">AI 分析</div>
           </button>
         </div>
         <div id="exPhotoGrid" class="photo-grid"></div>
@@ -856,6 +848,7 @@ function setType(t){
 function switchType(t){setType(t);}
 
 // ── 體重設定 ──────────────────────────────────────────────────────
+
 function loadWeight(){return parseFloat(localStorage.getItem('user_weight')||'0');}
 function saveWeightVal(w){localStorage.setItem('user_weight',String(w));}
 function openWeightSheet(){
@@ -1153,112 +1146,12 @@ function renderPhotoGrid(kind){
   const arr=kind==='meal'?mealPhotos:exPhotos;
   const grid=document.getElementById(kind==='meal'?'photoGrid':'exPhotoGrid');
   const up=document.getElementById(kind==='meal'?'photoUploadArea':'exPhotoUploadArea');
-  const aiBtn=document.getElementById(kind==='meal'?'mealAiBtn':'exAiBtn');
   if(!grid)return;
   grid.innerHTML=arr.map((p,i)=>`<div class="photo-thumb"><img src="${p}"><button class="photo-thumb-remove" onclick="removePhoto('${kind}',${i})">✕</button></div>`).join('');
   if(up)up.style.display=arr.length>=9?'none':'flex';
-  // 有照片才顯示 AI 按鈕
-  if(aiBtn)aiBtn.style.display=arr.length>0?'flex':'none';
 }
 function removePhoto(kind,i){if(kind==='meal')mealPhotos.splice(i,1);else exPhotos.splice(i,1);renderPhotoGrid(kind);}
 
-// ── AI 圖片分析 ─────────────────────────────────────────────────────
-async function callVisionAPI(base64img, systemPrompt, userPrompt){
-  const controller=new AbortController();
-  const timeout=setTimeout(()=>controller.abort(),20000);
-  // strip data URL prefix, detect media type
-  const mediaMatch=base64img.match(/^data:(image\/\w+);base64,/);
-  const mediaType=(mediaMatch?mediaMatch[1]:'image/jpeg');
-  const b64=base64img.replace(/^data:image\/\w+;base64,/,'');
-  try{
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
-      signal:controller.signal,
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'anthropic-version':'2023-06-01',
-        'anthropic-dangerous-direct-browser-access':'true'
-      },
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:500,
-        system: systemPrompt,
-        messages:[{role:'user',content:[
-          {type:'image',source:{type:'base64',media_type:mediaType,data:b64}},
-          {type:'text',text:userPrompt}
-        ]}]
-      })
-    });
-    clearTimeout(timeout);
-    const data=await resp.json();
-    if(data.error){throw new Error(data.error.message||'API error');}
-    const text=(data.content||[]).find(b=>b.type==='text')?.text||'';
-    return text.replace(/```json|```/g,'').trim();
-  }catch(e){
-    clearTimeout(timeout);
-    throw e;
-  }
-}
-
-async function analyzeExPhoto(){
-  if(!exPhotos.length){showToast('請先上傳運動照片');return;}
-  const btn=document.getElementById('exAiBtn');
-  btn.innerHTML='<div style="font-size:20px">⏳</div><div style="font-size:11px">分析中</div>';
-  btn.disabled=true;
-  try{
-    const json=await callVisionAPI(
-      exPhotos[0],
-      '你是運動資料辨識專家。從圖片中找出運動記錄的時間和距離數據。只回傳 JSON，不要任何說明。',
-      '請從這張圖片（可能是運動手錶截圖、跑步App截圖、健身記錄）辨識出：運動時間（分鐘）、距離（公里）。格式：{"duration":數字或null,"distance":數字或null,"note":"辨識到的其他資訊，如步頻心率等，用中文"}'
-    );
-    const result=JSON.parse(json);
-    if(result.duration){document.getElementById('fDuration').value=result.duration;autoCalcExCal();}
-    if(result.distance){document.getElementById('fDistance').value=result.distance;}
-    if(result.note){
-      const noteEl=document.getElementById('fExNote');
-      if(!noteEl.value)noteEl.value=result.note;
-    }
-    const filled=[];
-    if(result.duration)filled.push(`時間 ${result.duration} 分`);
-    if(result.distance)filled.push(`距離 ${result.distance} km`);
-    showToast(filled.length?`✅ 已填入：${filled.join('、')}`:'⚠️ 圖片中找不到運動數據');
-  }catch(e){
-    showToast('❌ '+(e.name==='AbortError'?'逾時，請重試':e.message||'AI 分析失敗'));
-  }finally{
-    btn.innerHTML='<div style="font-size:24px">🤖</div><div style="font-size:12px">AI 分析</div>';
-    btn.disabled=false;
-  }
-}
-
-async function analyzeMealPhoto(){
-  if(!mealPhotos.length){showToast('請先上傳食物照片');return;}
-  const btn=document.getElementById('mealAiBtn');
-  btn.innerHTML='<div style="font-size:20px">⏳</div><div style="font-size:11px">辨識中</div>';
-  btn.disabled=true;
-  try{
-    const json=await callVisionAPI(
-      mealPhotos[0],
-      '你是食物辨識專家。從圖片辨識所有食物。只回傳 JSON，不要任何說明。',
-      '請辨識圖片中所有食物，用繁體中文命名，盡量精確（如「白飯」而非「飯」、「荷包蛋」而非「蛋」）。格式：{"foods":["食物1","食物2",...],"note":"整體描述（如：台式便當、日式拉麵等），用中文"}'
-    );
-    const result=JSON.parse(json);
-    if(result.foods?.length){
-      const foodEl=document.getElementById('fFoodText');
-      const existing=foodEl.value.trim();
-      const newFoods=result.foods.join(' ');
-      foodEl.value=existing?`${existing} ${newFoods}`:newFoods;
-      foodEl.dispatchEvent(new Event('input'));
-      showToast(`✅ 辨識到 ${result.foods.length} 樣食物`);
-    } else {
-      showToast('⚠️ 無法辨識食物，請手動輸入');
-    }
-  }catch(e){
-    showToast('❌ '+(e.name==='AbortError'?'逾時，請重試':e.message||'AI 辨識失敗'));
-  }finally{
-    btn.innerHTML='<div style="font-size:24px">🤖</div><div style="font-size:12px">AI 辨識</div>';
-    btn.disabled=false;
-  }
-}
 
 function editEntry(id){
   const e=entries.find(x=>x.id==id);if(!e)return;
