@@ -79,7 +79,7 @@ button{cursor:pointer}
 .cal-wd{text-align:center;padding:8px 0;font-size:12px;font-weight:700}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:#e8e2d8}
 .cal-cell{background:#fff;min-height:58px;cursor:pointer;position:relative;overflow:hidden;transition:background .15s}
-.cal-cell-inner{position:relative;z-index:1;padding:4px 4px}
+.cal-cell-inner{position:relative;z-index:1;padding:4px}
 .cal-cell-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .cal-day-num{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px}
 .cal-dots{display:flex;gap:2px;margin-top:2px}
@@ -257,7 +257,7 @@ button{cursor:pointer}
     </div>
     <div class="sheet-body">
       <div style="font-size:15px;color:#2c2416;font-weight:600;margin-bottom:6px">清除此日期之前的所有記錄</div>
-      <input type="date" id="clearDate" class="clear-date-input" oninput="updateClearInfo()">
+      <input type="date" id="clearDate" class="clear-date-input">
       <div class="clear-info" id="clearInfo">選擇日期後顯示將刪除的筆數</div>
       <button class="btn-clear-confirm" onclick="confirmClear()">確認清除</button>
     </div>
@@ -278,7 +278,6 @@ let calYear=new Date().getFullYear(),calMonth=new Date().getMonth(),calSelected=
 let pendingPhotos=[],selectedMealType='早餐',selectedExType='跑步';
 let fabOpen=false,calDblTapTimer=null;
 const collapsedDays=new Set();
-
 const FOOD_DB=[
   {name:'白飯',cal:180},{name:'糙米飯',cal:165},{name:'麵條',cal:220},{name:'烏龍麵',cal:200},
   {name:'拉麵',cal:450},{name:'炒飯',cal:380},{name:'泡麵',cal:400},{name:'稀飯',cal:100},
@@ -290,33 +289,30 @@ const FOOD_DB=[
   {name:'豬排',cal:280},{name:'排骨',cal:250},{name:'牛排',cal:320},{name:'羊肉',cal:300},
   {name:'鮭魚',cal:200},{name:'鯖魚',cal:190},{name:'鱸魚',cal:120},{name:'蝦子',cal:100},
   {name:'豆腐',cal:80},{name:'豆漿',cal:54},{name:'牛奶',cal:150},{name:'優格',cal:100},
-  {name:'起司',cal:90},{name:'花椰菜',cal:35},{name:'高麗菜',cal:25},{name:'菠菜',cal:23},
-  {name:'番茄',cal:35},{name:'小黃瓜',cal:16},{name:'紅蘿蔔',cal:41},{name:'地瓜',cal:130},
-  {name:'馬鈴薯',cal:130},{name:'玉米',cal:90},{name:'南瓜',cal:50},{name:'香蕉',cal:90},
-  {name:'蘋果',cal:80},{name:'橘子',cal:47},{name:'葡萄',cal:70},{name:'西瓜',cal:50},
-  {name:'芭樂',cal:40},{name:'鳳梨',cal:55},{name:'芒果',cal:65},{name:'沙拉',cal:50},
-  {name:'凱薩沙拉',cal:180},{name:'生菜沙拉',cal:30},{name:'味噌湯',cal:40},{name:'雞湯',cal:80},
-  {name:'玉米濃湯',cal:120},{name:'排骨湯',cal:150},{name:'咖啡',cal:5},{name:'黑咖啡',cal:5},
-  {name:'拿鐵',cal:150},{name:'卡布奇諾',cal:100},{name:'紅茶',cal:5},{name:'綠茶',cal:3},
-  {name:'奶茶',cal:200},{name:'珍珠奶茶',cal:450},{name:'珍奶',cal:450},{name:'果汁',cal:120},
-  {name:'可樂',cal:140},{name:'汽水',cal:120},{name:'燕麥',cal:150},{name:'麥片',cal:130},
-  {name:'便當',cal:650},{name:'排骨便當',cal:700},{name:'雞腿便當',cal:680},{name:'滷肉飯',cal:450},
-  {name:'雞肉飯',cal:420},{name:'牛肉麵',cal:550},{name:'鹹粥',cal:200},{name:'控肉飯',cal:600},
-  {name:'漢堡',cal:450},{name:'大麥克',cal:550},{name:'三明治',cal:280},{name:'薯條',cal:300},
-  {name:'炸雞',cal:320},{name:'雞塊',cal:200},{name:'薯片',cal:150},{name:'披薩',cal:280},
-  {name:'義大利麵',cal:350},{name:'焗烤',cal:380},{name:'燉飯',cal:400},{name:'火鍋',cal:500},
-  {name:'麻辣鍋',cal:600},{name:'壽司',cal:350},{name:'生魚片',cal:150},{name:'燒肉',cal:400},
-  {name:'烤肉',cal:380},{name:'關東煮',cal:200},{name:'天婦羅',cal:300},{name:'巧克力',cal:150},
-  {name:'蛋糕',cal:300},{name:'鬆餅',cal:250},{name:'麵包',cal:200},{name:'餅乾',cal:130},
-  {name:'冰淇淋',cal:200},{name:'布丁',cal:120},{name:'果凍',cal:60},{name:'麻糬',cal:180},
-  {name:'地瓜球',cal:180},{name:'章魚燒',cal:200},{name:'鹽酥雞',cal:350},{name:'臭豆腐',cal:280},
+  {name:'起司',cal:90},{name:'奶油',cal:100},{name:'花椰菜',cal:35},{name:'高麗菜',cal:25},
+  {name:'菠菜',cal:23},{name:'番茄',cal:35},{name:'小黃瓜',cal:16},{name:'紅蘿蔔',cal:41},
+  {name:'地瓜',cal:130},{name:'馬鈴薯',cal:130},{name:'玉米',cal:90},{name:'南瓜',cal:50},
+  {name:'香蕉',cal:90},{name:'蘋果',cal:80},{name:'橘子',cal:47},{name:'葡萄',cal:70},
+  {name:'西瓜',cal:50},{name:'芭樂',cal:40},{name:'鳳梨',cal:55},{name:'芒果',cal:65},
+  {name:'沙拉',cal:50},{name:'凱薩沙拉',cal:180},{name:'生菜沙拉',cal:30},{name:'水果沙拉',cal:80},
+  {name:'味噌湯',cal:40},{name:'玉米濃湯',cal:120},{name:'雞湯',cal:80},{name:'排骨湯',cal:150},
+  {name:'咖啡',cal:5},{name:'黑咖啡',cal:5},{name:'拿鐵',cal:150},{name:'卡布奇諾',cal:100},
+  {name:'紅茶',cal:5},{name:'綠茶',cal:3},{name:'奶茶',cal:200},{name:'珍珠奶茶',cal:450},
+  {name:'珍奶',cal:450},{name:'果汁',cal:120},{name:'柳橙汁',cal:110},{name:'可樂',cal:140},{name:'汽水',cal:120},
+  {name:'燕麥',cal:150},{name:'麥片',cal:130},{name:'穀片',cal:160},{name:'玉米片',cal:150},
+  {name:'便當',cal:650},{name:'排骨便當',cal:700},{name:'雞腿便當',cal:680},{name:'控肉飯',cal:600},
+  {name:'滷肉飯',cal:450},{name:'鹹粥',cal:200},{name:'雞肉飯',cal:420},{name:'牛肉麵',cal:550},
+  {name:'漢堡',cal:450},{name:'大麥克',cal:550},{name:'雞腿堡',cal:480},{name:'三明治',cal:280},
+  {name:'薯條',cal:300},{name:'炸雞',cal:320},{name:'雞塊',cal:200},{name:'薯片',cal:150},
+  {name:'披薩',cal:280},{name:'義大利麵',cal:350},{name:'焗烤',cal:380},{name:'燉飯',cal:400},
+  {name:'火鍋',cal:500},{name:'麻辣鍋',cal:600},{name:'壽司',cal:350},{name:'生魚片',cal:150},
+  {name:'關東煮',cal:200},{name:'天婦羅',cal:300},{name:'燒肉',cal:400},{name:'烤肉',cal:380},
+  {name:'巧克力',cal:150},{name:'蛋糕',cal:300},{name:'鬆餅',cal:250},{name:'麵包',cal:200},
+  {name:'餅乾',cal:130},{name:'冰淇淋',cal:200},{name:'布丁',cal:120},{name:'果凍',cal:60},
+  {name:'麻糬',cal:180},{name:'大福',cal:130},{name:'地瓜球',cal:180},{name:'章魚燒',cal:200},
+  {name:'鹽酥雞',cal:350},{name:'臭豆腐',cal:280},
 ];
-
-function lookupCal(name){
-  const match=FOOD_DB.find(f=>f.name===name||name.includes(f.name)||f.name.includes(name));
-  return match?match.cal:null;
-}
-
+function lookupCal(name){const m=FOOD_DB.find(f=>f.name===name||name.includes(f.name)||f.name.includes(name));return m?m.cal:null;}
 function onFoodTextChange(){
   const text=document.getElementById('fFoodText').value;
   const tagsRow=document.getElementById('foodTagsRow');
@@ -334,21 +330,17 @@ function onFoodTextChange(){
   tagsRow.innerHTML=`<div class="tags">${tags}</div>`;
   if(total>0){
     const unknownCount=names.length-known;
-    const note=unknownCount>0?`<span style="font-size:11px;color:#bbb;font-weight:400">（${unknownCount}樣未知）</span>`:'';
-    calNum.innerHTML=`${total} kcal ${note}`;
+    const note=unknownCount>0?`（${unknownCount}樣未知）`:'';
+    calNum.innerHTML=`${total} kcal <span style="font-size:11px;color:#bbb;font-weight:400">${note}</span>`;
     calRow.style.display='flex';
-  } else {
-    calRow.style.display='none';
-  }
+  } else {calRow.style.display='none';}
 }
-
 function parseFoods(text){
   return text.trim().split(/[\s\u3000,，]+/).filter(Boolean).map(name=>{
     const cal=lookupCal(name)||0;
     return {name,qty:1,cal,unit:'份',id:uid()};
   });
 }
-
 function todayDate(){const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;}
 function nowTime(){const d=new Date();return pad(d.getHours())+':'+pad(d.getMinutes());}
 function pad(n){return String(n).padStart(2,'0');}
@@ -360,18 +352,14 @@ function saveEntries(){try{localStorage.setItem(STORE_KEY,JSON.stringify(entries
 function calcStorage(){try{const raw=localStorage.getItem(STORE_KEY)||'';const bytes=new Blob([raw]).size;const mb=(bytes/1024/1024).toFixed(2);const pct=Math.min((bytes/(8*1024*1024))*100,100).toFixed(0);document.getElementById('storageText').textContent=mb+' MB';const fill=document.getElementById('storageFill');fill.style.width=pct+'%';fill.style.background=pct>80?'#e06060':pct>60?'#e0a060':'#c8a96e';}catch{}}
 function grouped(){const g={};entries.forEach(e=>{(g[e.date]=g[e.date]||[]).push(e);});Object.keys(g).forEach(d=>g[d].sort((a,b)=>a.time.localeCompare(b.time)));return g;}
 function sortedDates(g){return Object.keys(g).sort((a,b)=>a.localeCompare(b));}
-
 function toggleDay(date){
   if(collapsedDays.has(date))collapsedDays.delete(date);else collapsedDays.add(date);
-  const body=document.getElementById('tbody-'+date);
-  const arrow=document.getElementById('tarrow-'+date);
-  const badge=document.getElementById('tbadge-'+date);
+  const body=document.getElementById('tbody-'+date),arrow=document.getElementById('tarrow-'+date),badge=document.getElementById('tbadge-'+date);
   const collapsed=collapsedDays.has(date);
   if(body)body.style.display=collapsed?'none':'block';
   if(arrow)arrow.style.transform=collapsed?'rotate(-90deg)':'rotate(0deg)';
   if(badge)badge.style.display=collapsed?'inline-block':'none';
 }
-
 function renderTimeline(){
   const g=grouped();const dates=sortedDates(g);const el=document.getElementById('viewTimeline');
   if(!dates.length){el.innerHTML='<div class="empty"><div class="empty-icon">📓</div><div style="font-size:16px;color:#aaa">還沒有任何記錄</div><div style="font-size:13px;color:#ccc;margin-top:6px">點右下角 + 開始記錄</div></div>';return;}
@@ -382,29 +370,9 @@ function renderTimeline(){
     const isToday=date===todayDate();const collapsed=collapsedDays.has(date);
     const calHtml=dayCal>0?`<div style="color:#8b6f47;font-weight:600">${Math.round(dayCal)} kcal</div>`:'';
     const burnHtml=dayBurn>0?`<div style="color:#5a9a6a">−${dayBurn} kcal</div>`:'';
-    return `<div id="tday-${date}">
-      <div class="day-header" onclick="toggleDay('${date}')" style="cursor:pointer;user-select:none;-webkit-user-select:none">
-        <div class="day-title">
-          ${isToday?'<span class="day-dot"></span>':''}
-          <span class="day-name">${fmtDate(date)}</span>
-          ${isToday?'<span class="today-badge">今天</span>':''}
-          <span id="tbadge-${date}" style="display:${collapsed?'inline-block':'none'};font-size:11px;background:#e8e2d8;color:#8b6f47;padding:2px 8px;border-radius:99px;font-weight:600">${de.length}筆</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="day-cal">${calHtml}${burnHtml}</div>
-          <span id="tarrow-${date}" style="color:#c8b89a;font-size:16px;transition:transform .2s;transform:${collapsed?'rotate(-90deg)':'rotate(0deg)'}">▾</span>
-        </div>
-      </div>
-      <div id="tbody-${date}" style="display:${collapsed?'none':'block'}">
-        <div class="timeline-entries">
-          <div class="timeline-line"></div>
-          ${de.map(e=>renderTimelineCard(e)).join('')}
-        </div>
-      </div>
-    </div>`;
+    return `<div id="tday-${date}"><div class="day-header" onclick="toggleDay('${date}')" style="cursor:pointer;user-select:none;-webkit-user-select:none"><div class="day-title">${isToday?'<span class="day-dot"></span>':''}<span class="day-name">${fmtDate(date)}</span>${isToday?'<span class="today-badge">今天</span>':''}<span id="tbadge-${date}" style="display:${collapsed?'inline-block':'none'};font-size:11px;background:#e8e2d8;color:#8b6f47;padding:2px 8px;border-radius:99px;font-weight:600">${de.length}筆</span></div><div style="display:flex;align-items:center;gap:8px"><div class="day-cal">${calHtml}${burnHtml}</div><span id="tarrow-${date}" style="color:#c8b89a;font-size:16px;transition:transform .2s;transform:${collapsed?'rotate(-90deg)':'rotate(0deg)'}">▾</span></div></div><div id="tbody-${date}" style="display:${collapsed?'none':'block'}"><div class="timeline-entries"><div class="timeline-line"></div>${de.map(e=>renderTimelineCard(e)).join('')}</div></div></div>`;
   }).join('');
 }
-
 function renderTimelineCard(e){
   const isMeal=e.type==='meal';const dotColor=isMeal?'#c8a96e':'#7aaa8a';
   const photos=e.photos||[];
@@ -417,7 +385,6 @@ function renderTimelineCard(e){
   const icon=isMeal?(MEAL_ICONS[e.mealType]||'🍽'):(EX_ICONS[e.exerciseType]||'⚡');
   return `<div class="tcard" onclick="openDetail('${e.id}')"><div class="tcard-time">${e.time}</div><div class="tcard-dot" style="background:${dotColor}"></div><div class="tcard-body">${imgHtml}<div class="tcard-content"><div class="tcard-row"><span class="tcard-name">${icon} ${esc(isMeal?e.mealType:e.exerciseType)}</span>${rightHtml}</div>${tagsHtml}${subHtml}${noteHtml}</div></div></div>`;
 }
-
 function renderCalendar(){
   const el=document.getElementById('viewCalendar');const g=grouped();
   const firstDay=new Date(calYear,calMonth,1).getDay();
@@ -445,12 +412,10 @@ function renderCalendar(){
     const clickFn=other?'':`onclick="handleCalCellClick('${ds}')"`;
     return `<div class="cal-cell" style="${cellStyle}" ${clickFn}>${photoEl}<div class="cal-cell-inner"><div class="cal-day-num" style="background:${numBg};color:${numColor};font-weight:${active?700:400}">${day}</div>${dots}</div></div>`;
   }).join('');
-  const isThisMonth=calYear===today.getFullYear()&&calMonth===today.getMonth();
   const selEntries=g[calSelected]||[];
   const selHtml=selEntries.length?selEntries.map(e=>renderCalEntry(e)).join(''):`<div style="text-align:center;padding:22px 0;color:#ccc;font-size:14px">這天還沒有記錄</div>`;
-  el.innerHTML=`<div class="cal-nav"><button class="cal-nav-btn" onclick="calPrev()">‹</button><div style="display:flex;flex-direction:column;align-items:center;gap:3px"><div class="cal-month">${calYear}年${calMonth+1}月</div></div><button class="cal-nav-btn" onclick="calNext()">›</button></div><div class="cal-weekdays">${WEEKDAYS.map((d,i)=>`<div class="cal-wd" style="color:${i===0?'#c0756a':i===6?'#7090c0':'#8b6f47'}">${d}</div>`).join('')}</div><div class="cal-grid">${gridCells}</div><div class="cal-selected-header"><div class="cal-selected-date">${fmtDate(calSelected)}</div></div><div class="cal-entries">${selHtml}</div>`;
+  el.innerHTML=`<div class="cal-nav"><button class="cal-nav-btn" onclick="calPrev()">‹</button><div class="cal-month">${calYear}年${calMonth+1}月</div><button class="cal-nav-btn" onclick="calNext()">›</button></div><div class="cal-weekdays">${WEEKDAYS.map((d,i)=>`<div class="cal-wd" style="color:${i===0?'#c0756a':i===6?'#7090c0':'#8b6f47'}">${d}</div>`).join('')}</div><div class="cal-grid">${gridCells}</div><div class="cal-selected-header"><div class="cal-selected-date">${fmtDate(calSelected)}</div></div><div class="cal-entries">${selHtml}</div>`;
 }
-
 function renderCalEntry(e){
   const isMeal=e.type==='meal';const icon=isMeal?(MEAL_ICONS[e.mealType]||'🍽'):(EX_ICONS[e.exerciseType]||'⚡');
   const photos=e.photos||[];const thumb=photos.length?`<img class="cal-entry-thumb" src="${photos[0]}" loading="lazy">`:'';
@@ -460,10 +425,9 @@ function renderCalEntry(e){
   const note=e.note?`<div style="font-size:12px;color:#aaa;font-style:italic;margin-top:3px">${esc(e.note)}</div>`:'';
   return `<div class="cal-entry" onclick="openDetail('${e.id}')">${thumb}<div class="cal-entry-info"><div class="cal-entry-row"><span class="cal-entry-name">${icon} ${esc(isMeal?e.mealType:e.exerciseType)}</span><span class="cal-entry-time">${e.time}</span></div>${foods}${sub}${note}</div></div>`;
 }
-
 function handleCalCellClick(ds){
   const now=Date.now();
-  if(calDblTapTimer&&now-calDblTapTimer<400){clearTimeout(calDblTapTimer);calDblTapTimer=null;openAdd('meal',ds);}
+  if(calDblTapTimer&&now-calDblTapTimer<400){calDblTapTimer=null;openAdd('meal',ds);}
   else{calDblTapTimer=now;setTimeout(()=>{if(calDblTapTimer===now){calDblTapTimer=null;selectCalDay(ds);}},420);}
 }
 function switchTab(tab){
@@ -484,18 +448,24 @@ function goToday(){
 }
 function scrollToDate(date){
   if(collapsedDays.has(date)){collapsedDays.delete(date);renderTimeline();}
-  setTimeout(()=>{const el=document.getElementById('tday-'+date);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});else scrollToToday();},60);
+  setTimeout(()=>{
+    const el=document.getElementById('tday-'+date);
+    if(el){el.scrollIntoView({behavior:'smooth',block:'start'});return;}
+    const g=grouped();const dates=sortedDates(g);
+    if(!dates.length){window.scrollTo({top:0,behavior:'smooth'});return;}
+    let closest=dates[0];
+    for(const d of dates){if(d<=date)closest=d;}
+    const el2=document.getElementById('tday-'+closest);
+    if(el2)el2.scrollIntoView({behavior:'smooth',block:'start'});
+    else window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+  },60);
 }
 function scrollToToday(){
   const el=document.getElementById('tday-'+todayDate());
   if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
   else window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
 }
-function toggleFabMenu(){
-  fabOpen=!fabOpen;
-  document.getElementById('fabMenu').style.display=fabOpen?'flex':'none';
-  document.getElementById('fab').style.transform=fabOpen?'rotate(45deg)':'none';
-}
+function toggleFabMenu(){fabOpen=!fabOpen;document.getElementById('fabMenu').style.display=fabOpen?'flex':'none';document.getElementById('fab').style.transform=fabOpen?'rotate(45deg)':'none';}
 function closeFabMenu(){fabOpen=false;document.getElementById('fabMenu').style.display='none';document.getElementById('fab').style.transform='none';}
 document.addEventListener('click',e=>{
   if(fabOpen&&!document.getElementById('fab').contains(e.target)&&!document.getElementById('fabMenu').contains(e.target))closeFabMenu();
@@ -553,7 +523,7 @@ function openDetail(id){
   else if(photos.length===2)photoHtml=`<div class="detail-photo-grid" style="grid-template-columns:1fr 1fr">${photos.map(p=>`<img src="${p}" style="height:160px">`).join('')}</div>`;
   else if(photos.length>=3)photoHtml=`<div class="detail-photo-grid" style="grid-template-columns:1fr 1fr 1fr">${photos.slice(0,3).map(p=>`<img src="${p}" style="height:120px">`).join('')}</div>`;
   const totalMealCal=(e.foods||[]).reduce((a,f)=>a+(f.cal||0)*(f.qty||1),0);
-  const foodsHtml=isMeal&&e.foods&&e.foods.length?`<div class="detail-food-label">食物</div><div class="tags">${e.foods.map(f=>`<span class="tag">${esc(f.name)}${f.cal>0?` <span style="color:#c8a96e;font-weight:700">${f.cal}</span>`:''}</span>`).join('')}</div>${totalMealCal>0?`<div style="margin-top:8px;background:#f5f0e8;border-radius:9px;padding:8px 13px;display:flex;justify-content:space-between"><span style="font-size:12px;color:#8b6f47">估算合計</span><span style="font-size:16px;font-weight:800;color:#2c2416">${Math.round(totalMealCal)} kcal</span></div>`:''}`:'' ;
+  const foodsHtml=isMeal&&e.foods&&e.foods.length?`<div class="detail-food-label">食物</div><div class="tags" style="gap:6px">${e.foods.map(f=>`<span class="tag">${esc(f.name)}${f.cal>0?` <span style="color:#c8a96e;font-weight:700">${f.cal} kcal</span>`:''}</span>`).join('')}</div>${totalMealCal>0?`<div style="margin-top:10px;background:#f5f0e8;border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between"><span style="font-size:13px;color:#8b6f47;font-weight:600">合計</span><span style="font-size:17px;font-weight:800;color:#2c2416">${Math.round(totalMealCal)} kcal</span></div>`:''}`:'' ;
   const statsHtml=!isMeal?`<div class="stat-grid">${e.duration?`<div class="stat-box" style="background:#f5f0e8"><div class="stat-val">${e.duration}</div><div class="stat-unit">分鐘</div></div>`:''}${e.distance?`<div class="stat-box" style="background:#f5f0e8"><div class="stat-val">${e.distance}</div><div class="stat-unit">公里</div></div>`:''}${e.calories?`<div class="stat-box" style="background:#f0f8f2"><div class="stat-val" style="color:#5a9a6a">${e.calories}</div><div class="stat-unit">消耗kcal</div></div>`:''}</div>`:'';
   const noteHtml=e.note?`<div class="detail-note">${esc(e.note)}</div>`:'';
   document.getElementById('detailSheetInner').innerHTML=`${photoHtml}<div class="detail-body"><div class="detail-title">${icon} ${esc(isMeal?e.mealType:e.exerciseType)}</div><div class="detail-date">${fmtDate(e.date)} · ${e.time}</div>${foodsHtml}${statsHtml}${noteHtml}<div class="detail-btns"><button class="btn-edit" onclick="editEntry('${e.id}')">編輯</button><button class="btn-delete" onclick="deleteEntry('${e.id}')">刪除</button></div></div>`;
@@ -565,14 +535,8 @@ function editEntry(id){
   const e=entries.find(x=>x.id==id);if(!e)return;closeDetail();editId=id;currentType=e.type;
   document.getElementById('fDate').value=e.date;document.getElementById('fTime').value=e.time;
   pendingPhotos=[...(e.photos||[])];renderPhotoGrid();
-  if(e.type==='meal'){
-    selectedMealType=e.mealType||'早餐';
-    document.getElementById('fFoodText').value=(e.foods||[]).map(f=>f.name).join(' ');
-    onFoodTextChange();
-    document.getElementById('fNote').value=e.note||'';
-  } else {
-    selectedExType=e.exerciseType||'跑步';document.getElementById('fDuration').value=e.duration||'';document.getElementById('fDistance').value=e.distance||'';document.getElementById('fCalories').value=e.calories||'';document.getElementById('fExNote').value=e.note||'';
-  }
+  if(e.type==='meal'){selectedMealType=e.mealType||'早餐';document.getElementById('fFoodText').value=(e.foods||[]).map(f=>f.name).join(' ');onFoodTextChange();document.getElementById('fNote').value=e.note||'';}
+  else{selectedExType=e.exerciseType||'跑步';document.getElementById('fDuration').value=e.duration||'';document.getElementById('fDistance').value=e.distance||'';document.getElementById('fCalories').value=e.calories||'';document.getElementById('fExNote').value=e.note||'';}
   renderChips();setType(currentType);document.getElementById('addSheet').style.display='flex';document.getElementById('addSheet').querySelector('.sheet-save').textContent='更新';
 }
 function deleteEntry(id){if(!confirm('確定刪除這筆記錄？'))return;entries=entries.filter(e=>e.id!=id);saveEntries();closeDetail();rerender();}
@@ -581,7 +545,7 @@ function importData(event){const file=event.target.files[0];if(!file)return;cons
 function openClearSheet(){document.getElementById('clearDate').value='';document.getElementById('clearInfo').textContent='選擇日期後顯示將刪除的筆數';document.getElementById('clearSheet').style.display='flex';closeDropdown();}
 function closeClearSheet(){document.getElementById('clearSheet').style.display='none';}
 function closeClearIfBg(e){if(e.target===document.getElementById('clearSheet'))closeClearSheet();}
-function updateClearInfo(){const d=document.getElementById('clearDate').value;if(!d)return;const count=entries.filter(en=>en.date<d).length;document.getElementById('clearInfo').textContent=`將刪除 ${count} 筆記錄（${d} 之前）`;}
+document.addEventListener('change',e=>{if(e.target.id==='clearDate'){const d=e.target.value;if(!d)return;const count=entries.filter(en=>en.date<d).length;document.getElementById('clearInfo').textContent=`將刪除 ${count} 筆記錄（${d} 之前）`;}});
 function confirmClear(){const d=document.getElementById('clearDate').value;if(!d){showToast('請選擇日期');return;}const count=entries.filter(en=>en.date<d).length;if(!count){showToast('沒有符合的記錄');return;}if(!confirm(`確定刪除 ${count} 筆 ${d} 之前的記錄？`))return;entries=entries.filter(en=>en.date>=d);saveEntries();rerender();closeClearSheet();showToast(`已刪除 ${count} 筆記錄`);}
 function toggleDropdown(){const m=document.getElementById('dropdownMenu');if(m.style.display==='none'){m.style.display='block';calcStorage();}else m.style.display='none';}
 function closeDropdown(){document.getElementById('dropdownMenu').style.display='none';}
