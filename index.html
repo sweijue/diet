@@ -149,6 +149,14 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;gap
 .lb-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.18);border:none;color:#fff;width:42px;height:42px;border-radius:50%;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 #lightbox-prev{left:12px}
 #lightbox-next{right:12px}
+#exActionSheet{position:fixed;inset:0;z-index:400;display:none}
+#exActionSheet .as-overlay{position:absolute;inset:0;background:rgba(0,0,0,.45)}
+#exActionSheet .as-menu{position:absolute;bottom:0;left:0;right:0;max-width:480px;margin:0 auto;background:#fdf9f4;border-radius:20px 20px 0 0;padding:12px 16px 36px;animation:slideUp .2s ease}
+.as-title{text-align:center;font-size:13px;color:#bbb;padding-bottom:12px;border-bottom:1px solid #ece6de;margin-bottom:6px;font-weight:600}
+.as-btn{display:block;width:100%;padding:15px;background:none;border:none;font-size:16px;font-weight:600;text-align:center;cursor:pointer;border-radius:10px;color:#2c2416}
+.as-btn:active{background:#f5f0e8}
+.as-btn.red{color:#d44}
+.as-cancel{margin-top:8px;background:#f5f0e8;border-radius:14px;color:#8b6f47}
 .empty{text-align:center;padding:80px 24px;color:#ccc}
 .empty-icon{font-size:48px;margin-bottom:12px}
 #toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#2c2416;color:#c8a96e;padding:11px 22px;border-radius:99px;font-size:14px;font-weight:700;z-index:999;box-shadow:0 4px 16px rgba(0,0,0,.3);display:none;white-space:nowrap}
@@ -260,7 +268,7 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;gap
       </div>
       <div id="exerciseFields" style="display:none">
         <div class="form-label">運動類型</div>
-        <div class="chip-hint">💡 長按自訂類別可刪除・拖曳排序</div>
+        <div class="chip-hint">💡 長按編輯或刪除・拖曳排序</div>
         <div class="chip-group" id="exTypeChips"></div>
         <button onclick="openAddExType()" style="margin-bottom:13px;background:#f5f0e8;color:#8b6f47;border:1.5px dashed #c8b89a;border-radius:20px;padding:6px 13px;font-size:13px;font-weight:600">＋ 自訂類別</button>
         <div class="num-grid">
@@ -343,6 +351,16 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;gap
       <div class="clear-info" id="clearInfo">選擇日期後顯示將刪除的筆數</div>
       <button class="btn-clear-confirm" onclick="confirmClear()">確認清除</button>
     </div>
+  </div>
+</div>
+
+<div id="exActionSheet">
+  <div class="as-overlay" onclick="closeExAction()"></div>
+  <div class="as-menu">
+    <div class="as-title" id="exActionTitle"></div>
+    <button class="as-btn" onclick="exActionEdit()">✏️ 編輯名稱</button>
+    <button class="as-btn red" onclick="exActionDelete()">🗑 刪除</button>
+    <button class="as-btn as-cancel" onclick="closeExAction()">取消</button>
   </div>
 </div>
 
@@ -898,7 +916,7 @@ function renderChips(){
   const et=allExTypes(),ei=allExIcons();
   const chipsEl=document.getElementById('exTypeChips');
   chipsEl.innerHTML=et.map((t,idx)=>{
-    const lp=`oncontextmenu="delCustomEx(event,'${esc(t)}')" ontouchstart="exChipTouchStart(event,'${esc(t)}')" ontouchend="exChipTouchEnd(event,'${esc(t)}')" ontouchmove="exChipTouchMove(event,'${esc(t)}')"`;
+    const lp=`oncontextmenu="openExAction('${esc(t)}');return false" ontouchstart="exChipTouchStart(event,'${esc(t)}')" ontouchend="exChipTouchEnd(event,'${esc(t)}')" ontouchmove="exChipTouchMove(event,'${esc(t)}')"` ;
     const label=t;
     const drag=`draggable="true" ondragstart="exDragStart(event,'${esc(t)}')" ondragover="exDragOver(event,'${esc(t)}')" ondrop="exDrop(event,'${esc(t)}')"` ;
     return `<button class="chip${t===selExType?' active':''} chip-custom" onclick="selEx('${esc(t)}')" ${lp} ${drag} data-name="${esc(t)}">${label}</button>`;
@@ -906,7 +924,36 @@ function renderChips(){
 }
 function selMeal(m){selMealType=m;renderChips();}
 function selEx(t){selExType=t;renderChips();autoCalcExCal();}
-function lpStart(ev,name){_lpTimer=setTimeout(()=>{_lpTimer=null;delCustomEx(null,name);},600);}
+let _exActionTarget=null;
+function openExAction(name){
+  _exActionTarget=name;
+  document.getElementById('exActionTitle').textContent=name;
+  document.getElementById('exActionSheet').style.display='block';
+}
+function closeExAction(){
+  document.getElementById('exActionSheet').style.display='none';
+  _exActionTarget=null;
+}
+function exActionEdit(){
+  const name=_exActionTarget; closeExAction();
+  const newLabel=prompt('修改運動名稱',name);
+  if(!newLabel?.trim()||newLabel.trim()===name) return;
+  const label=newLabel.trim();
+  const custom=loadCustomEx();
+  if(custom.find(x=>x.name===label)){showToast('此名稱已存在');return;}
+  const idx=custom.findIndex(x=>x.name===name);
+  if(idx<0) return;
+  custom[idx]={...custom[idx],name:label};
+  saveCustomEx(custom);
+  if(selExType===name) selExType=label;
+  renderChips(); showToast('已更新');
+}
+function exActionDelete(){
+  const name=_exActionTarget; closeExAction();
+  if(!confirm('刪除「'+name+'」？')) return;
+  delCustomEx(null,name);
+}
+function lpStart(ev,name){_lpTimer=setTimeout(()=>{_lpTimer=null;openExAction(name);},500);}
 function lpEnd(){if(_lpTimer){clearTimeout(_lpTimer);_lpTimer=null;}}
 
 // Drag-to-reorder custom exercise types
@@ -931,7 +978,7 @@ function exDrop(ev,name){
 let _touchDragName=null,_touchDragTimer=null;
 function exChipTouchStart(ev,name){
   _touchDragName=name;
-  _lpTimer=setTimeout(()=>{_lpTimer=null;delCustomEx(null,name);},600);
+  _lpTimer=setTimeout(()=>{_lpTimer=null;openExAction(name);},500);
 }
 function exChipTouchEnd(ev,name){lpEnd();}
 function exChipTouchMove(ev,name){
@@ -1111,17 +1158,36 @@ function lbPrev(ev){ev.stopPropagation();lbIdx=(lbIdx-1+lbPhotos.length)%lbPhoto
 function lbNext(ev){ev.stopPropagation();lbIdx=(lbIdx+1)%lbPhotos.length;showLb();}
 
 function exportData(){
-  const json=JSON.stringify(entries,null,2);const blob=new Blob([json],{type:'application/json'});
+  const periods=JSON.parse(localStorage.getItem('periods')||'[]');
+  const backup={version:2,entries,periods};
+  const json=JSON.stringify(backup,null,2);const blob=new Blob([json],{type:'application/json'});
   const url=URL.createObjectURL(blob);const a=document.createElement('a');const d=new Date();
   a.href=url;a.download=`diet_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}.json`;
   a.click();URL.revokeObjectURL(url);closeDropdown();showToast('已匯出備份');
 }
 function importData(event){
   const file=event.target.files[0];if(!file)return;const r=new FileReader();
-  r.onload=ev=>{try{const data=JSON.parse(ev.target.result);if(!Array.isArray(data))throw new Error();
-    if(confirm(`匯入 ${data.length} 筆記錄？\n將與現有資料合併`)){
-      const ids=new Set(entries.map(e=>e.id));entries=[...entries,...data.filter(e=>!ids.has(e.id))];
-      entries.sort((a,b)=>a.date.localeCompare(b.date));saveEntries();rerender();showToast(`✅ 成功匯入 ${data.length} 筆`);
+  r.onload=ev=>{try{
+    const raw=JSON.parse(ev.target.result);
+    // support both old format (array) and new format ({version,entries,periods})
+    let data,pdata;
+    if(Array.isArray(raw)){data=raw;pdata=[];}
+    else if(raw.entries){data=raw.entries||[];pdata=raw.periods||[];}
+    else throw new Error();
+    const pInfo=pdata.length?`、${pdata.length} 筆經期`:'';
+    if(confirm(`匯入 ${data.length} 筆記錄${pInfo}？\n將與現有資料合併`)){
+      // merge entries
+      const ids=new Set(entries.map(e=>e.id));
+      entries=[...entries,...data.filter(e=>!ids.has(e.id))];
+      entries.sort((a,b)=>a.date.localeCompare(b.date));saveEntries();
+      // merge periods
+      if(pdata.length){
+        const existing=JSON.parse(localStorage.getItem('periods')||'[]');
+        const pids=new Set(existing.map(p=>p.id));
+        const merged=[...existing,...pdata.filter(p=>!pids.has(p.id))];
+        localStorage.setItem('periods',JSON.stringify(merged));
+      }
+      rerender();showToast(`✅ 成功匯入 ${data.length} 筆記錄${pInfo}`);
     }}catch{showToast('❌ 檔案格式錯誤');}};r.readAsText(file);event.target.value='';
 }
 function openClearSheet(){
