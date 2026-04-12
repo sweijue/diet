@@ -21,7 +21,6 @@ button{cursor:pointer}
 ::-webkit-scrollbar-thumb{background:#c8b89a;border-radius:99px}
 @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes popIn{from{transform:scale(.94);opacity:0}to{transform:scale(1);opacity:1}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 #app{max-width:480px;margin:0 auto;min-height:100vh;background:#f7f4ef;padding-bottom:90px}
 #header{background:#2c2416;color:#f7f4ef;position:sticky;top:0;z-index:100;padding:16px 16px 0}
@@ -58,13 +57,13 @@ button{cursor:pointer}
 .day-cal{font-size:12px;text-align:right;line-height:1.7}
 .timeline-entries{padding:8px 16px;position:relative}
 .timeline-line{position:absolute;left:36px;top:0;bottom:0;width:1px;background:#e0d8cc}
+/* ── 卡片滑動：左刪除、右編輯 ── */
 .tcard-wrap{position:relative;overflow:hidden;margin-bottom:11px}
-.tcard-actions{position:absolute;right:0;top:0;bottom:0;display:flex;align-items:stretch;opacity:0;pointer-events:none}
-.tcard-action-edit{background:#c8a96e;color:#2c2416;border:none;padding:0 18px;font-size:12px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
-.tcard-action-del{background:#e06060;color:#fff;border:none;padding:0 18px;font-size:12px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-radius:0 12px 12px 0}
-.tcard-inner{transition:transform .22s ease;display:flex;align-items:flex-start}
-.tcard-inner.swiped{transform:translateX(-132px)}
-.tcard-wrap.open .tcard-actions{opacity:1;pointer-events:auto}
+.tcard-action-left{position:absolute;left:0;top:0;bottom:0;width:90px;display:flex;align-items:stretch;opacity:0;pointer-events:none}
+.tcard-action-right{position:absolute;right:0;top:0;bottom:0;width:90px;display:flex;align-items:stretch;opacity:0;pointer-events:none}
+.btn-swipe-edit{flex:1;background:#c8a96e;color:#2c2416;border:none;font-size:12px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-radius:12px 0 0 12px}
+.btn-swipe-del{flex:1;background:#e06060;color:#fff;border:none;font-size:12px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-radius:0 12px 12px 0}
+.tcard-inner{transition:transform .22s ease;display:flex;align-items:flex-start;position:relative;z-index:1}
 .tcard-time{width:50px;flex-shrink:0;text-align:right;padding-right:10px;padding-top:4px;font-size:14px;font-weight:800;color:#2c2416}
 .tcard-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:5px;z-index:1;border:2px solid #f7f4ef}
 .tcard-body{flex:1;margin-left:10px;background:#fff;border-radius:12px;border:1px solid #ece6de;overflow:hidden;box-shadow:0 2px 8px rgba(44,36,22,.06)}
@@ -78,6 +77,7 @@ button{cursor:pointer}
 .tag{display:inline-block;padding:3px 9px;border-radius:99px;background:#f5f0e8;color:#6b5230;font-size:12px;font-weight:600}
 .tcard-sub{font-size:12px;color:#999;margin-top:4px}
 .tcard-note{font-size:12px;color:#aaa;font-style:italic;margin-top:4px;border-top:1px solid #f5f0e8;padding-top:4px}
+/* 日曆 */
 .cal-nav{display:flex;align-items:center;justify-content:space-between;padding:13px 16px 10px;border-bottom:1px solid #e8e2d8}
 .cal-nav-btn{background:none;border:none;font-size:26px;color:#8b6f47;padding:4px 12px}
 .cal-month{font-weight:700;font-size:19px;color:#2c2416}
@@ -92,14 +92,9 @@ button{cursor:pointer}
 .cal-dot{width:4px;height:4px;border-radius:50%;display:inline-block}
 .cal-selected-header{padding:10px 16px 7px;display:flex;justify-content:space-between;align-items:center;background:#faf8f5;border-top:2px solid #2c2416}
 .cal-selected-date{font-weight:700;font-size:16px;color:#2c2416}
-.cal-entries{padding:6px 16px 20px}
-.cal-entry{display:flex;gap:10px;padding:10px 12px;background:#fff;border-radius:11px;margin-bottom:6px;border:1px solid #ece6de;cursor:pointer;box-shadow:0 1px 4px rgba(44,36,22,.05);transition:box-shadow .15s}
-.cal-entry:active{box-shadow:0 3px 12px rgba(44,36,22,.12)}
-.cal-entry-thumb{width:52px;height:52px;border-radius:7px;object-fit:cover;flex-shrink:0}
-.cal-entry-info{flex:1;min-width:0}
-.cal-entry-row{display:flex;justify-content:space-between;align-items:center}
-.cal-entry-name{font-weight:700;font-size:14px;color:#2c2416}
-.cal-entry-time{font-size:13px;font-weight:700;color:#2c2416}
+.cal-entries{padding:6px 16px 20px;position:relative}
+.cal-tl-line{position:absolute;left:52px;top:0;bottom:0;width:1px;background:#e0d8cc;pointer-events:none}
+/* 表單 */
 .sheet-overlay{position:fixed;inset:0;background:rgba(44,36,22,.65);z-index:200;display:flex;align-items:flex-end;backdrop-filter:blur(4px);animation:fadeIn .2s ease}
 .sheet{width:100%;max-width:480px;margin:0 auto;background:#fdf9f4;border-radius:20px 20px 0 0;max-height:92vh;overflow-y:auto;animation:slideUp .28s ease}
 .sheet-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #e8e2d8;position:sticky;top:0;background:#fdf9f4;z-index:10;border-radius:20px 20px 0 0}
@@ -118,30 +113,16 @@ button{cursor:pointer}
 .datetime-label{padding:0 13px;font-size:14px;color:#8b6f47;font-weight:600;width:52px;flex-shrink:0}
 .datetime-input{flex:1;padding:12px 13px 12px 0;background:transparent;border:none;color:#2c2416;font-size:16px;font-weight:600;min-width:0}
 .chip-group{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
-.chip{padding:7px 13px;border-radius:20px;border:none;font-weight:600;font-size:14px;background:#f5f0e8;color:#8b6f47;transition:all .15s}
+.chip{padding:7px 13px;border-radius:20px;border:none;font-weight:600;font-size:14px;background:#f5f0e8;color:#8b6f47;transition:all .15s;user-select:none;-webkit-user-select:none}
 .chip.active{background:#2c2416;color:#f7f4ef}
+.chip-custom{border:1.5px solid #c8a96e}
+.chip-hint{font-size:11px;color:#bbb;margin-bottom:6px}
 .photo-upload{border:2px dashed #d8cfc4;border-radius:12px;padding:20px;text-align:center;cursor:pointer;color:#c8b89a}
 .photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
 .photo-thumb{position:relative;border-radius:8px;overflow:hidden;aspect-ratio:1}
 .photo-thumb img{width:100%;height:100%;object-fit:cover;display:block}
 .photo-thumb-remove{position:absolute;top:3px;right:3px;background:rgba(0,0,0,.55);border:none;color:#fff;width:22px;height:22px;border-radius:50%;font-size:13px;display:flex;align-items:center;justify-content:center}
 .num-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-bottom:13px}
-.detail-overlay{position:fixed;inset:0;background:rgba(44,36,22,.7);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);animation:fadeIn .2s ease}
-.detail-modal{width:100%;max-width:440px;background:#fdf9f4;border-radius:18px;max-height:88vh;overflow-y:auto;animation:popIn .25s ease}
-.detail-photo-grid{display:grid;gap:2px;border-radius:18px 18px 0 0;overflow:hidden}
-.detail-photo-grid img{width:100%;object-fit:cover;display:block;cursor:zoom-in}
-.detail-body{padding:18px 18px 32px}
-.detail-title{font-size:21px;font-weight:700;color:#2c2416}
-.detail-date{font-size:13px;color:#bbb;margin-top:3px}
-.detail-food-label{font-size:12px;color:#bbb;letter-spacing:1px;margin-bottom:7px;margin-top:12px}
-.stat-grid{display:flex;gap:9px;margin:12px 0}
-.stat-box{flex:1;border-radius:10px;padding:11px;text-align:center}
-.stat-val{font-weight:700;font-size:19px}
-.stat-unit{font-size:11px;color:#bbb;margin-top:2px}
-.detail-note{background:#faf8f5;border-radius:10px;padding:11px 13px;font-size:13px;color:#8b6f47;font-style:italic;margin:12px 0}
-.detail-btns{display:flex;gap:9px;margin-top:14px}
-.btn-edit{flex:1;padding:13px;border-radius:10px;background:#2c2416;color:#f7f4ef;border:none;font-weight:700;font-size:15px}
-.btn-delete{padding:13px 16px;border-radius:10px;background:#fff0f0;color:#d44;border:1.5px solid #ffd8d8;font-weight:600;font-size:15px}
 #lightbox{position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:500;display:none;align-items:center;justify-content:center;animation:fadeIn .15s ease}
 #lightbox-img{max-width:100%;max-height:92vh;object-fit:contain;border-radius:4px;display:block}
 #lightbox-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,.18);border:none;color:#fff;width:38px;height:38px;border-radius:50%;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
@@ -246,6 +227,7 @@ button{cursor:pointer}
       </div>
       <div id="exerciseFields" style="display:none">
         <div class="form-label">運動類型</div>
+        <div class="chip-hint">💡 長按自訂類別可刪除</div>
         <div class="chip-group" id="exTypeChips"></div>
         <button onclick="openAddExType()" style="margin-bottom:13px;background:#f5f0e8;color:#8b6f47;border:1.5px dashed #c8b89a;border-radius:20px;padding:6px 13px;font-size:13px;font-weight:600">＋ 自訂類別</button>
         <div class="num-grid">
@@ -264,10 +246,6 @@ button{cursor:pointer}
       </div>
     </div>
   </div>
-</div>
-
-<div id="detailSheet" class="detail-overlay" style="display:none" onclick="closeDetailIfBg(event)">
-  <div class="detail-modal" id="detailSheetInner"></div>
 </div>
 
 <div id="clearSheet" class="sheet-overlay" style="display:none" onclick="closeClearIfBg(event)">
@@ -305,6 +283,7 @@ const MEAL_TYPES=['早餐','午餐','晚餐','點心','宵夜'];
 const EX_BASE=['跑步','走路','騎車','游泳','重訓','瑜伽','HIIT','其他'];
 const EX_BASE_ICONS={'跑步':'🏃','走路':'🚶','騎車':'🚴','游泳':'🏊','重訓':'💪','瑜伽':'🧘','HIIT':'🔥','其他':'⚡'};
 const WEEKDAYS=['日','一','二','三','四','五','六'];
+const SWIPE_W=90;
 
 function loadCustomEx(){try{return JSON.parse(localStorage.getItem('ex_custom')||'[]');}catch{return[];}}
 function saveCustomEx(a){localStorage.setItem('ex_custom',JSON.stringify(a));}
@@ -314,10 +293,12 @@ function allExIcons(){const m={...EX_BASE_ICONS};loadCustomEx().forEach(x=>m[x.n
 let entries=[],currentTab='timeline',currentType='meal',editId=null;
 let calYear=new Date().getFullYear(),calMonth=new Date().getMonth(),calSelected=todayDate();
 let mealPhotos=[],exPhotos=[],selMealType='早餐',selExType='跑步';
-let fabOpen=false,calDblTimer=null;
+let fabOpen=false;
 const collapsedDays=new Set();
+// swipe state: {id, ctx, dir}
 let swipeTouches={},currentSwiped=null;
 let lbPhotos=[],lbIdx=0,lbEntryId=null;
+let _lpTimer=null;
 
 const FOOD_DB=[
   {n:'白飯',c:180},{n:'糙米飯',c:165},{n:'麵條',c:220},{n:'烏龍麵',c:200},{n:'拉麵',c:450},
@@ -380,7 +361,7 @@ function todayDate(){const d=new Date();return `${d.getFullYear()}-${pad(d.getMo
 function nowTime(){const d=new Date();return pad(d.getHours())+':'+pad(d.getMinutes());}
 function pad(n){return String(n).padStart(2,'0');}
 function fmtDate(s){const d=new Date(s+'T00:00:00');return `${d.getMonth()+1}月${d.getDate()}日 週${WEEKDAYS[d.getDay()]}`;}
-function uid(){return Date.now()+Math.random();}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2);}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',2800);}
 function loadEntries(){try{entries=JSON.parse(localStorage.getItem(STORE_KEY))||[];}catch{entries=[];}}
@@ -439,14 +420,15 @@ function renderTimeline(){
 <div id="tbody-${date}" style="display:${col?'none':'block'}">
   <div class="timeline-entries">
     <div class="timeline-line"></div>
-    ${de.map(e=>renderCard(e)).join('')}
+    ${de.map(e=>renderCard(e,'tl')).join('')}
   </div>
 </div>
 </div>`;
   }).join('');
 }
 
-function renderCard(e){
+/* ── 通用卡片（時間線 & 日曆共用） ── */
+function renderCard(e,ctx){
   const isMeal=e.type==='meal',dot=isMeal?'#c8a96e':'#7aaa8a';
   const photos=e.photos||[];
   const imgHtml=photos.length?`<div class="tcard-imgs">${photos.slice(0,3).map((p,i)=>`<img class="tcard-img" src="${p}" loading="lazy" style="flex:${photos.length===1?'unset;width:100%':'1'}" onclick="openLightboxEntry(event,'${e.id}',${i})">`).join('')}</div>`:'';
@@ -456,8 +438,15 @@ function renderCard(e){
   const subHtml=!isMeal&&(e.duration||e.distance)?`<div class="tcard-sub">${e.duration?e.duration+'分鐘':''}${e.distance?' · '+e.distance+'km':''}</div>`:'';
   const noteHtml=e.note?`<div class="tcard-note">${esc(e.note)}</div>`:'';
   const icon=isMeal?(MEAL_ICONS[e.mealType]||'🍽'):(allExIcons()[e.exerciseType]||'⚡');
-  return `<div class="tcard-wrap" id="twrap-${e.id}">
-  <div class="tcard-inner" id="tinn-${e.id}" ontouchstart="tsStart(event,'${e.id}')" ontouchmove="tsMove(event,'${e.id}')" ontouchend="tsEnd(event,'${e.id}')">
+  const pid=ctx+'-'+e.id;
+  return `<div class="tcard-wrap" id="wrap-${pid}">
+  <div class="tcard-action-left" id="aL-${pid}">
+    <button class="btn-swipe-edit" onclick="doEdit('${e.id}','${ctx}')">✏️<span>編輯</span></button>
+  </div>
+  <div class="tcard-inner" id="inn-${pid}"
+    ontouchstart="tsStart(event,'${e.id}','${ctx}')"
+    ontouchmove="tsMove(event,'${e.id}','${ctx}')"
+    ontouchend="tsEnd(event,'${e.id}','${ctx}')">
     <div class="tcard-time">${e.time}</div>
     <div class="tcard-dot" style="background:${dot}"></div>
     <div class="tcard-body">
@@ -468,51 +457,79 @@ function renderCard(e){
       </div>
     </div>
   </div>
-  <div class="tcard-actions">
-    <button class="tcard-action-edit" onclick="doEdit('${e.id}')">✏️<span>編輯</span></button>
-    <button class="tcard-action-del" onclick="doDel('${e.id}')">🗑<span>刪除</span></button>
+  <div class="tcard-action-right" id="aR-${pid}">
+    <button class="btn-swipe-del" onclick="doDel('${e.id}','${ctx}')">🗑<span>刪除</span></button>
   </div>
 </div>`;
 }
 
-function tsStart(ev,id){const t=ev.touches[0];swipeTouches[id]={x:t.clientX,y:t.clientY,moved:false};}
-function tsMove(ev,id){
-  const d=swipeTouches[id];if(!d)return;
+/* ── 滑動手勢 ── */
+function tsStart(ev,id,ctx){
+  const t=ev.touches[0];
+  swipeTouches[id+ctx]={x:t.clientX,y:t.clientY,moved:false,id,ctx};
+}
+function tsMove(ev,id,ctx){
+  const key=id+ctx,d=swipeTouches[key];if(!d)return;
   const dx=ev.touches[0].clientX-d.x,dy=Math.abs(ev.touches[0].clientY-d.y);
-  if(dy>20&&Math.abs(dx)<dy)return;
-  if(Math.abs(dx)>6){d.moved=true;ev.preventDefault();}
-  const el=document.getElementById('tinn-'+id),wrap=document.getElementById('twrap-'+id);if(!el)return;
-  const base=currentSwiped===id?-132:0;
-  const off=Math.max(-132,Math.min(0,base+dx));
+  if(dy>18&&Math.abs(dx)<dy)return;
+  if(Math.abs(dx)>5){d.moved=true;ev.preventDefault();}
+  const pid=ctx+'-'+id;
+  const el=document.getElementById('inn-'+pid);if(!el)return;
+  let base=0;
+  if(currentSwiped&&currentSwiped.id===id&&currentSwiped.ctx===ctx){
+    base=currentSwiped.dir==='left'?-SWIPE_W:SWIPE_W;
+  }
+  const off=Math.max(-SWIPE_W,Math.min(SWIPE_W,base+dx));
   el.style.transition='none';el.style.transform=`translateX(${off}px)`;
-  const acts=wrap.querySelector('.tcard-actions');
-  acts.style.opacity=String(Math.min(1,-off/132));acts.style.pointerEvents='none';
+  syncActionOpacity(pid,off);
 }
-function tsEnd(ev,id){
-  const d=swipeTouches[id];if(!d)return;
+function tsEnd(ev,id,ctx){
+  const key=id+ctx,d=swipeTouches[key];if(!d)return;
   const dx=ev.changedTouches[0].clientX-d.x;
-  const el=document.getElementById('tinn-'+id),wrap=document.getElementById('twrap-'+id);
-  if(!el){delete swipeTouches[id];return;}
+  const pid=ctx+'-'+id;
+  const el=document.getElementById('inn-'+pid);
+  if(!el){delete swipeTouches[key];return;}
   el.style.transition='';
-  if(!d.moved){if(currentSwiped&&currentSwiped!==id)closeSwipe(currentSwiped);delete swipeTouches[id];return;}
-  const open=currentSwiped===id;
-  if(dx<-40||(!open&&dx<-15)){
-    if(currentSwiped&&currentSwiped!==id)closeSwipe(currentSwiped);
-    el.classList.add('swiped');wrap.classList.add('open');
-    const acts=wrap.querySelector('.tcard-actions');acts.style.opacity='1';acts.style.pointerEvents='auto';
-    currentSwiped=id;
-  } else closeSwipe(id);
-  delete swipeTouches[id];
+  if(!d.moved){
+    if(currentSwiped&&!(currentSwiped.id===id&&currentSwiped.ctx===ctx))closeSwipe();
+    delete swipeTouches[key];return;
+  }
+  if(currentSwiped&&!(currentSwiped.id===id&&currentSwiped.ctx===ctx))closeSwipe();
+  if(dx<-30){activateSwipe(id,ctx,'left');}
+  else if(dx>30){activateSwipe(id,ctx,'right');}
+  else{closeSwipe();}
+  delete swipeTouches[key];
 }
-function closeSwipe(id){
-  const el=document.getElementById('tinn-'+id),wrap=document.getElementById('twrap-'+id);if(!el)return;
-  el.classList.remove('swiped');el.style.transform='';
-  if(wrap){wrap.classList.remove('open');const a=wrap.querySelector('.tcard-actions');if(a){a.style.opacity='0';a.style.pointerEvents='none';}}
-  if(currentSwiped===id)currentSwiped=null;
+function syncActionOpacity(pid,off){
+  const aL=document.getElementById('aL-'+pid),aR=document.getElementById('aR-'+pid);
+  if(aL){const o=Math.min(1,off/SWIPE_W);aL.style.opacity=o>0?String(o):'0';aL.style.pointerEvents=o>.5?'auto':'none';}
+  if(aR){const o=Math.min(1,-off/SWIPE_W);aR.style.opacity=o>0?String(o):'0';aR.style.pointerEvents=o>.5?'auto':'none';}
 }
-function doEdit(id){closeSwipe(id);editEntry(id);}
-function doDel(id){if(!confirm('確定刪除？'))return;entries=entries.filter(e=>e.id!=id);saveEntries();rerender();}
+function activateSwipe(id,ctx,dir){
+  closeSwipe();
+  const pid=ctx+'-'+id;
+  const el=document.getElementById('inn-'+pid);if(!el)return;
+  const off=dir==='left'?-SWIPE_W:SWIPE_W;
+  el.style.transform=`translateX(${off}px)`;
+  syncActionOpacity(pid,off);
+  currentSwiped={id,ctx,dir};
+}
+function closeSwipe(){
+  if(!currentSwiped)return;
+  const pid=currentSwiped.ctx+'-'+currentSwiped.id;
+  const el=document.getElementById('inn-'+pid);
+  if(el){el.style.transform='';}
+  syncActionOpacity(pid,0);
+  currentSwiped=null;
+}
+function doEdit(id,ctx){closeSwipe();editEntry(id);}
+function doDel(id,ctx){
+  closeSwipe();
+  if(!confirm('確定刪除？'))return;
+  entries=entries.filter(e=>e.id!=id);saveEntries();rerender();
+}
 
+/* ── 日曆 ── */
 function renderCalendar(){
   const el=document.getElementById('viewCalendar'),g=grouped();
   const firstDay=new Date(calYear,calMonth,1).getDay();
@@ -540,28 +557,20 @@ function renderCalendar(){
     const cf=other?'':`onclick="calClick('${ds}')"`;
     return `<div class="cal-cell" style="${cs}" ${cf}>${pe}<div class="cal-cell-inner"><div class="cal-day-num" style="background:${nb};color:${nc};font-weight:${active?700:400}">${day}</div>${dots}</div></div>`;
   }).join('');
+
   const se=g[calSelected]||[];
-  const sh=se.length?se.map(e=>renderCalEntry(e)).join(''):`<div style="text-align:center;padding:22px 0;color:#ccc;font-size:14px">這天還沒有記錄</div>`;
-  el.innerHTML=`<div class="cal-nav"><button class="cal-nav-btn" onclick="calPrev()">‹</button><div class="cal-month">${calYear}年${calMonth+1}月</div><button class="cal-nav-btn" onclick="calNext()">›</button></div><div class="cal-weekdays">${WEEKDAYS.map((d,i)=>`<div class="cal-wd" style="color:${i===0?'#c0756a':i===6?'#7090c0':'#8b6f47'}">${d}</div>`).join('')}</div><div class="cal-grid">${grid}</div><div class="cal-selected-header"><div class="cal-selected-date">${fmtDate(calSelected)}</div></div><div class="cal-entries">${sh}</div>`;
+  const cardsHtml=se.length
+    ?se.map(e=>renderCard(e,'cal')).join('')
+    :`<div style="text-align:center;padding:22px 0;color:#ccc;font-size:14px">這天還沒有記錄</div>`;
+
+  el.innerHTML=`<div class="cal-nav"><button class="cal-nav-btn" onclick="calPrev()">‹</button><div class="cal-month">${calYear}年${calMonth+1}月</div><button class="cal-nav-btn" onclick="calNext()">›</button></div><div class="cal-weekdays">${WEEKDAYS.map((d,i)=>`<div class="cal-wd" style="color:${i===0?'#c0756a':i===6?'#7090c0':'#8b6f47'}">${d}</div>`).join('')}</div><div class="cal-grid">${grid}</div><div class="cal-selected-header"><div class="cal-selected-date">${fmtDate(calSelected)}</div></div><div class="cal-entries"><div class="cal-tl-line"></div>${cardsHtml}</div>`;
 }
 
-function renderCalEntry(e){
-  const isMeal=e.type==='meal';const icon=isMeal?(MEAL_ICONS[e.mealType]||'🍽'):(allExIcons()[e.exerciseType]||'⚡');
-  const photos=e.photos||[];const thumb=photos.length?`<img class="cal-entry-thumb" src="${photos[0]}" loading="lazy">`:'';
-  const mealCal=isMeal?(e.foods||[]).reduce((a,f)=>a+(f.cal||0)*(f.qty||1),0):0;
-  const foods=isMeal&&e.foods?.length?`<div class="tags" style="margin-top:5px">${e.foods.map(f=>`<span class="tag">${esc(f.name)}</span>`).join('')}</div>${mealCal>0?`<div style="font-size:12px;color:#c8a96e;font-weight:700;margin-top:3px">${Math.round(mealCal)} kcal</div>`:''}`:'';
-  const sub=!isMeal?`<div style="font-size:12px;color:#888;margin-top:3px">${e.duration?e.duration+'分鐘':''}${e.distance?' · '+e.distance+'km':''}${e.calories?' · 消耗'+e.calories+'kcal':''}</div>`:'';
-  const note=e.note?`<div style="font-size:12px;color:#aaa;font-style:italic;margin-top:3px">${esc(e.note)}</div>`:'';
-  return `<div class="cal-entry" onclick="openDetail('${e.id}')">${thumb}<div class="cal-entry-info"><div class="cal-entry-row"><span class="cal-entry-name">${icon} ${esc(isMeal?e.mealType:e.exerciseType)}</span><span class="cal-entry-time">${e.time}</span></div>${foods}${sub}${note}</div></div>`;
-}
+function calClick(ds){calSelected=ds;if(currentSwiped)closeSwipe();renderCalendar();}
 
-function calClick(ds){
-  const now=Date.now();
-  if(calDblTimer&&now-calDblTimer<350){calDblTimer=null;openAdd('meal',ds);}
-  else{calDblTimer=now;calSelected=ds;renderCalendar();setTimeout(()=>{calDblTimer=null;},380);}
-}
 function switchTab(tab){
   currentTab=tab;
+  if(currentSwiped)closeSwipe();
   document.getElementById('viewTimeline').style.display=tab==='timeline'?'block':'none';
   document.getElementById('viewCalendar').style.display=tab==='calendar'?'block':'none';
   document.getElementById('tabTimeline').className='tab-btn'+(tab==='timeline'?' active':'');
@@ -602,7 +611,11 @@ function closeFabMenu(){fabOpen=false;document.getElementById('fabMenu').style.d
 document.addEventListener('click',ev=>{
   if(fabOpen&&!document.getElementById('fab').contains(ev.target)&&!document.getElementById('fabMenu').contains(ev.target))closeFabMenu();
   if(!document.getElementById('dataDropdown').contains(ev.target))closeDropdown();
-  if(currentSwiped){const w=document.getElementById('twrap-'+currentSwiped);if(w&&!w.contains(ev.target))closeSwipe(currentSwiped);}
+  if(currentSwiped){
+    const pid=currentSwiped.ctx+'-'+currentSwiped.id;
+    const w=document.getElementById('wrap-'+pid);
+    if(w&&!w.contains(ev.target))closeSwipe();
+  }
 });
 
 function openAdd(type,date){
@@ -631,14 +644,29 @@ function setType(t){
   document.getElementById('exerciseFields').style.display=t==='exercise'?'block':'none';
 }
 function switchType(t){setType(t);}
+
+/* ── 運動 chip（長按刪除自訂） ── */
 function renderChips(){
   document.getElementById('mealTypeChips').innerHTML=MEAL_TYPES.map(m=>`<button class="chip${m===selMealType?' active':''}" onclick="selMeal('${m}')">${MEAL_ICONS[m]} ${m}</button>`).join('');
+  const customNames=new Set(loadCustomEx().map(x=>x.name));
   const et=allExTypes(),ei=allExIcons();
-  document.getElementById('exTypeChips').innerHTML=et.map(t=>`<button class="chip${t===selExType?' active':''}" onclick="selEx('${t}')">${ei[t]||'⚡'} ${t}</button>`).join('');
+  document.getElementById('exTypeChips').innerHTML=et.map(t=>{
+    const isC=customNames.has(t);
+    const lp=isC?`oncontextmenu="delCustomEx(event,'${esc(t)}')" ontouchstart="lpStart(event,'${esc(t)}')" ontouchend="lpEnd()" ontouchmove="lpEnd()"`:'' ;
+    return `<button class="chip${t===selExType?' active':''}${isC?' chip-custom':''}" onclick="selEx('${esc(t)}')" ${lp}>${ei[t]||'⚡'} ${t}</button>`;
+  }).join('');
 }
 function selMeal(m){selMealType=m;renderChips();}
 function selEx(t){selExType=t;renderChips();}
-
+function lpStart(ev,name){_lpTimer=setTimeout(()=>{_lpTimer=null;delCustomEx(null,name);},600);}
+function lpEnd(){if(_lpTimer){clearTimeout(_lpTimer);_lpTimer=null;}}
+function delCustomEx(ev,name){
+  if(ev)ev.preventDefault();
+  if(!confirm(`刪除「${name}」？`))return;
+  saveCustomEx(loadCustomEx().filter(x=>x.name!==name));
+  if(selExType===name)selExType='跑步';
+  renderChips();
+}
 function openAddExType(){
   const name=prompt('輸入自訂運動名稱（例如：攀岩）');
   if(!name?.trim())return;
@@ -693,29 +721,8 @@ function renderPhotoGrid(kind){
 }
 function removePhoto(kind,i){if(kind==='meal')mealPhotos.splice(i,1);else exPhotos.splice(i,1);renderPhotoGrid(kind);}
 
-function openDetail(id){
-  const e=entries.find(x=>x.id==id);if(!e)return;
-  lbEntryId=id;
-  const isMeal=e.type==='meal';
-  const icon=isMeal?(MEAL_ICONS[e.mealType]||'🍽'):(allExIcons()[e.exerciseType]||'⚡');
-  const photos=e.photos||[];
-  let ph='';
-  if(photos.length===1)ph=`<div class="detail-photo-grid" style="grid-template-columns:1fr"><img src="${photos[0]}" style="height:200px" onclick="openLb(0)"></div>`;
-  else if(photos.length===2)ph=`<div class="detail-photo-grid" style="grid-template-columns:1fr 1fr">${photos.map((p,i)=>`<img src="${p}" style="height:160px" onclick="openLb(${i})">`).join('')}</div>`;
-  else if(photos.length>=3)ph=`<div class="detail-photo-grid" style="grid-template-columns:1fr 1fr 1fr">${photos.slice(0,3).map((p,i)=>`<img src="${p}" style="height:120px" onclick="openLb(${i})">`).join('')}</div>`;
-  const totalCal=(e.foods||[]).reduce((a,f)=>a+(f.cal||0)*(f.qty||1),0);
-  const foodsHtml=isMeal&&e.foods?.length?`<div class="detail-food-label">食物</div><div class="tags">${e.foods.map(f=>`<span class="tag">${esc(f.name)}${f.cal>0?` <span style="color:#c8a96e;font-weight:700">${f.cal}</span>`:''}</span>`).join('')}</div>${totalCal>0?`<div style="margin-top:8px;background:#f5f0e8;border-radius:9px;padding:8px 13px;display:flex;justify-content:space-between"><span style="font-size:12px;color:#8b6f47">合計</span><span style="font-size:16px;font-weight:800;color:#2c2416">${Math.round(totalCal)} kcal</span></div>`:''}`:'' ;
-  const statsHtml=!isMeal?`<div class="stat-grid">${e.duration?`<div class="stat-box" style="background:#f5f0e8"><div class="stat-val">${e.duration}</div><div class="stat-unit">分鐘</div></div>`:''}${e.distance?`<div class="stat-box" style="background:#f5f0e8"><div class="stat-val">${e.distance}</div><div class="stat-unit">公里</div></div>`:''}${e.calories?`<div class="stat-box" style="background:#f0f8f2"><div class="stat-val" style="color:#5a9a6a">${e.calories}</div><div class="stat-unit">消耗kcal</div></div>`:''}</div>`:'';
-  const noteHtml=e.note?`<div class="detail-note">${esc(e.note)}</div>`:'';
-  document.getElementById('detailSheetInner').innerHTML=`${ph}<div class="detail-body"><div class="detail-title">${icon} ${esc(isMeal?e.mealType:e.exerciseType)}</div><div class="detail-date">${fmtDate(e.date)} · ${e.time}</div>${foodsHtml}${statsHtml}${noteHtml}<div class="detail-btns"><button class="btn-edit" onclick="editEntry('${e.id}')">編輯</button><button class="btn-delete" onclick="deleteEntry('${e.id}')">刪除</button></div></div>`;
-  document.getElementById('detailSheet').style.display='flex';
-}
-function closeDetail(){document.getElementById('detailSheet').style.display='none';}
-function closeDetailIfBg(ev){if(ev.target===document.getElementById('detailSheet'))closeDetail();}
-
 function editEntry(id){
   const e=entries.find(x=>x.id==id);if(!e)return;
-  closeDetail();if(currentSwiped)closeSwipe(currentSwiped);
   editId=id;currentType=e.type;
   document.getElementById('fDate').value=e.date;document.getElementById('fTime').value=e.time;
   mealPhotos=[];exPhotos=[];
@@ -735,15 +742,7 @@ function editEntry(id){
   document.getElementById('addSheet').style.display='flex';
   document.getElementById('addSheet').querySelector('.sheet-save').textContent='更新';
 }
-function deleteEntry(id){
-  if(!confirm('確定刪除這筆記錄？'))return;
-  entries=entries.filter(e=>e.id!=id);saveEntries();closeDetail();rerender();
-}
 
-function openLb(idx){
-  const e=entries.find(x=>x.id==lbEntryId);if(!e)return;
-  lbPhotos=e.photos||[];lbIdx=idx;showLb();
-}
 function openLightboxEntry(ev,id,idx){
   ev.stopPropagation();lbEntryId=id;
   const e=entries.find(x=>x.id==id);if(!e)return;
@@ -795,7 +794,40 @@ function toggleDropdown(){const m=document.getElementById('dropdownMenu');if(m.s
 function closeDropdown(){document.getElementById('dropdownMenu').style.display='none';}
 function rerender(){renderTimeline();if(currentTab==='calendar')renderCalendar();}
 
-loadEntries();renderChips();renderTimeline();
+/* ── 模擬五天資料 ── */
+function buildDemo(){
+  const D=new Date();
+  function ago(n){const x=new Date(D);x.setDate(x.getDate()-n);return `${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`;}
+  return [
+    {id:'d01',type:'meal',date:ago(0),time:'07:30',mealType:'早餐',foods:[{name:'燕麥',qty:1,cal:150,id:'f1'},{name:'牛奶',qty:1,cal:150,id:'f2'},{name:'香蕉',qty:1,cal:90,id:'f3'}],note:'元氣早餐',photos:[]},
+    {id:'d02',type:'exercise',date:ago(0),time:'08:30',exerciseType:'跑步',duration:'35',distance:'5.2',calories:'310',note:'清晨慢跑，狀態很好',photos:[]},
+    {id:'d03',type:'meal',date:ago(0),time:'12:00',mealType:'午餐',foods:[{name:'雞胸肉',qty:1,cal:165,id:'f4'},{name:'糙米飯',qty:1,cal:165,id:'f5'},{name:'花椰菜',qty:1,cal:35,id:'f6'}],note:'健身餐',photos:[]},
+    {id:'d04',type:'meal',date:ago(0),time:'15:30',mealType:'點心',foods:[{name:'優格',qty:1,cal:100,id:'f7'},{name:'蘋果',qty:1,cal:80,id:'f8'}],note:'',photos:[]},
+    {id:'d05',type:'meal',date:ago(0),time:'19:00',mealType:'晚餐',foods:[{name:'鮭魚',qty:1,cal:200,id:'f9'},{name:'白飯',qty:1,cal:180,id:'fa'},{name:'菠菜',qty:1,cal:23,id:'fb'}],note:'',photos:[]},
+    {id:'d06',type:'meal',date:ago(1),time:'08:00',mealType:'早餐',foods:[{name:'吐司',qty:2,cal:140,id:'fc'},{name:'荷包蛋',qty:1,cal:90,id:'fd'},{name:'黑咖啡',qty:1,cal:5,id:'fe'}],note:'',photos:[]},
+    {id:'d07',type:'meal',date:ago(1),time:'12:30',mealType:'午餐',foods:[{name:'牛肉麵',qty:1,cal:550,id:'ff'}],note:'巷口新開的，湯底很濃郁',photos:[]},
+    {id:'d08',type:'exercise',date:ago(1),time:'18:00',exerciseType:'重訓',duration:'60',distance:'',calories:'280',note:'胸背日，臥推有進步',photos:[]},
+    {id:'d09',type:'meal',date:ago(1),time:'19:30',mealType:'晚餐',foods:[{name:'沙拉',qty:1,cal:50,id:'fg'},{name:'豆腐',qty:1,cal:80,id:'fh'}],note:'',photos:[]},
+    {id:'d10',type:'meal',date:ago(2),time:'09:00',mealType:'早餐',foods:[{name:'蛋餅',qty:1,cal:280,id:'fi'},{name:'豆漿',qty:1,cal:54,id:'fj'}],note:'早餐店',photos:[]},
+    {id:'d11',type:'exercise',date:ago(2),time:'10:30',exerciseType:'瑜伽',duration:'45',distance:'',calories:'150',note:'肩頸舒緩',photos:[]},
+    {id:'d12',type:'meal',date:ago(2),time:'13:00',mealType:'午餐',foods:[{name:'排骨便當',qty:1,cal:700,id:'fk'}],note:'',photos:[]},
+    {id:'d13',type:'meal',date:ago(2),time:'18:30',mealType:'晚餐',foods:[{name:'火鍋',qty:1,cal:500,id:'fl'}],note:'朋友聚餐',photos:[]},
+    {id:'d14',type:'meal',date:ago(2),time:'21:00',mealType:'宵夜',foods:[{name:'珍珠奶茶',qty:1,cal:450,id:'fm'}],note:'罪惡的一杯',photos:[]},
+    {id:'d15',type:'meal',date:ago(3),time:'07:30',mealType:'早餐',foods:[{name:'麥片',qty:1,cal:130,id:'fn'},{name:'牛奶',qty:1,cal:150,id:'fo'}],note:'',photos:[]},
+    {id:'d16',type:'exercise',date:ago(3),time:'08:00',exerciseType:'走路',duration:'40',distance:'3.0',calories:'150',note:'通勤步行',photos:[]},
+    {id:'d17',type:'meal',date:ago(3),time:'12:00',mealType:'午餐',foods:[{name:'義大利麵',qty:1,cal:350,id:'fp'},{name:'拿鐵',qty:1,cal:150,id:'fq'}],note:'',photos:[]},
+    {id:'d18',type:'meal',date:ago(3),time:'18:30',mealType:'晚餐',foods:[{name:'滷肉飯',qty:1,cal:450,id:'fr'},{name:'味噌湯',qty:1,cal:40,id:'fs'}],note:'',photos:[]},
+    {id:'d19',type:'meal',date:ago(4),time:'08:30',mealType:'早餐',foods:[{name:'包子',qty:2,cal:440,id:'ft'},{name:'豆漿',qty:1,cal:54,id:'fu'}],note:'',photos:[]},
+    {id:'d20',type:'exercise',date:ago(4),time:'17:00',exerciseType:'騎車',duration:'50',distance:'15.0',calories:'350',note:'騎到淡水河邊',photos:[]},
+    {id:'d21',type:'meal',date:ago(4),time:'12:00',mealType:'午餐',foods:[{name:'壽司',qty:1,cal:350,id:'fv'},{name:'味噌湯',qty:1,cal:40,id:'fw'}],note:'迴轉壽司',photos:[]},
+    {id:'d22',type:'meal',date:ago(4),time:'19:00',mealType:'晚餐',foods:[{name:'雞腿便當',qty:1,cal:680,id:'fx'}],note:'',photos:[]},
+  ];
+}
+
+loadEntries();
+if(!entries.length){entries=buildDemo();saveEntries();}
+renderChips();
+renderTimeline();
 setTimeout(scrollToToday,100);
 </script>
 </body>
