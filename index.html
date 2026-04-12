@@ -386,7 +386,7 @@ const SWIPE_W=136; // 兩個按鈕各68px
 
 function loadCustomEx(){
   const DEFAULT_EX=[
-    {name:'🏃 跑步',icon:''},{name:'🚶 走路',icon:''},{name:'🚴 騎車',icon:''},
+    {name:'🏃 跑步',icon:''},{name:'🐢 超慢跑',icon:''},{name:'🚶 走路',icon:''},{name:'🚴 騎車',icon:''},
     {name:'🏊 游泳',icon:''},{name:'💪 重訓',icon:''},{name:'🧘 瑜伽',icon:''},
     {name:'🔥 HIIT',icon:''},{name:'⛰️ 爬坡',icon:''},{name:'🥊 拳擊',icon:''},
     {name:'🏸 羽球',icon:''},{name:'⚽ 足球',icon:''},{name:'🏀 籃球',icon:''},
@@ -871,7 +871,7 @@ function saveWeight(){
 // 爬坡說明：坡度 5% ≈ MET 6.5、10% ≈ 8.0、15%+ ≈ 9.5，以下取中段坡 MET=8.0
 const MET_TABLE={
   // 跑步/走路
-  '跑步':9.8,'🏃 跑步':9.8,
+  '跑步':9.8,'🏃 跑步':9.8,'超慢跑':5.0,'🐢 超慢跑':5.0,
   '走路':3.5,'🚶 走路':3.5,'快走':5.0,
   // 單車
   '騎車':6.8,'🚴 騎車':6.8,'腳踏車':6.8,'自行車':6.8,
@@ -900,11 +900,15 @@ const MET_TABLE={
 
 function getMET(exType){
   if(!exType) return null;
-  // exact match first
-  if(MET_TABLE[exType]) return MET_TABLE[exType];
-  // partial match
-  const key=Object.keys(MET_TABLE).find(k=>exType.includes(k)||k.includes(exType));
-  return key?MET_TABLE[key]:null;
+  // exact match（含 emoji 版本都已在 MET_TABLE 登記）
+  if(MET_TABLE[exType]!=null) return MET_TABLE[exType];
+  // fallback：去掉 emoji 前綴後再比對
+  const stripped=exType.replace(/^[\p{Emoji}\s]+/u,'').trim();
+  if(stripped&&MET_TABLE[stripped]!=null) return MET_TABLE[stripped];
+  // partial：只用無 emoji 的 key 做包含比對，避免 '坡走 5%' 誤中 '坡走 10%'
+  const plainKeys=Object.keys(MET_TABLE).filter(k=>!/[\p{Emoji}]/u.test(k));
+  const key=plainKeys.find(k=>exType===k||exType.includes(k)&&k.length>=4);
+  return key!=null?MET_TABLE[key]:null;
 }
 
 function autoCalcExCal(){
