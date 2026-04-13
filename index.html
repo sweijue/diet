@@ -149,6 +149,8 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;gap
 .lb-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.18);border:none;color:#fff;width:42px;height:42px;border-radius:50%;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 #lightbox-prev{left:12px}
 #lightbox-next{right:12px}
+.collapse-opt{padding:7px 13px;border-radius:20px;border:1.5px solid #d8cfc4;background:#fdf9f4;color:#8b6f47;font-size:13px;font-weight:600;cursor:pointer}
+.collapse-opt.active{background:#c8a96e;border-color:#c8a96e;color:#fff}
 #exActionSheet{position:fixed;inset:0;z-index:400;display:none}
 #exActionSheet .as-overlay{position:absolute;inset:0;background:rgba(0,0,0,.45)}
 #exActionSheet .as-menu{position:absolute;bottom:0;left:0;right:0;max-width:480px;margin:0 auto;background:#fdf9f4;border-radius:20px 20px 0 0;padding:12px 16px 36px;animation:slideUp .2s ease}
@@ -186,6 +188,7 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;gap
             </div>
             <button class="dropdown-item" onclick="exportData()">📤 匯出備份</button>
             <button class="dropdown-item" onclick="document.getElementById('importInput').click()">📥 匯入資料</button>
+            <button class="dropdown-item" onclick="openCollapseSheet()">📅 收合設定</button>
             <button class="dropdown-item" onclick="openWeightSheet()">⚖️ 設定體重</button>
             <button class="dropdown-item" onclick="openClearSheet()">🗑 清除舊資料</button>
           </div>
@@ -323,6 +326,28 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;gap
   </div>
 </div>
 
+<div id="collapseSheet" class="sheet-overlay" style="display:none" onclick="if(event.target===this)closeCollapseSheet()">
+  <div class="sheet">
+    <div class="sheet-header">
+      <button class="sheet-cancel" onclick="closeCollapseSheet()">取消</button>
+      <span style="font-weight:700;font-size:16px;color:#2c2416">📅 自動收合設定</span>
+      <button class="sheet-save" onclick="saveCollapseSettings()">儲存</button>
+    </div>
+    <div class="sheet-body">
+      <div class="form-label">此日期之前自動收合</div>
+      <input type="date" id="collapseDateInput" class="form-input" style="margin-bottom:10px">
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+        <button class="collapse-opt" onclick="setCollapseDate(0)">不收合</button>
+        <button class="collapse-opt" onclick="setCollapseDate(3)">3天前</button>
+        <button class="collapse-opt" onclick="setCollapseDate(7)">7天前</button>
+        <button class="collapse-opt" onclick="setCollapseDate(30)">30天前</button>
+        <button class="collapse-opt" onclick="setCollapseDate(-1)">全部</button>
+      </div>
+      <div style="font-size:12px;color:#bbb">手動展開或收合的日期會記住您的選擇</div>
+    </div>
+  </div>
+</div>
+
 <div id="weightSheet" class="sheet-overlay" style="display:none" onclick="closeWeightIfBg(event)">
   <div class="sheet">
     <div class="sheet-header">
@@ -408,7 +433,49 @@ let entries=[],currentTab='timeline',currentType='meal',editId=null;
 let calYear=new Date().getFullYear(),calMonth=new Date().getMonth(),calSelected=todayDate();
 let mealPhotos=[],exPhotos=[],selMealType='早餐',selExType='';
 let fabOpen=false;
+// ── 收合狀態持久化 ───────────────────────────────────────────────
+function loadCollapsedState(){
+  try{
+    const s=JSON.parse(localStorage.getItem('collapsed_state')||'{}');
+    // s = { manual:{date:true/false}, autoDays:N }
+    return s;
+  }catch{return {};}
+}
+function saveCollapsedState(){
+  const manual={};
+  collapsedDays.forEach(d=>manual[d]=true);
+  expandedDays.forEach(d=>manual[d]=false);
+  localStorage.setItem('collapsed_state',JSON.stringify({manual,beforeDate:collapseBeforeDate}));
+}
+function loadCollapseBeforeDate(){
+  try{return JSON.parse(localStorage.getItem('collapsed_state')||'{}').beforeDate||'';}catch{return '';}
+}
+
+let collapseBeforeDate=loadCollapseBeforeDate(); // 'YYYY-MM-DD' or ''
+// collapsedDays = 手動收合的日期；expandedDays = 手動展開（覆蓋自動收合）的日期
 const collapsedDays=new Set();
+const expandedDays=new Set();
+
+// 初始化：從 localStorage 還原手動狀態
+(function initCollapse(){
+  try{
+    const s=JSON.parse(localStorage.getItem('collapsed_state')||'{}');
+    const manual=s.manual||{};
+    Object.keys(manual).forEach(d=>{
+      if(manual[d]===true)collapsedDays.add(d);
+      else expandedDays.add(d);
+    });
+  }catch{}
+})();
+
+function isCollapsed(date){
+  if(collapsedDays.has(date)) return true;   // 手動收合
+  if(expandedDays.has(date)) return false;   // 手動展開（優先）
+  if(collapseBeforeDate){                    // 自動收合
+    return date < collapseBeforeDate;
+  }
+  return false;
+}
 let swipeTouches={},currentSwiped=null;
 let lbPhotos=[],lbIdx=0,lbEntryId=null;
 let _lpTimer=null;
@@ -589,12 +656,16 @@ function grouped(){
 function sortedDates(g){return Object.keys(g).sort((a,b)=>a.localeCompare(b));}
 
 function toggleDay(date){
-  if(collapsedDays.has(date))collapsedDays.delete(date);else collapsedDays.add(date);
+  const wasCollapsed=isCollapsed(date);
+  const nowCollapsed=!wasCollapsed;
+  // 更新手動狀態
+  if(nowCollapsed){collapsedDays.add(date);expandedDays.delete(date);}
+  else{collapsedDays.delete(date);expandedDays.add(date);}
+  saveCollapsedState();
   const body=document.getElementById('tbody-'+date),arrow=document.getElementById('tarrow-'+date),badge=document.getElementById('tbadge-'+date);
-  const c=collapsedDays.has(date);
-  if(body)body.style.display=c?'none':'block';
-  if(arrow)arrow.style.transform=c?'rotate(-90deg)':'rotate(0deg)';
-  if(badge)badge.style.display=c?'inline-block':'none';
+  if(body)body.style.display=nowCollapsed?'none':'block';
+  if(arrow)arrow.style.transform=nowCollapsed?'rotate(-90deg)':'rotate(0deg)';
+  if(badge)badge.style.display=nowCollapsed?'inline-block':'none';
 }
 
 function renderTimeline(){
@@ -607,7 +678,7 @@ function renderTimeline(){
     const de=g[date];
     const dayCal=de.filter(e=>e.type==='meal').flatMap(e=>e.foods||[]).reduce((a,f)=>a+(f.cal||0)*(f.qty||1),0);
     const dayBurn=de.filter(e=>e.type==='exercise').reduce((a,e)=>a+(+e.calories||0),0);
-    const isToday=date===todayDate(),col=collapsedDays.has(date);
+    const isToday=date===todayDate(),col=isCollapsed(date);
     const calHtml=dayCal>0?`<div style="color:#8b6f47;font-weight:600">${Math.round(dayCal)} kcal</div>`:'';
     const burnHtml=dayBurn>0?`<div style="color:#5a9a6a">−${dayBurn} kcal</div>`:'';
     return `<div id="tday-${date}">
@@ -786,7 +857,7 @@ function goToday(){
   else{calYear=new Date().getFullYear();calMonth=new Date().getMonth();calSelected=todayDate();renderCalendar();}
 }
 function scrollToDate(date){
-  if(collapsedDays.has(date)){collapsedDays.delete(date);renderTimeline();}
+  if(isCollapsed(date)){expandedDays.add(date);collapsedDays.delete(date);saveCollapsedState();renderTimeline();}
   setTimeout(()=>{
     const el=document.getElementById('tday-'+date);
     if(el){el.scrollIntoView({behavior:'smooth',block:'start'});return;}
@@ -851,6 +922,30 @@ function switchType(t){setType(t);}
 
 function loadWeight(){return parseFloat(localStorage.getItem('user_weight')||'0');}
 function saveWeightVal(w){localStorage.setItem('user_weight',String(w));}
+
+// ── 收合設定 sheet ────────────────────────────────────────────────
+function openCollapseSheet(){
+  document.getElementById('collapseDateInput').value=collapseBeforeDate||'';
+  document.getElementById('collapseSheet').style.display='flex';
+  closeDropdown();
+}
+function closeCollapseSheet(){document.getElementById('collapseSheet').style.display='none';}
+function setCollapseDate(daysAgo){
+  const inp=document.getElementById('collapseDateInput');
+  if(daysAgo===0){inp.value='';return;}
+  if(daysAgo===-1){// 全部收合：用很早的日期
+    inp.value='1900-01-01';return;
+  }
+  const d=new Date();d.setDate(d.getDate()-daysAgo);
+  inp.value=d.toISOString().slice(0,10);
+}
+function saveCollapseSettings(){
+  collapseBeforeDate=document.getElementById('collapseDateInput').value||'';
+  collapsedDays.clear();expandedDays.clear();
+  saveCollapsedState();
+  closeCollapseSheet();renderTimeline();
+  showToast(collapseBeforeDate?`✅ ${collapseBeforeDate} 之前自動收合`:'已關閉自動收合');
+}
 function openWeightSheet(){
   const w=loadWeight();
   document.getElementById('weightInput').value=w||'';
