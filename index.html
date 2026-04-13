@@ -942,9 +942,11 @@ function autoCalcExCal(){
 }
 
 function guessMealType(){
-  const h=new Date().getHours();
+  const h=new Date().getHours(),m=new Date().getMinutes();
+  const hm=h*60+m;
   if(h>=4&&h<9) return '早餐';
-  if(h>=9&&h<11) return '早午餐';
+  if(hm>=9*60&&hm<10*60+30) return '早餐';
+  if(hm>=10*60+30&&h<11) return '早午餐';
   if(h>=11&&h<14) return '午餐';
   if(h>=14&&h<17) return '下午茶';
   if(h>=17&&h<21) return '晚餐';
