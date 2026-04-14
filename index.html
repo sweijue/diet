@@ -445,8 +445,16 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
       <span style="width:40px"></span>
     </div>
     <div class="sheet-body">
-      <div style="font-size:15px;color:#2c2416;font-weight:600;margin-bottom:6px">清除此日期之前的所有記錄</div>
+      <div style="font-size:15px;color:#2c2416;font-weight:600;margin-bottom:6px">清除此日期之前的記錄</div>
       <input type="date" id="clearDate" class="clear-date-input" oninput="updateClearInfo()">
+      <div style="display:flex;gap:14px;margin:10px 0 4px">
+        <label style="display:flex;align-items:center;gap:6px;font-size:14px;color:#2c2416;font-weight:600">
+          <input type="checkbox" id="clearMeal" checked> 飲食/運動
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:14px;color:#2c2416;font-weight:600">
+          <input type="checkbox" id="clearSymptom" checked> 身體症狀
+        </label>
+      </div>
       <div class="clear-info" id="clearInfo">選擇日期後顯示將刪除的筆數</div>
       <button class="btn-clear-confirm" onclick="confirmClear()">確認清除</button>
     </div>
@@ -1452,13 +1460,25 @@ function closeClearSheet(){document.getElementById('clearSheet').style.display='
 function closeClearIfBg(ev){if(ev.target===document.getElementById('clearSheet'))closeClearSheet();}
 function updateClearInfo(){
   const d=document.getElementById('clearDate').value;if(!d)return;
-  document.getElementById('clearInfo').textContent=`將刪除 ${entries.filter(e=>e.date<d).length} 筆記錄（${d} 之前）`;
+  const meal=document.getElementById('clearMeal')?.checked;
+  const sym=document.getElementById('clearSymptom')?.checked;
+  const mc=meal?entries.filter(e=>e.date<d).length:0;
+  const sc=sym?loadSymptoms().filter(s=>s.date<d).length:0;
+  const parts=[];if(mc)parts.push(`${mc} 筆飲食/運動`);if(sc)parts.push(`${sc} 筆症狀`);
+  document.getElementById('clearInfo').textContent=parts.length?`將刪除：${parts.join('、')}（${d} 之前）`:'沒有符合的記錄';
 }
 function confirmClear(){
   const d=document.getElementById('clearDate').value;if(!d){showToast('請選擇日期');return;}
-  const count=entries.filter(e=>e.date<d).length;if(!count){showToast('沒有符合的記錄');return;}
-  if(!confirm(`確定刪除 ${count} 筆 ${d} 之前的記錄？`))return;
-  entries=entries.filter(e=>e.date>=d);saveEntries();rerender();closeClearSheet();showToast(`已刪除 ${count} 筆記錄`);
+  const meal=document.getElementById('clearMeal')?.checked;
+  const sym=document.getElementById('clearSymptom')?.checked;
+  const mc=meal?entries.filter(e=>e.date<d).length:0;
+  const sc=sym?loadSymptoms().filter(s=>s.date<d).length:0;
+  if(!mc&&!sc){showToast('沒有符合的記錄');return;}
+  const parts=[];if(mc)parts.push(`${mc} 筆飲食/運動`);if(sc)parts.push(`${sc} 筆症狀`);
+  if(!confirm(`確定刪除 ${parts.join('、')}（${d} 之前）？`))return;
+  if(meal){entries=entries.filter(e=>e.date>=d);saveEntries();}
+  if(sym){saveSymptoms(loadSymptoms().filter(s=>s.date>=d));}
+  rerender();closeClearSheet();showToast(`已清除 ${parts.join('、')}`);
 }
 function toggleDropdown(){const m=document.getElementById('dropdownMenu');if(m.style.display==='none'){m.style.display='block';calcStorage();}else m.style.display='none';}
 function closeDropdown(){document.getElementById('dropdownMenu').style.display='none';}
@@ -1587,7 +1607,15 @@ function doEditSym(id,ctx){closeSwipe();openSymptomSheet(id);}
 
 // ══ 統計 ══════════════════════════════════════════════════════════
 let statPeriod='month'; // 'month' | 'year'
+let _statsInited=false;
 let statYear=new Date().getFullYear(),statMonth=new Date().getMonth();
+function initStatPeriod(){
+  // 找最新有症狀的月份作為預設
+  const syms=loadSymptoms();
+  if(!syms.length)return;
+  const latest=syms.map(s=>s.date).sort().pop();
+  if(latest){statYear=parseInt(latest.slice(0,4));statMonth=parseInt(latest.slice(5,7))-1;}
+}
 
 function renderStats(){
   const el=document.getElementById('viewStats');
