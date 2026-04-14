@@ -946,9 +946,13 @@ function switchTab(tab){
   if(currentSwiped)closeSwipe();
   document.getElementById('viewTimeline').style.display=tab==='timeline'?'block':'none';
   document.getElementById('viewCalendar').style.display=tab==='calendar'?'block':'none';
+  document.getElementById('viewStats').style.display=tab==='stats'?'block':'none';
   document.getElementById('tabTimeline').className='tab-btn'+(tab==='timeline'?' active':'');
   document.getElementById('tabCalendar').className='tab-btn'+(tab==='calendar'?' active':'');
-  if(tab==='calendar')renderCalendar();else scrollToDate(calSelected);
+  document.getElementById('tabStats').className='tab-btn'+(tab==='stats'?' active':'');
+  if(tab==='calendar')renderCalendar();
+  else if(tab==='stats'){if(!_statsInited){initStatPeriod();_statsInited=true;}renderStats();}
+  else scrollToDate(calSelected);
 }
 function calPrev(){if(calMonth===0){calYear--;calMonth=11;}else calMonth--;renderCalendar();}
 function calNext(){if(calMonth===11){calYear++;calMonth=0;}else calMonth++;renderCalendar();}
@@ -1667,66 +1671,76 @@ function renderStats(){
     label=`${statYear} 年`;
   }
 
-  const tagCount={};
-  filtered.forEach(s=>(s.tags||[]).forEach(t=>{tagCount[t]=(tagCount[t]||0)+1;}));
-  const sorted=Object.entries(tagCount).sort((a,b)=>b[1]-a[1]);
-  const maxCount=sorted[0]?.[1]||1;
-  const avgSev=filtered.length?(filtered.reduce((a,s)=>a+(parseInt(s.severity)||5),0)/filtered.length).toFixed(1):null;
+  const sevBands=[['1–3','輕微','#4caf50',[1,3]],['4–6','中等','#f59c00',[4,6]],['7–10','嚴重','#e53935',[7,10]]];
+  function inBand(v,b){return v>=b[0]&&v<=b[1];}
+  const sevRows=sevBands.map(function(band){
+    const range=band[0],lbl=band[1],color=band[2],b=band[3];
+    const cnt=filtered.filter(function(s){return inBand(parseInt(s.severity)||5,b);}).length;
+    const pct=filtered.length?Math.round(cnt/filtered.length*100):0;
+    return '<div class="stat-row">'
+      +'<span style="font-size:13px;font-weight:600;min-width:60px;color:'+color+'">'+lbl+'</span>'
+      +'<div class="stat-bar-wrap"><div class="stat-bar-fill" style="width:'+pct+'%;background:'+color+'"></div></div>'
+      +'<span class="stat-num" style="color:'+color+'">'+cnt+'</span>'
+      +'</div>';
+  }).join('');
+  const recentRows=filtered.slice().sort(function(a,b){return b.date.localeCompare(a.date)||b.time.localeCompare(a.time);}).slice(0,5).map(function(s){
+    const sv=parseInt(s.severity)||5;const sc=sevColor(sv);
+    return '<div class="stat-row">'
+      +'<span style="font-size:12px;color:#bbb;min-width:60px">'+s.date.slice(5)+' '+s.time+'</span>'
+      +'<span style="flex:1;font-size:13px;color:#2c2416;margin:0 8px">'+(s.tags||[]).join('、')+'</span>'
+      +'<span class="sev-score" style="background:'+sc+'22;color:'+sc+'">'+sv+'/10</span>'
+      +'</div>';
+  }).join('');
 
-  el.innerHTML=`
-<div class="stat-period-bar" style="margin-bottom:12px">
-  <button class="stat-period-btn${statPeriod==='day'?' active':''}" onclick="statPeriod='day';renderStats()">日</button>
-  <button class="stat-period-btn${statPeriod==='month'?' active':''}" onclick="statPeriod='month';renderStats()">月</button>
-  <button class="stat-period-btn${statPeriod==='year'?' active':''}" onclick="statPeriod='year';renderStats()">年</button>
-</div>
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-  <button onclick="statNav(-1)" style="background:#f5f0e8;border:none;border-radius:10px;padding:8px 16px;font-size:20px;cursor:pointer">‹</button>
-  <span style="font-weight:700;font-size:17px;color:#2c2416">${label}</span>
-  <button onclick="statNav(1)" style="background:#f5f0e8;border:none;border-radius:10px;padding:8px 16px;font-size:20px;cursor:pointer">›</button>
-</div>
-${filtered.length===0
-  ? `<div class="empty"><div class="empty-icon">🩺</div><div style="font-size:15px;color:#aaa">這段期間沒有症狀記錄</div></div>`
-  : `<div class="stat-section">
-  <div class="stat-title">共 ${filtered.length} 筆 ${avgSev?`・平均嚴重度 ${avgSev}/10`:''}</div>
-  <div class="stat-card">
-    ${sorted.map(([tag,cnt])=>`
-    <div class="stat-row">
-      <span style="font-size:13px;color:#2c2416;font-weight:600;min-width:72px">${esc(tag)}</span>
-      <div class="stat-bar-wrap"><div class="stat-bar-fill" style="width:${Math.round(cnt/maxCount*100)}%"></div></div>
-      <span class="stat-num">${cnt}</span>
-    </div>`).join('')}
-  </div>
-</div>
-<div class="stat-section">
-  <div class="stat-title">嚴重程度</div>
-  <div class="stat-card">
-    ${[['1–3','輕微','#4caf50',v=>v<=3],['4–6','中等','#f59c00',v=>v>=4&&v<=6],['7–10','嚴重','#e53935',v=>v>=7]].map(([range,label,color,fn])=>{
-      const cnt=filtered.filter(s=>fn(parseInt(s.severity)||5)).length;
-      const pct=filtered.length?Math.round(cnt/filtered.length*100):0;
-      return `<div class="stat-row">
-        <span style="font-size:13px;font-weight:600;min-width:60px;color:${color}">${label}</span>
-        <div class="stat-bar-wrap"><div class="stat-bar-fill" style="width:${pct}%;background:${color}"></div></div>
-        <span class="stat-num" style="color:${color}">${cnt}</span>
-      </div>`;
-    }).join('')}
-  </div>
-</div>
-<div class="stat-section">
-  <div class="stat-title">最近記錄</div>
-  <div class="stat-card">
-    ${filtered.slice().sort((a,b)=>b.date.localeCompare(a.date)||b.time.localeCompare(a.time)).slice(0,5).map(s=>{
-      const sv=parseInt(s.severity)||5;const sc=sevColor(sv);
-      return `<div class="stat-row">
-        <span style="font-size:12px;color:#bbb;min-width:60px">${s.date.slice(5)} ${s.time}</span>
-        <span style="flex:1;font-size:13px;color:#2c2416;margin:0 8px">${(s.tags||[]).join('、')}</span>
-        <span class="sev-score" style="background:${sc}22;color:${sc}">${sv}/10</span>
-      </div>`;
-    }).join('')}
-    ${filtered.length>5?`<div style="text-align:center;font-size:12px;color:#bbb;padding-top:6px">顯示最近 5 筆，共 ${filtered.length} 筆</div>`:''}
-  </div>
-</div>`}`;
+  // 計算 tagCount、sorted、maxCount、avgSev
+  var tagCount={};
+  filtered.forEach(function(s){(s.tags||[]).forEach(function(t){tagCount[t]=(tagCount[t]||0)+1;});});
+  var sorted=Object.keys(tagCount).map(function(t){return [t,tagCount[t]];}).sort(function(a,b){return b[1]-a[1];});
+  var maxCount=sorted.length?sorted[0][1]:1;
+  var avgSev=filtered.length?(filtered.reduce(function(a,s){return a+(parseInt(s.severity)||5);},0)/filtered.length).toFixed(1):null;
+
+  var tagRows=sorted.map(function(item){
+    var tag=item[0],cnt=item[1];
+    var pct=Math.round(cnt/maxCount*100);
+    return '<div class="stat-row">'
+      +'<span style="font-size:13px;color:#2c2416;font-weight:600;min-width:72px">'+esc(tag)+'</span>'
+      +'<div class="stat-bar-wrap"><div class="stat-bar-fill" style="width:'+pct+'%"></div></div>'
+      +'<span class="stat-num">'+cnt+'</span>'
+      +'</div>';
+  }).join('');
+
+  var html='';
+  html+='<div class="stat-period-bar" style="margin-bottom:12px">';
+  html+=['<button class="stat-period-btn',statPeriod==='day'?' active':'','" onclick="statNav2(&quot;day&quot;)">日</button>'].join('');
+  html+=['<button class="stat-period-btn',statPeriod==='month'?' active':'','" onclick="statNav2(&quot;month&quot;)">月</button>'].join('');
+  html+=['<button class="stat-period-btn',statPeriod==='year'?' active':'','" onclick="statNav2(&quot;year&quot;)">年</button>'].join('');
+  html+='</div>';
+  html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">';
+  html+='<button onclick="statNav(-1)" style="background:#f5f0e8;border:none;border-radius:10px;padding:8px 16px;font-size:20px;cursor:pointer">‹</button>';
+  html+='<span style="font-weight:700;font-size:17px;color:#2c2416">'+label+'</span>';
+  html+='<button onclick="statNav(1)" style="background:#f5f0e8;border:none;border-radius:10px;padding:8px 16px;font-size:20px;cursor:pointer">›</button>';
+  html+='</div>';
+  if(filtered.length===0){
+    html+='<div class="empty"><div class="empty-icon">🩺</div><div style="font-size:15px;color:#aaa">這段期間沒有症狀記錄</div></div>';
+  } else {
+    html+='<div class="stat-section">';
+    html+='<div class="stat-title">共 '+filtered.length+' 筆'+(avgSev?' · 平均嚴重度 '+avgSev+'/10':'')+' </div>';
+    html+='<div class="stat-card">'+tagRows+'</div>';
+    html+='</div>';
+    html+='<div class="stat-section">';
+    html+='<div class="stat-title">嚴重程度</div>';
+    html+='<div class="stat-card">'+sevRows+'</div>';
+    html+='</div>';
+    html+='<div class="stat-section">';
+    html+='<div class="stat-title">最近記錄</div>';
+    html+='<div class="stat-card">'+recentRows;
+    if(filtered.length>5)html+='<div style="text-align:center;font-size:12px;color:#bbb;padding-top:6px">顯示最近 5 筆，共 '+filtered.length+' 筆</div>';
+    html+='</div></div>';
+  }
+  el.innerHTML=html;
 }
 
+function statNav2(p){statPeriod=p;renderStats();}
 function statNav(dir){
   if(statPeriod==='day'){
     const d=new Date(statDay);d.setDate(d.getDate()+dir);
