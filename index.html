@@ -175,6 +175,17 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
 .stat-bar-fill{height:100%;background:#9b7fc8;border-radius:3px;transition:width .4s}
 .stat-num{font-size:13px;font-weight:700;color:#6b4fa0;min-width:24px;text-align:right}
 .cal-dot-symptom{background:#9b7fc8}
+/* ── 血壓 ── */
+.tcard-body.bp{border-left:3px solid #5b8cbf;}
+.bp-val{font-size:16px;font-weight:800;color:#2c2416}
+.bp-val.high{color:#e53935}
+.bp-meds-on{font-size:18px;filter:none}
+.bp-meds-off{font-size:18px;filter:grayscale(1);opacity:.4}
+.bp-input-row{display:flex;gap:8px;margin-bottom:12px}
+.bp-input-box{flex:1;text-align:center}
+.bp-input-box input{width:100%;text-align:center;font-size:22px;font-weight:800;padding:10px 4px;border-radius:10px;border:1.5px solid #e0d8cc;background:#faf8f5;color:#2c2416;box-sizing:border-box}
+.bp-input-box .bp-lbl{font-size:11px;color:#bbb;text-align:center;margin-top:3px}
+.bp-slash{font-size:28px;font-weight:800;color:#c8b89a;align-self:center;padding-bottom:18px}
 .collapse-opt{padding:7px 13px;border-radius:20px;border:1.5px solid #d8cfc4;background:#fdf9f4;color:#8b6f47;font-size:13px;font-weight:600;cursor:pointer}
 .collapse-opt.active{background:#c8a96e;border-color:#c8a96e;color:#fff}
 #exActionSheet{position:fixed;inset:0;z-index:400;display:none}
@@ -223,11 +234,13 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
     <div class="tab-bar">
       <button class="tab-btn active" id="tabTimeline" onclick="switchTab('timeline')">⏱ 時間線</button>
       <button class="tab-btn" id="tabCalendar" onclick="switchTab('calendar')">📅 日曆</button>
+      <button class="tab-btn" id="tabBp" onclick="switchTab('bp')">🩸 血壓</button>
       <button class="tab-btn" id="tabStats" onclick="switchTab('stats')">🩺 症狀統計</button>
     </div>
   </div>
   <div id="viewTimeline"></div>
   <div id="viewCalendar" style="display:none"></div>
+  <div id="viewBp" style="display:none;padding:14px 14px 100px"></div>
   <div id="viewStats" style="display:none"></div>
 </div>
 
@@ -240,6 +253,10 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
   <div class="fab-item">
     <div class="fab-item-label">記錄運動</div>
     <button class="fab-item-btn" style="background:#7aaa8a;color:#fff" onclick="openAdd('exercise');closeFabMenu()">🏃</button>
+  </div>
+  <div class="fab-item">
+    <div class="fab-item-label">血壓記錄</div>
+    <button class="fab-item-btn" style="background:#5b8cbf;color:#fff" onclick="openBpSheet();closeFabMenu()">💉</button>
   </div>
   <div class="fab-item">
     <div class="fab-item-label">身體症狀</div>
@@ -370,6 +387,54 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
   </div>
 </div>
 
+<div id="bpSheet" class="sheet-overlay" style="display:none" onclick="if(event.target===this)closeBpSheet()">
+  <div class="sheet">
+    <div class="sheet-header">
+      <button class="sheet-cancel" onclick="closeBpSheet()">取消</button>
+      <span style="font-weight:700;font-size:16px;color:#2c2416">🩸 血壓記錄</span>
+      <button class="sheet-save" onclick="saveBp()">儲存</button>
+    </div>
+    <div class="sheet-body">
+      <div class="datetime-group" style="margin-bottom:14px">
+        <div class="datetime-row">
+          <span class="datetime-label">日期</span>
+          <input type="date" id="bpDate" class="datetime-input">
+        </div>
+        <div class="datetime-row">
+          <span class="datetime-label">時間</span>
+          <input type="time" id="bpTime" class="datetime-input">
+        </div>
+      </div>
+      <div class="bp-input-row">
+        <div class="bp-input-box">
+          <input type="number" id="bpSys" placeholder="120" min="60" max="250">
+          <div class="bp-lbl">收縮壓 mmHg</div>
+        </div>
+        <div class="bp-slash">/</div>
+        <div class="bp-input-box">
+          <input type="number" id="bpDia" placeholder="80" min="40" max="150">
+          <div class="bp-lbl">舒張壓 mmHg</div>
+        </div>
+        <div class="bp-slash"> </div>
+        <div class="bp-input-box">
+          <input type="number" id="bpHr" placeholder="72" min="30" max="220">
+          <div class="bp-lbl">心率 bpm</div>
+        </div>
+      </div>
+      <div style="margin-bottom:14px">
+        <div class="form-label">服藥</div>
+        <button id="bpMedsBtn" onclick="toggleBpMeds()" style="background:#f5f0e8;border:none;border-radius:12px;padding:10px 20px;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px">
+          <span id="bpMedsIcon" class="bp-meds-off">💊</span>
+          <span id="bpMedsLabel" style="color:#bbb">未服藥</span>
+        </button>
+      </div>
+      <div class="form-label">備注</div>
+      <textarea id="bpNote" class="form-textarea" rows="2" placeholder="量測情況、姿勢…"></textarea>
+      <input type="hidden" id="bpEditId" value="">
+    </div>
+  </div>
+</div>
+
 <div id="periodSheet" class="sheet-overlay" style="display:none" onclick="closePeriodIfBg(event)">
   <div class="sheet">
     <div class="sheet-header">
@@ -462,6 +527,9 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
         </label>
         <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:#2c2416;font-weight:600;background:#faf8f5;padding:11px 13px;border-radius:10px;border:1.5px solid #e0d8cc">
           <input type="checkbox" id="clearSymptom" onchange="updateClearInfo()" checked> 🩺 身體症狀
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:#2c2416;font-weight:600;background:#faf8f5;padding:11px 13px;border-radius:10px;border:1.5px solid #e0d8cc">
+          <input type="checkbox" id="clearBp" onchange="updateClearInfo()" checked> 🩸 血壓記錄
         </label>
       </div>
       <div class="clear-info" id="clearInfo">選擇日期後顯示將刪除的筆數</div>
@@ -799,6 +867,7 @@ function renderTimeline(){
 /* ── 通用卡片 ── */
 function renderCard(e,ctx){
   if(e.type==='symptom') return renderSymptomCard(e,ctx);
+  if(e.type==='bp') return renderBpCard(e,ctx);
   const isMeal=e.type==='meal';
   const photos=e.photos||[];
   const imgHtml=photos.length?`<div class="tcard-imgs">${photos.slice(0,3).map((p,i)=>`<img class="tcard-img" src="${p}" loading="lazy" style="flex:${photos.length===1?'unset;width:100%':'1'}" onclick="openLightboxEntry(event,'${e.id}',${i})">`).join('')}</div>`:'';
@@ -898,7 +967,9 @@ function doDel(id,ctx){
   if(entries.length<before){saveEntries();}
   else{
     const syms=loadSymptoms().filter(s=>s.id!=id);
-    saveSymptoms(syms);
+    const bps=loadBpRecords().filter(b=>b.id!=id);
+    if(syms.length<loadSymptoms().length)saveSymptoms(syms);
+    else saveBpRecords(bps);
   }
   rerender();
 }
@@ -926,7 +997,7 @@ function renderCalendar(){
     const nc=other?'#ccc':isSel?'#f7f4ef':isTd?'#2c2416':dow===0?'#c0756a':dow===6?'#7090c0':'#2c2416';
     const nb=isTd?'#c8a96e':'transparent';
     const pe=photo?`<img class="cal-cell-photo" src="${photo}" loading="lazy" style="opacity:${isSel?.35:.55}">`:'';
-    let dots='';if(active&&!photo){const en=(g[ds]||[]).slice(0,3);dots=`<div class="cal-dots">${en.map(e=>`<span class="cal-dot" style="background:${e.type==='meal'?'#c8a96e':e.type==='symptom'?'#9b7fc8':'#7aaa8a'}"></span>`).join('')}</div>`;}
+    let dots='';if(active&&!photo){const en=(g[ds]||[]).slice(0,3);dots=`<div class="cal-dots">${en.map(e=>`<span class="cal-dot" style="background:${e.type==='meal'?'#c8a96e':e.type==='symptom'?'#9b7fc8':e.type==='bp'?'#5b8cbf':'#7aaa8a'}"></span>`).join('')}</div>`;}
     const cs=`background:${isSel?'#2c2416':other?'#f3f0ea':'#fff'};cursor:${other?'default':'pointer'}`;
     const cf=other?'':`onclick="calClick('${ds}')"`;
     const pMark=!other&&isInPeriod(ds)?'<span style="position:absolute;top:3px;right:4px;font-size:10px;line-height:1;z-index:2">🩸</span>':'';
@@ -946,11 +1017,14 @@ function switchTab(tab){
   if(currentSwiped)closeSwipe();
   document.getElementById('viewTimeline').style.display=tab==='timeline'?'block':'none';
   document.getElementById('viewCalendar').style.display=tab==='calendar'?'block':'none';
+  document.getElementById('viewBp').style.display=tab==='bp'?'block':'none';
   document.getElementById('viewStats').style.display=tab==='stats'?'block':'none';
   document.getElementById('tabTimeline').className='tab-btn'+(tab==='timeline'?' active':'');
   document.getElementById('tabCalendar').className='tab-btn'+(tab==='calendar'?' active':'');
+  document.getElementById('tabBp').className='tab-btn'+(tab==='bp'?' active':'');
   document.getElementById('tabStats').className='tab-btn'+(tab==='stats'?' active':'');
   if(tab==='calendar')renderCalendar();
+  else if(tab==='bp')renderBpTab();
   else if(tab==='stats'){if(!_statsInited){initStatPeriod();_statsInited=true;}renderStats();}
   else scrollToDate(calSelected);
 }
@@ -959,6 +1033,7 @@ function calNext(){if(calMonth===11){calYear++;calMonth=0;}else calMonth++;rende
 function goToday(){
   var now=new Date();
   if(currentTab==='timeline'){calSelected=todayDate();scrollToToday();}
+  else if(currentTab==='bp'){bpTabYear=now.getFullYear();bpTabMonth=now.getMonth();renderBpTab();}
   else if(currentTab==='stats'){
     statYear=now.getFullYear();statMonth=now.getMonth();
     statDay=todayDate();renderStats();
@@ -1419,7 +1494,8 @@ function exportData(){
   const customEx=loadCustomEx();
   const weight=loadWeight()||undefined;
   const symptoms=JSON.parse(localStorage.getItem('symptoms')||'[]');
-  const backup={version:4,entries,periods,customEx,weight,symptoms};
+  const bpData=JSON.parse(localStorage.getItem('bp_records')||'[]');
+  const backup={version:5,entries,periods,customEx,weight,symptoms,bpData};
   const json=JSON.stringify(backup,null,2);const blob=new Blob([json],{type:'application/json'});
   const url=URL.createObjectURL(blob);const a=document.createElement('a');const d=new Date();
   a.href=url;a.download=`diet_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}.json`;
@@ -1430,16 +1506,17 @@ function importData(event){
   r.onload=ev=>{try{
     const raw=JSON.parse(ev.target.result);
     // support old format (array), v2 ({entries,periods}), v3 (+customEx,weight)
-    let data,pdata,exdata,wdata,symdata=[];
+    let data,pdata,exdata,wdata,symdata=[],bpImport=[];
     if(Array.isArray(raw)){data=raw;pdata=[];exdata=[];wdata=null;}
     else if(raw.entries!=null){
       data=raw.entries||[];pdata=raw.periods||[];
       exdata=raw.customEx||[];wdata=raw.weight||null;
       symdata=raw.symptoms||[];
+      bpImport=raw.bpData||[];
     } else throw new Error();
-    const pInfo=pdata.length?`、${pdata.length} 筆經期`:'';const symInfo=symdata.length?`、${symdata.length} 筆症狀`:'';
+    const pInfo=pdata.length?`、${pdata.length} 筆經期`:'';const symInfo=symdata.length?`、${symdata.length} 筆症狀`:'';const bpInfo=bpImport.length?`、${bpImport.length} 筆血壓`:'';
     const exInfo=exdata.length?`、${exdata.length} 個運動類別`:'';
-    if(confirm(`匯入 ${data.length} 筆記錄${pInfo}${exInfo}${symInfo}？\n將與現有資料合併`)){
+    if(confirm(`匯入 ${data.length} 筆記錄${pInfo}${exInfo}${symInfo}${bpInfo}？\n將與現有資料合併`)){
       // merge entries
       const ids=new Set(entries.map(e=>e.id));
       entries=[...entries,...data.filter(e=>!ids.has(e.id))];
@@ -1464,9 +1541,15 @@ function importData(event){
         const sids=new Set(exSym.map(s=>s.id));
         localStorage.setItem('symptoms',JSON.stringify([...exSym,...symdata.filter(s=>!sids.has(s.id))]));
       }
+      // merge bp
+      if(bpImport.length){
+        const exBp=JSON.parse(localStorage.getItem('bp_records')||'[]');
+        const bids=new Set(exBp.map(b=>b.id));
+        localStorage.setItem('bp_records',JSON.stringify([...exBp,...bpImport.filter(b=>!bids.has(b.id))]));
+      }
       // 體重：只在本機未設定時才帶入
       if(wdata&&!loadWeight()){saveWeightVal(wdata);}
-      rerender();showToast(`✅ 成功匯入 ${data.length} 筆記錄${pInfo}${exInfo}${symInfo}`);
+      rerender();showToast(`✅ 成功匯入 ${data.length} 筆記錄${pInfo}${exInfo}${symInfo}${bpInfo}`);
     }}catch{showToast('❌ 檔案格式錯誤');}};r.readAsText(file);event.target.value='';
 }
 function openClearSheet(){
@@ -1484,10 +1567,12 @@ function updateClearInfo(){
   const mc=meal?entries.filter(e=>e.type==='meal'&&e.date<d).length:0;
   const ec=exer?entries.filter(e=>e.type==='exercise'&&e.date<d).length:0;
   const sc=sym?loadSymptoms().filter(s=>s.date<d).length:0;
+  const bpc=document.getElementById('clearBp')?.checked?loadBpRecords().filter(b=>b.date<d).length:0;
   const parts=[];
   if(mc)parts.push(`${mc} 筆飲食`);
   if(ec)parts.push(`${ec} 筆運動`);
   if(sc)parts.push(`${sc} 筆症狀`);
+  if(bpc)parts.push(`${bpc} 筆血壓`);
   document.getElementById('clearInfo').textContent=parts.length?`將刪除：${parts.join('、')}（${d} 之前）`:'沒有符合的記錄';
 }
 function confirmClear(){
@@ -1514,6 +1599,7 @@ function confirmClear(){
     saveEntries();
   }
   if(sym){saveSymptoms(loadSymptoms().filter(s=>s.date>=d));}
+  if(document.getElementById('clearBp')?.checked){saveBpRecords(loadBpRecords().filter(b=>b.date>=d));}
   rerender();closeClearSheet();showToast(`已清除 ${parts.join('、')}`);
 }
 function toggleDropdown(){const m=document.getElementById('dropdownMenu');if(m.style.display==='none'){m.style.display='block';calcStorage();}else m.style.display='none';}
@@ -1521,7 +1607,8 @@ function closeDropdown(){document.getElementById('dropdownMenu').style.display='
 
 function allEntries(){
   const syms=loadSymptoms().map(s=>({...s,type:'symptom'}));
-  return [...entries,...syms].sort((a,b)=>a.date.localeCompare(b.date)||a.time.localeCompare(b.time));
+  const bps=loadBpRecords().map(b=>({...b,type:'bp'}));
+  return [...entries,...syms,...bps].sort((a,b)=>a.date.localeCompare(b.date)||a.time.localeCompare(b.time));
 }
 
 // ══ 症狀記錄 ══════════════════════════════════════════════════════
@@ -1529,6 +1616,365 @@ function allEntries(){
 const DEFAULT_SYMPTOMS=['頭痛','疲勞','肚子痛','噁心','失眠','頭暈','生理痛','背痛','喉嚨痛','發燒','咳嗽','過敏'];
 let selSymTags=new Set(),selSeverityVal=5;
 
+
+// ══ 血壓記錄 ══════════════════════════════════════════════════════
+function loadBpRecords(){try{return JSON.parse(localStorage.getItem('bp_records')||'[]');}catch{return[];}}
+function saveBpRecords(arr){localStorage.setItem('bp_records',JSON.stringify(arr));}
+
+var _bpMeds=false;
+
+function openBpSheet(editId){
+  var now=new Date();
+  _bpMeds=false;
+  document.getElementById('bpDate').value=todayDate();
+  document.getElementById('bpTime').value=now.toTimeString().slice(0,5);
+  document.getElementById('bpSys').value='';
+  document.getElementById('bpDia').value='';
+  document.getElementById('bpHr').value='';
+  document.getElementById('bpNote').value='';
+  document.getElementById('bpEditId').value='';
+  if(editId){
+    var rec=loadBpRecords().find(function(b){return b.id===editId;});
+    if(rec){
+      document.getElementById('bpDate').value=rec.date;
+      document.getElementById('bpTime').value=rec.time;
+      document.getElementById('bpSys').value=rec.sys||'';
+      document.getElementById('bpDia').value=rec.dia||'';
+      document.getElementById('bpHr').value=rec.hr||'';
+      document.getElementById('bpNote').value=rec.note||'';
+      document.getElementById('bpEditId').value=editId;
+      _bpMeds=rec.meds||false;
+    }
+  }
+  renderBpMedsBtn();
+  document.getElementById('bpSheet').style.display='flex';
+}
+function closeBpSheet(){document.getElementById('bpSheet').style.display='none';}
+
+function toggleBpMeds(){_bpMeds=!_bpMeds;renderBpMedsBtn();}
+function renderBpMedsBtn(){
+  document.getElementById('bpMedsIcon').className=_bpMeds?'bp-meds-on':'bp-meds-off';
+  document.getElementById('bpMedsLabel').textContent=_bpMeds?'已服藥':'未服藥';
+  document.getElementById('bpMedsLabel').style.color=_bpMeds?'#5b8cbf':'#bbb';
+}
+
+function saveBp(){
+  var date=document.getElementById('bpDate').value;
+  var time=document.getElementById('bpTime').value;
+  var sys=parseInt(document.getElementById('bpSys').value)||null;
+  var dia=parseInt(document.getElementById('bpDia').value)||null;
+  var hr=parseInt(document.getElementById('bpHr').value)||null;
+  var note=document.getElementById('bpNote').value.trim();
+  var editId=document.getElementById('bpEditId').value;
+  if(!date){showToast('請選擇日期');return;}
+  if(!sys||!dia){showToast('請輸入收縮壓和舒張壓');return;}
+  var recs=loadBpRecords();
+  var rec={id:editId||uid(),date:date,time:time,sys:sys,dia:dia,hr:hr,meds:_bpMeds,note:note};
+  if(editId){var i=recs.findIndex(function(b){return b.id===editId;});if(i>=0)recs[i]=rec;else recs.push(rec);}
+  else recs.push(rec);
+  saveBpRecords(recs);
+  closeBpSheet();rerender();showToast('✅ 已記錄血壓');
+}
+
+function isHighBp(sys,dia){return sys>=140||dia>=90;}
+
+
+// ══ 血壓分頁 ══════════════════════════════════════════════════════
+var bpTabYear=new Date().getFullYear(),bpTabMonth=new Date().getMonth();
+
+
+function buildBpSymCorrelationHtml(bpRecs, symRecs){
+  if(!bpRecs.length||!symRecs.length) return '';
+  var symDates=new Set(symRecs.map(function(s){return s.date;}));
+  var bpOnSym=[],bpNoSym=[];
+  bpRecs.forEach(function(b){
+    if(symDates.has(b.date))bpOnSym.push(b);
+    else bpNoSym.push(b);
+  });
+  function avgBp(arr){
+    if(!arr.length)return null;
+    var s=arr.reduce(function(a,b){return a+b.sys;},0);
+    var d=arr.reduce(function(a,b){return a+b.dia;},0);
+    return {sys:Math.round(s/arr.length),dia:Math.round(d/arr.length)};
+  }
+  var avgSym=avgBp(bpOnSym),avgNone=avgBp(bpNoSym);
+  if(!avgSym&&!avgNone) return '';
+  var html='<div class="stat-section">';
+  html+='<div class="stat-title">血壓與症狀關聯</div>';
+  html+='<div class="stat-card">';
+  if(avgSym){
+    var hi=isHighBp(avgSym.sys,avgSym.dia);
+    html+='<div class="stat-row">'
+      +'<span style="font-size:13px;font-weight:600;color:#9b7fc8;min-width:64px">有症狀日</span>'
+      +'<span style="font-size:15px;font-weight:800;color:'+(hi?'#e53935':'#2c2416')+'">'+avgSym.sys+'/'+avgSym.dia+'</span>'
+      +(hi?'<span style="font-size:11px;background:#fce4ec;color:#e53935;padding:2px 6px;border-radius:99px;margin-left:6px;font-weight:700">偏高</span>':'')
+      +'<span style="font-size:11px;color:#bbb;margin-left:6px">'+bpOnSym.length+' 筆</span>'
+      +'</div>';
+  }
+  if(avgNone){
+    var hi2=isHighBp(avgNone.sys,avgNone.dia);
+    html+='<div class="stat-row">'
+      +'<span style="font-size:13px;font-weight:600;color:#8b6f47;min-width:64px">無症狀日</span>'
+      +'<span style="font-size:15px;font-weight:800;color:'+(hi2?'#e53935':'#2c2416')+'">'+avgNone.sys+'/'+avgNone.dia+'</span>'
+      +(hi2?'<span style="font-size:11px;background:#fce4ec;color:#e53935;padding:2px 6px;border-radius:99px;margin-left:6px;font-weight:700">偏高</span>':'')
+      +'<span style="font-size:11px;color:#bbb;margin-left:6px">'+bpNoSym.length+' 筆</span>'
+      +'</div>';
+  }
+  // 差值提示
+  if(avgSym&&avgNone){
+    var diffSys=avgSym.sys-avgNone.sys;
+    var diffDia=avgSym.dia-avgNone.dia;
+    if(Math.abs(diffSys)>=5||Math.abs(diffDia)>=5){
+      html+='<div style="font-size:12px;color:#9b7fc8;padding:6px 0 2px;font-weight:600">'
+        +(diffSys>0?'▲':'▼')+' 有症狀日血壓比無症狀日'+(diffSys>0?'高':'低')+' '+Math.abs(diffSys)+'/'+Math.abs(diffDia)+' mmHg'
+        +'</div>';
+    }
+  }
+  html+='</div></div>';
+  return html;
+}
+function renderBpTab(){
+  var el=document.getElementById('viewBp');
+  if(!el)return;
+  var recs=loadBpRecords();
+  var prefix=bpTabYear+'-'+(bpTabMonth+1<10?'0':'')+(bpTabMonth+1);
+  var month=recs.filter(function(b){return b.date.startsWith(prefix);});
+  month.sort(function(a,b){return a.date.localeCompare(b.date)||a.time.localeCompare(b.time);});
+
+  // 月平均（整體 + 早/晚分開）
+  // 早：0-11點；晚：12-23點
+  var morn=month.filter(function(b){return parseInt(b.time.slice(0,2))<12;});
+  var eve=month.filter(function(b){return parseInt(b.time.slice(0,2))>=12;});
+  function calcAvg(arr){
+    if(!arr.length)return null;
+    var s=arr.reduce(function(a,b){return a+b.sys;},0);
+    var d=arr.reduce(function(a,b){return a+b.dia;},0);
+    var hr=arr.filter(function(b){return b.hr;});
+    var avgH=hr.length?Math.round(hr.reduce(function(a,b){return a+b.hr;},0)/hr.length):null;
+    return {sys:Math.round(s/arr.length),dia:Math.round(d/arr.length),hr:avgH};
+  }
+  var avgAll=calcAvg(month),avgMorn=calcAvg(morn),avgEve=calcAvg(eve);
+  var avgSys=avgAll?avgAll.sys:0,avgDia=avgAll?avgAll.dia:0,avgHr=avgAll?avgAll.hr:null;
+  var hrCount=avgHr?1:0;
+  var avgHigh=avgAll&&isHighBp(avgAll.sys,avgAll.dia);
+  var medsCount=month.filter(function(b){return b.meds;}).length;
+
+  var html='';
+  // 月份切換
+  html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">';
+  html+='<button onclick="bpTabNav(-1)" style="background:#f5f0e8;border:none;border-radius:10px;padding:8px 16px;font-size:20px;cursor:pointer">‹</button>';
+  html+='<span style="font-weight:700;font-size:17px;color:#2c2416">'+bpTabYear+' / '+(bpTabMonth+1)+'</span>';
+  html+='<button onclick="bpTabNav(1)" style="background:#f5f0e8;border:none;border-radius:10px;padding:8px 16px;font-size:20px;cursor:pointer">›</button>';
+  html+='</div>';
+
+  if(!month.length){
+    html+='<div class="empty"><div class="empty-icon">🩸</div><div style="font-size:15px;color:#aaa">這個月沒有血壓記錄</div></div>';
+    el.innerHTML=html;return;
+  }
+
+  // 月摘要卡
+  html+='<div class="stat-card" style="margin-bottom:14px;padding:14px 16px">';
+  // 早晚血壓並排
+  html+='<div style="display:flex;gap:8px;margin-bottom:10px">';
+  function bpCell(label,avg,icon){
+    if(!avg)return '<div style="flex:1;text-align:center;background:#faf8f5;border-radius:10px;padding:10px 6px"><div style="font-size:11px;color:#bbb;margin-bottom:3px">'+icon+' '+label+'</div><div style="font-size:13px;color:#ccc">無資料</div></div>';
+    var hi=isHighBp(avg.sys,avg.dia);
+    return '<div style="flex:1;text-align:center;background:#faf8f5;border-radius:10px;padding:10px 6px">'
+      +'<div style="font-size:11px;color:#bbb;margin-bottom:3px">'+icon+' '+label+'</div>'
+      +'<div style="font-size:20px;font-weight:800;color:'+(hi?'#e53935':'#2c2416')+'">'+avg.sys+'/'+avg.dia+'</div>'
+      +(hi?'<div style="font-size:10px;color:#e53935;font-weight:700">偏高</div>':'')
+      +(avg.hr?'<div style="font-size:11px;color:#8b6f47">❤️ '+avg.hr+'</div>':'')
+      +'</div>';
+  }
+  html+=bpCell('早晨',avgMorn,'🌅');
+  html+=bpCell('下午/晚',avgEve,'🌙');
+  html+='</div>';
+  // 服藥統計
+  html+='<div style="display:flex;justify-content:space-between;align-items:center;padding-top:6px;border-top:1px solid #f0ece6">';
+  html+='<span style="font-size:12px;color:#bbb">本月共 '+month.length+' 筆記錄</span>';
+  html+='<span style="font-size:13px;font-weight:700;color:#5b8cbf">💊 服藥 '+medsCount+'/'+month.length+' 天</span>';
+  html+='</div>';
+  html+='</div>';
+
+  // 每日記錄列表（左滑編輯刪除，含當日症狀）
+  var allSyms=loadSymptoms();
+  var byDate={};
+  month.forEach(function(b){(byDate[b.date]=byDate[b.date]||[]).push(b);});
+  var dates=Object.keys(byDate).sort(function(a,b){return b.localeCompare(a);});
+  dates.forEach(function(date){
+    var dayRecs=byDate[date];
+    var daySyms=allSyms.filter(function(s){return s.date===date;});
+    daySyms.sort(function(a,b){return a.time.localeCompare(b.time);});
+    var wd=['日','一','二','三','四','五','六'][new Date(date).getDay()];
+    // 整天框在一個卡片裡
+    html+='<div style="background:#fff;border-radius:14px;border:1.5px solid #e0d8cc;margin-bottom:12px;overflow:hidden">';
+    // 日期標頭列
+    html+='<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #f0ece6">';
+    html+='<span style="font-size:16px;font-weight:800;color:#2c2416">'+date.slice(5).replace('-','/')+'</span>';
+    html+='<span style="font-size:13px;color:#bbb;font-weight:600">週'+wd+'</span>';
+    html+='</div>';
+    // 症狀區塊
+    if(daySyms.length){
+      html+='<div style="background:#f9f5ff;padding:8px 14px;border-bottom:1px solid #f0ece6">';
+      daySyms.forEach(function(s){
+        var sv=parseInt(s.severity)||5;
+        var sc=sevColor(sv);
+        html+='<div style="display:flex;align-items:center;gap:8px;padding:3px 0">';
+        html+='<span style="font-size:12px;color:#9b7fc8;font-weight:700;min-width:40px">'+s.time+'</span>';
+        html+='<span style="font-size:13px;color:#6b4fa0;font-weight:600">'+(s.tags||[]).join('・')+'</span>';
+        html+='<span style="margin-left:auto;font-size:11px;font-weight:700;background:'+sc+'22;color:'+sc+';padding:2px 6px;border-radius:99px">'+sv+'/10</span>';
+        html+='</div>';
+      });
+      html+='</div>';
+    }
+    // 血壓記錄（無外框，padding內縮）
+    html+='<div style="padding:6px 8px">';
+    dayRecs.forEach(function(b){
+      var high=isHighBp(b.sys,b.dia);
+      var bpColor=high?'#e53935':'#2c2416';
+      var pid='bp-'+b.id;
+      html+='<div class="tcard-wrap" id="wrap-'+pid+'" style="margin-bottom:4px">';
+      html+='<div class="tcard-inner" id="inn-'+pid+'"';
+      html+=' data-bpid="'+b.id+'" ontouchstart="bpSwipeStart(event,this.dataset.bpid)"';
+      html+=' ontouchmove="bpSwipeMove(event,this.dataset.bpid)"';
+      html+=' ontouchend="bpSwipeEnd(event,this.dataset.bpid)"';
+      html+=' style="background:#faf8f5;border-radius:10px;border-left:3px solid '+(high?'#e53935':'#5b8cbf')+';padding:9px 12px;display:flex;align-items:center;gap:10px">';
+      html+='<span style="font-size:12px;color:#bbb;min-width:40px">'+b.time+'</span>';
+      html+='<span style="font-size:18px;font-weight:800;color:'+bpColor+'">'+b.sys+'/'+b.dia+'</span>';
+      html+='<span style="font-size:11px;color:#bbb">mmHg</span>';
+      if(b.hr)html+='<span style="font-size:12px;color:#8b6f47;margin-left:2px">❤️'+b.hr+'</span>';
+      html+='<span style="margin-left:auto;font-size:15px;'+(b.meds?'':'filter:grayscale(1);opacity:.35')+'">💊</span>';
+      if(high)html+='<span style="font-size:10px;background:#fce4ec;color:#e53935;padding:2px 5px;border-radius:99px;font-weight:700">偏高</span>';
+      html+='</div>';
+      html+='<div class="tcard-action-right" id="aR-'+pid+'">';
+      html+='<button class="btn-swipe-edit" data-id="'+b.id+'" onclick="openBpSheet(this.dataset.id);closeBpSwipe()">✏️<span>編輯</span></button>';
+      html+='<button class="btn-swipe-del" data-id="'+b.id+'" onclick="deleteBpRec(this.dataset.id)">🗑<span>刪除</span></button>';
+      html+='</div>';
+      html+='</div>';
+    });
+    html+='</div>';
+    html+='</div>';
+  });
+
+  el.innerHTML=html;
+}
+
+
+// BP tab 左滑
+var _bpSwiped=null,_bpSwipeTouches={};
+function bpSwipeStart(ev,id){
+  var t=ev.touches[0];
+  _bpSwipeTouches[id]={x:t.clientX,y:t.clientY,moved:false};
+}
+function bpSwipeMove(ev,id){
+  var d=_bpSwipeTouches[id];if(!d)return;
+  var dx=ev.touches[0].clientX-d.x,dy=Math.abs(ev.touches[0].clientY-d.y);
+  if(dy>18&&Math.abs(dx)<dy)return;
+  if(Math.abs(dx)>5){d.moved=true;ev.preventDefault();}
+  var pid='bp-'+id;
+  var el=document.getElementById('inn-'+pid);if(!el)return;
+  var base=(_bpSwiped===id)?-SWIPE_W:0;
+  var off=Math.max(-SWIPE_W,Math.min(0,base+dx));
+  el.style.transition='none';el.style.transform='translateX('+off+'px)';
+  var aR=document.getElementById('aR-'+pid);
+  if(aR){var o=Math.min(1,-off/SWIPE_W);aR.style.opacity=String(o);aR.style.pointerEvents=o>.5?'auto':'none';}
+}
+function bpSwipeEnd(ev,id){
+  var d=_bpSwipeTouches[id];if(!d)return;
+  var dx=ev.changedTouches[0].clientX-d.x;
+  var pid='bp-'+id;
+  var el=document.getElementById('inn-'+pid);
+  if(!el){delete _bpSwipeTouches[id];return;}
+  el.style.transition='';
+  if(!d.moved){if(_bpSwiped&&_bpSwiped!==id)closeBpSwipe();delete _bpSwipeTouches[id];return;}
+  if(_bpSwiped&&_bpSwiped!==id)closeBpSwipe();
+  if(dx<-30){
+    closeBpSwipe();
+    var pid2='bp-'+id;
+    var el2=document.getElementById('inn-'+pid2);
+    if(el2)el2.style.transform='translateX(-'+SWIPE_W+'px)';
+    var aR=document.getElementById('aR-'+pid2);
+    if(aR){aR.style.opacity='1';aR.style.pointerEvents='auto';}
+    _bpSwiped=id;
+  } else {closeBpSwipe();}
+  delete _bpSwipeTouches[id];
+}
+function closeBpSwipe(){
+  if(!_bpSwiped)return;
+  var pid='bp-'+_bpSwiped;
+  var el=document.getElementById('inn-'+pid);
+  if(el)el.style.transform='';
+  var aR=document.getElementById('aR-'+pid);
+  if(aR){aR.style.opacity='0';aR.style.pointerEvents='none';}
+  _bpSwiped=null;
+}
+function bpTabNav(dir){
+  bpTabMonth+=dir;
+  if(bpTabMonth<0){bpTabMonth=11;bpTabYear--;}
+  if(bpTabMonth>11){bpTabMonth=0;bpTabYear++;}
+  renderBpTab();
+}
+
+function deleteBpRec(id){
+  if(!confirm('確定刪除？'))return;
+  saveBpRecords(loadBpRecords().filter(function(b){return b.id!==id;}));
+  renderBpTab();rerender();
+}
+function renderBpCard(e,ctx){
+  var sys=e.sys,dia=e.dia,hr=e.hr,high=isHighBp(sys,dia);
+  var pid=ctx+'-'+e.id;
+  var valHtml='<span class="bp-val'+(high?' high':'')+'">'
+    +sys+'/'+dia+'</span><span style="font-size:12px;color:#8b6f47;margin-left:4px">mmHg</span>';
+  var hrHtml=hr?'<span style="font-size:12px;color:#8b6f47;margin-left:8px">❤️ '+hr+'</span>':'';
+  var medsHtml='<span style="font-size:15px;margin-left:6px;'+(e.meds?'':'filter:grayscale(1);opacity:.35')+'">💊</span>';
+  var noteHtml=e.note?'<div class="tcard-note">'+esc(e.note)+'</div>':'';
+  var ts="ontouchstart=\"tsStart(event,'"+e.id+"','"+ctx+"')\"";
+  var tm="ontouchmove=\"tsMove(event,'"+e.id+"','"+ctx+"')\"";
+  var te="ontouchend=\"tsEnd(event,'"+e.id+"','"+ctx+"')\"";
+  var editBtn="onclick=\"doEditBp('"+e.id+"','"+ctx+"')\"";
+  var delBtn="onclick=\"doDel('"+e.id+"','"+ctx+"')\"";
+  return '<div class="tcard-wrap" id="wrap-'+pid+'">'
+    +'<div class="tcard-inner" id="inn-'+pid+'" '+ts+' '+tm+' '+te+'>'
+    +'<div class="tcard-time">'+e.time+'</div>'
+    +'<div class="tcard-body bp">'
+    +'<div class="tcard-content">'
+    +'<div class="tcard-row"><span class="tcard-name">🩸 血壓</span>'
+    +(high?'<span style="font-size:11px;background:#fce4ec;color:#e53935;padding:2px 7px;border-radius:99px;font-weight:700;margin-left:4px">偏高</span>':'')
+    +'</div>'
+    +'<div style="display:flex;align-items:center;margin:4px 0">'+valHtml+hrHtml+medsHtml+'</div>'
+    +noteHtml
+    +'</div></div></div>'
+    +'<div class="tcard-action-right" id="aR-'+pid+'">'
+    +'<button class="btn-swipe-edit" '+editBtn+'>✏️<span>編輯</span></button>'
+    +'<button class="btn-swipe-del" '+delBtn+'>🗑<span>刪除</span></button>'
+    +'</div></div>';
+}
+function doEditBp(id,ctx){closeSwipe();openBpSheet(id);}
+
+// URL Scheme 匯入：?bp=120/80&hr=72&meds=1&date=2026-04-14&time=08:00
+function checkUrlBpImport(){
+  var search=window.location.search;
+  if(!search||search.indexOf('bp=')<0)return;
+  var params=new URLSearchParams(search);
+  var bp=params.get('bp');
+  var hr=params.get('hr');
+  var meds=params.get('meds');
+  var date=params.get('date')||todayDate();
+  var time=params.get('time')||new Date().toTimeString().slice(0,5);
+  if(!bp)return;
+  var parts=bp.split('/');
+  var sys=parseInt(parts[0]);
+  var dia=parseInt(parts[1]);
+  if(!sys||!dia)return;
+  openBpSheet();
+  document.getElementById('bpSys').value=sys;
+  document.getElementById('bpDia').value=dia;
+  if(hr)document.getElementById('bpHr').value=hr;
+  document.getElementById('bpDate').value=date;
+  document.getElementById('bpTime').value=time;
+  _bpMeds=meds==='1';renderBpMedsBtn();
+  history.replaceState(null,'',window.location.pathname);
+}
 function loadSymptoms(){try{return JSON.parse(localStorage.getItem('symptoms')||'[]');}catch{return[];}}
 function saveSymptoms(arr){localStorage.setItem('symptoms',JSON.stringify(arr));}
 
@@ -1741,6 +2187,8 @@ function renderStats(){
     html+='<div class="stat-card">'+recentRows;
     if(filtered.length>5)html+='<div style="text-align:center;font-size:12px;color:#bbb;padding-top:6px">顯示最近 5 筆，共 '+filtered.length+' 筆</div>';
     html+='</div></div>';
+    // 血壓與症狀關聯
+    html+=buildBpSymCorrelationHtml(loadBpRecords().filter(function(b){return filtered.some(function(s){return s.date===b.date||true;});}),filtered);
   }
   el.innerHTML=html;
 }
@@ -1953,6 +2401,7 @@ if(!entries.length&&!loadSymptoms().length){
 renderChips();
 renderTimeline();
 setTimeout(scrollToToday,100);
+checkUrlBpImport();
 </script>
 </body>
 </html>
