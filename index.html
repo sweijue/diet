@@ -1786,7 +1786,7 @@ function renderBpTab(){
       +(avg.hr?'<div style="font-size:11px;color:#8b6f47">❤️ '+avg.hr+'</div>':'')
       +'</div>';
   }
-  html+=bpCell('早晨',avgMorn,'🌅');
+  html+=bpCell('早晨',avgMorn,'☀️');
   html+=bpCell('下午/晚',avgEve,'🌙');
   html+='</div>';
   // 服藥統計
@@ -1806,11 +1806,23 @@ function renderBpTab(){
     var daySyms=allSyms.filter(function(s){return s.date===date;});
     daySyms.sort(function(a,b){return a.time.localeCompare(b.time);});
     var wd=['日','一','二','三','四','五','六'][new Date(date).getDay()];
+    var dayMorn=dayRecs.filter(function(b){return parseInt(b.time.slice(0,2))<12;});
+    var dayEve=dayRecs.filter(function(b){return parseInt(b.time.slice(0,2))>=12;});
+    function dayAvg(arr){
+      if(!arr.length)return null;
+      return {sys:Math.round(arr.reduce(function(a,b){return a+b.sys;},0)/arr.length),
+              dia:Math.round(arr.reduce(function(a,b){return a+b.dia;},0)/arr.length)};
+    }
+    var daMorn=dayAvg(dayMorn),daEve=dayAvg(dayEve);
     // 整天框在一個卡片裡
     html+='<div style="background:#fff;border-radius:14px;border:1.5px solid #e0d8cc;margin-bottom:12px;overflow:hidden">';
     // 日期標頭列
-    html+='<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #f0ece6">';
-    html+='<span style="font-size:16px;font-weight:800;color:#2c2416">'+date.slice(5).replace('-','/')+'</span>';
+    html+='<div style="display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid #f0ece6;gap:8px">';
+    html+='<span style="font-size:16px;font-weight:800;color:#2c2416;min-width:48px">'+date.slice(5).replace('-','/')+'</span>';
+    html+='<div style="flex:1;display:flex;gap:6px">';
+    if(daMorn){var mHi=isHighBp(daMorn.sys,daMorn.dia);html+='<span style="font-size:12px;background:#fff8ec;border-radius:8px;padding:3px 8px;color:'+(mHi?'#e53935':'#8b6f47')+';font-weight:700">☀️ '+daMorn.sys+'/'+daMorn.dia+'</span>';}
+    if(daEve){var eHi=isHighBp(daEve.sys,daEve.dia);html+='<span style="font-size:12px;background:#f0f4ff;border-radius:8px;padding:3px 8px;color:'+(eHi?'#e53935':'#5b6abf')+';font-weight:700">🌙 '+daEve.sys+'/'+daEve.dia+'</span>';}
+    html+='</div>';
     html+='<span style="font-size:13px;color:#bbb;font-weight:600">週'+wd+'</span>';
     html+='</div>';
     // 症狀區塊
