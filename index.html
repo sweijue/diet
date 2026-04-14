@@ -234,7 +234,7 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
     <div class="tab-bar">
       <button class="tab-btn active" id="tabTimeline" onclick="switchTab('timeline')">⏱ 時間線</button>
       <button class="tab-btn" id="tabCalendar" onclick="switchTab('calendar')">📅 日曆</button>
-      <button class="tab-btn" id="tabBp" onclick="switchTab('bp')">🩸 血壓</button>
+      <button class="tab-btn" id="tabBp" onclick="switchTab('bp')">🫀 血壓</button>
       <button class="tab-btn" id="tabStats" onclick="switchTab('stats')">🩺 症狀統計</button>
     </div>
   </div>
@@ -391,7 +391,7 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
   <div class="sheet">
     <div class="sheet-header">
       <button class="sheet-cancel" onclick="closeBpSheet()">取消</button>
-      <span style="font-weight:700;font-size:16px;color:#2c2416">🩸 血壓記錄</span>
+      <span style="font-weight:700;font-size:16px;color:#2c2416">🫀 血壓記錄</span>
       <button class="sheet-save" onclick="saveBp()">儲存</button>
     </div>
     <div class="sheet-body">
@@ -538,7 +538,10 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
           <input type="checkbox" id="clearSymptom" onchange="updateClearInfo()" checked> 🩺 身體症狀
         </label>
         <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:#2c2416;font-weight:600;background:#faf8f5;padding:11px 13px;border-radius:10px;border:1.5px solid #e0d8cc">
-          <input type="checkbox" id="clearBp" onchange="updateClearInfo()" checked> 🩸 血壓記錄
+          <input type="checkbox" id="clearBp" onchange="updateClearInfo()" checked> 🫀 血壓記錄
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:#2c2416;font-weight:600;background:#faf8f5;padding:11px 13px;border-radius:10px;border:1.5px solid #e0d8cc">
+          <input type="checkbox" id="clearPeriod" onchange="updateClearInfo()" checked> 🩸 經期記錄
         </label>
       </div>
       <div class="clear-info" id="clearInfo">選擇日期後顯示將刪除的筆數</div>
@@ -1573,15 +1576,19 @@ function updateClearInfo(){
   const meal=document.getElementById('clearMeal')?.checked;
   const exer=document.getElementById('clearExercise')?.checked;
   const sym=document.getElementById('clearSymptom')?.checked;
+  const bp=document.getElementById('clearBp')?.checked;
+  const period=document.getElementById('clearPeriod')?.checked;
   const mc=meal?entries.filter(e=>e.type==='meal'&&e.date<d).length:0;
   const ec=exer?entries.filter(e=>e.type==='exercise'&&e.date<d).length:0;
   const sc=sym?loadSymptoms().filter(s=>s.date<d).length:0;
-  const bpc=document.getElementById('clearBp')?.checked?loadBpRecords().filter(b=>b.date<d).length:0;
+  const bpc=bp?loadBpRecords().filter(b=>b.date<d).length:0;
+  const pc=period?loadPeriods().filter(p=>p.end<d).length:0;
   const parts=[];
   if(mc)parts.push(`${mc} 筆飲食`);
   if(ec)parts.push(`${ec} 筆運動`);
   if(sc)parts.push(`${sc} 筆症狀`);
   if(bpc)parts.push(`${bpc} 筆血壓`);
+  if(pc)parts.push(`${pc} 筆經期`);
   document.getElementById('clearInfo').textContent=parts.length?`將刪除：${parts.join('、')}（${d} 之前）`:'沒有符合的記錄';
 }
 function confirmClear(){
@@ -1589,14 +1596,20 @@ function confirmClear(){
   const meal=document.getElementById('clearMeal')?.checked;
   const exer=document.getElementById('clearExercise')?.checked;
   const sym=document.getElementById('clearSymptom')?.checked;
+  const bp=document.getElementById('clearBp')?.checked;
+  const period=document.getElementById('clearPeriod')?.checked;
   const mc=meal?entries.filter(e=>e.type==='meal'&&e.date<d).length:0;
   const ec=exer?entries.filter(e=>e.type==='exercise'&&e.date<d).length:0;
   const sc=sym?loadSymptoms().filter(s=>s.date<d).length:0;
-  if(!mc&&!ec&&!sc){showToast('沒有符合的記錄');return;}
+  const bpc=bp?loadBpRecords().filter(b=>b.date<d).length:0;
+  const pc=period?loadPeriods().filter(p=>p.end<d).length:0;
+  if(!mc&&!ec&&!sc&&!bpc&&!pc){showToast('沒有符合的記錄');return;}
   const parts=[];
   if(mc)parts.push(`${mc} 筆飲食`);
   if(ec)parts.push(`${ec} 筆運動`);
   if(sc)parts.push(`${sc} 筆症狀`);
+  if(bpc)parts.push(`${bpc} 筆血壓`);
+  if(pc)parts.push(`${pc} 筆經期`);
   if(!confirm(`確定刪除 ${parts.join('、')}（${d} 之前）？`))return;
   if(meal||exer){
     entries=entries.filter(e=>{
@@ -1608,7 +1621,8 @@ function confirmClear(){
     saveEntries();
   }
   if(sym){saveSymptoms(loadSymptoms().filter(s=>s.date>=d));}
-  if(document.getElementById('clearBp')?.checked){saveBpRecords(loadBpRecords().filter(b=>b.date>=d));}
+  if(bp){saveBpRecords(loadBpRecords().filter(b=>b.date>=d));}
+  if(period){savePeriods(loadPeriods().filter(p=>p.end>=d));}
   rerender();closeClearSheet();showToast(`已清除 ${parts.join('、')}`);
 }
 function toggleDropdown(){const m=document.getElementById('dropdownMenu');if(m.style.display==='none'){m.style.display='block';calcStorage();}else m.style.display='none';}
@@ -1933,7 +1947,7 @@ function renderBpTab(){
   html+='</div>';
 
   if(!month.length){
-    html+='<div class="empty"><div class="empty-icon">🩸</div><div style="font-size:15px;color:#aaa">這個月沒有血壓記錄</div></div>';
+    html+='<div class="empty"><div class="empty-icon">🫀</div><div style="font-size:15px;color:#aaa">這個月沒有血壓記錄</div></div>';
     el.innerHTML=html;return;
   }
 
@@ -2116,7 +2130,7 @@ function renderBpCard(e,ctx){
     +'<div class="tcard-time">'+e.time+'</div>'
     +'<div class="tcard-body bp">'
     +'<div class="tcard-content">'
-    +'<div class="tcard-row"><span class="tcard-name">🩸 血壓</span>'
+    +'<div class="tcard-row"><span class="tcard-name">🫀 血壓</span>'
     +(high?'<span style="font-size:11px;background:#fce4ec;color:#e53935;padding:2px 7px;border-radius:99px;font-weight:700;margin-left:4px">偏高</span>':'')
     +'</div>'
     +'<div style="display:flex;align-items:center;margin:4px 0">'+valHtml+hrHtml+medsHtml+'</div>'
