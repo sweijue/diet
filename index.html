@@ -957,8 +957,13 @@ function switchTab(tab){
 function calPrev(){if(calMonth===0){calYear--;calMonth=11;}else calMonth--;renderCalendar();}
 function calNext(){if(calMonth===11){calYear++;calMonth=0;}else calMonth++;renderCalendar();}
 function goToday(){
+  var now=new Date();
   if(currentTab==='timeline'){calSelected=todayDate();scrollToToday();}
-  else{calYear=new Date().getFullYear();calMonth=new Date().getMonth();calSelected=todayDate();renderCalendar();}
+  else if(currentTab==='stats'){
+    statYear=now.getFullYear();statMonth=now.getMonth();
+    statDay=todayDate();renderStats();
+  }
+  else{calYear=now.getFullYear();calMonth=now.getMonth();calSelected=todayDate();renderCalendar();}
 }
 function scrollToDate(date){
   if(isCollapsed(date)){expandedDays.add(date);collapsedDays.delete(date);saveCollapsedState();renderTimeline();}
