@@ -1718,7 +1718,7 @@ function parseBpBatch(){
   var parsed=parseOmronText(text);
   if(!parsed.length){showToast('找不到血壓數值，請確認格式');return;}
 
-  // 去重：跟現有記錄比對
+  // 去重：跟現有記錄比對（同日期+同收縮壓+同舒張壓視為重複）
   var existing=loadBpRecords();
   var newRecs=[],dupRecs=[];
   parsed.forEach(function(p){
@@ -1729,30 +1729,41 @@ function parseBpBatch(){
     else newRecs.push(p);
   });
 
-  // 顯示預覽
   var prev=document.getElementById('bpBatchPreview')||document.getElementById('bpBatchPreview2');
   var html='<div style="background:#faf8f5;border-radius:10px;padding:10px;font-size:13px">';
-  html+='<div style="font-weight:700;color:#2c2416;margin-bottom:6px">解析到 '+parsed.length+' 筆';
-  if(dupRecs.length)html+='，'+dupRecs.length+' 筆重複跳過';
+  html+='<div style="font-weight:700;color:#2c2416;margin-bottom:8px">解析到 '+parsed.length+' 筆';
+  if(dupRecs.length)html+='（'+dupRecs.length+' 筆重複）';
   html+='</div>';
-  newRecs.forEach(function(p){
-    var hi=isHighBp(p.sys,p.dia);
-    html+='<div style="display:flex;gap:8px;align-items:center;padding:4px 0;border-bottom:1px solid #f0ece6">';
-    html+='<span style="color:#bbb;min-width:80px">'+p.date.slice(5)+' '+p.time+'</span>';
-    html+='<span style="font-weight:700;color:'+(hi?'#e53935':'#2c2416')+'">'+p.sys+'/'+p.dia+'</span>';
-    if(p.hr)html+='<span style="color:#8b6f47">❤️'+p.hr+'</span>';
-    if(hi)html+='<span style="font-size:10px;background:#fce4ec;color:#e53935;padding:1px 5px;border-radius:99px">偏高</span>';
-    html+='</div>';
-  });
-  if(dupRecs.length){
-    html+='<div style="color:#bbb;margin-top:6px;font-size:12px">已跳過：';
-    html+=dupRecs.map(function(p){return p.date.slice(5)+' '+p.sys+'/'+p.dia;}).join('、');
-    html+='</div>';
+
+  // 新記錄
+  if(newRecs.length){
+    html+='<div style="font-size:11px;font-weight:700;color:#5b8cbf;margin-bottom:4px">✅ 新增 '+newRecs.length+' 筆</div>';
+    newRecs.forEach(function(p){
+      var hi=isHighBp(p.sys,p.dia);
+      html+='<div style="display:flex;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid #f0ece6">';
+      html+='<span style="color:#bbb;min-width:80px">'+p.date.slice(5)+' '+p.time+'</span>';
+      html+='<span style="font-weight:700;color:'+(hi?'#e53935':'#2c2416')+'">'+p.sys+'/'+p.dia+'</span>';
+      if(p.hr)html+='<span style="color:#8b6f47">❤️'+p.hr+'</span>';
+      if(hi)html+='<span style="font-size:10px;background:#fce4ec;color:#e53935;padding:1px 5px;border-radius:99px">偏高</span>';
+      html+='</div>';
+    });
   }
+
+  // 重複記錄
+  if(dupRecs.length){
+    html+='<div style="font-size:11px;font-weight:700;color:#bbb;margin:8px 0 4px">⚠️ 已存在，略過 '+dupRecs.length+' 筆</div>';
+    dupRecs.forEach(function(p){
+      html+='<div style="display:flex;gap:8px;align-items:center;padding:4px 0;border-bottom:1px solid #f0ece6;opacity:.5">';
+      html+='<span style="color:#bbb;min-width:80px">'+p.date.slice(5)+' '+p.time+'</span>';
+      html+='<span style="color:#bbb">'+p.sys+'/'+p.dia+'</span>';
+      html+='</div>';
+    });
+  }
+
   if(newRecs.length){
     html+='<button onclick="confirmBpBatch()" style="width:100%;margin-top:10px;background:#5b8cbf;border:none;border-radius:10px;padding:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">✅ 確認儲存 '+newRecs.length+' 筆</button>';
   } else {
-    html+='<div style="color:#bbb;margin-top:8px;text-align:center">所有記錄都已存在</div>';
+    html+='<div style="color:#bbb;margin-top:8px;text-align:center;padding:6px">所有記錄都已存在，無需重複儲存</div>';
   }
   html+='</div>';
   prev.innerHTML=html;
@@ -1765,9 +1776,13 @@ function confirmBpBatch(){
   if(!newRecs||!newRecs.length)return;
   var recs=loadBpRecords();
   newRecs.forEach(function(p){
-    recs.push({id:uid(),date:p.date,time:p.time,sys:p.sys,dia:p.dia,hr:p.hr,meds:false,note:''});
+    recs.push({id:uid(),date:p.date,time:p.time,sys:p.sys,dia:p.dia,hr:p.hr||null,meds:false,note:''});
   });
   saveBpRecords(recs);
+  // 清空輸入框和預覽
+  var ta=document.getElementById('bpBatchText');
+  if(ta)ta.value='';
+  prev.innerHTML='';
   rerender();
   if(currentTab==='bp')renderBpTab();
   closeBpSheet();
