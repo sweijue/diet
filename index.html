@@ -445,14 +445,23 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
       <span style="width:40px"></span>
     </div>
     <div class="sheet-body">
-      <div style="font-size:15px;color:#2c2416;font-weight:600;margin-bottom:6px">清除此日期之前的記錄</div>
-      <input type="date" id="clearDate" class="clear-date-input" oninput="updateClearInfo()">
-      <div style="display:flex;gap:14px;margin:10px 0 4px">
-        <label style="display:flex;align-items:center;gap:6px;font-size:14px;color:#2c2416;font-weight:600">
-          <input type="checkbox" id="clearMeal" checked> 飲食/運動
+      <div class="form-label">清除此日期之前的記錄</div>
+      <div class="datetime-group" style="margin-bottom:10px">
+        <div class="datetime-row">
+          <span class="datetime-label">日期</span>
+          <input type="date" id="clearDate" class="datetime-input" oninput="updateClearInfo()">
+        </div>
+      </div>
+      <div class="form-label">清除範圍</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">
+        <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:#2c2416;font-weight:600;background:#faf8f5;padding:11px 13px;border-radius:10px;border:1.5px solid #e0d8cc">
+          <input type="checkbox" id="clearMeal" onchange="updateClearInfo()" checked> 🍽 飲食記錄
         </label>
-        <label style="display:flex;align-items:center;gap:6px;font-size:14px;color:#2c2416;font-weight:600">
-          <input type="checkbox" id="clearSymptom" checked> 身體症狀
+        <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:#2c2416;font-weight:600;background:#faf8f5;padding:11px 13px;border-radius:10px;border:1.5px solid #e0d8cc">
+          <input type="checkbox" id="clearExercise" onchange="updateClearInfo()" checked> 🏃 運動記錄
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:#2c2416;font-weight:600;background:#faf8f5;padding:11px 13px;border-radius:10px;border:1.5px solid #e0d8cc">
+          <input type="checkbox" id="clearSymptom" onchange="updateClearInfo()" checked> 🩺 身體症狀
         </label>
       </div>
       <div class="clear-info" id="clearInfo">選擇日期後顯示將刪除的筆數</div>
@@ -1461,22 +1470,40 @@ function closeClearIfBg(ev){if(ev.target===document.getElementById('clearSheet')
 function updateClearInfo(){
   const d=document.getElementById('clearDate').value;if(!d)return;
   const meal=document.getElementById('clearMeal')?.checked;
+  const exer=document.getElementById('clearExercise')?.checked;
   const sym=document.getElementById('clearSymptom')?.checked;
-  const mc=meal?entries.filter(e=>e.date<d).length:0;
+  const mc=meal?entries.filter(e=>e.type==='meal'&&e.date<d).length:0;
+  const ec=exer?entries.filter(e=>e.type==='exercise'&&e.date<d).length:0;
   const sc=sym?loadSymptoms().filter(s=>s.date<d).length:0;
-  const parts=[];if(mc)parts.push(`${mc} 筆飲食/運動`);if(sc)parts.push(`${sc} 筆症狀`);
+  const parts=[];
+  if(mc)parts.push(`${mc} 筆飲食`);
+  if(ec)parts.push(`${ec} 筆運動`);
+  if(sc)parts.push(`${sc} 筆症狀`);
   document.getElementById('clearInfo').textContent=parts.length?`將刪除：${parts.join('、')}（${d} 之前）`:'沒有符合的記錄';
 }
 function confirmClear(){
   const d=document.getElementById('clearDate').value;if(!d){showToast('請選擇日期');return;}
   const meal=document.getElementById('clearMeal')?.checked;
+  const exer=document.getElementById('clearExercise')?.checked;
   const sym=document.getElementById('clearSymptom')?.checked;
-  const mc=meal?entries.filter(e=>e.date<d).length:0;
+  const mc=meal?entries.filter(e=>e.type==='meal'&&e.date<d).length:0;
+  const ec=exer?entries.filter(e=>e.type==='exercise'&&e.date<d).length:0;
   const sc=sym?loadSymptoms().filter(s=>s.date<d).length:0;
-  if(!mc&&!sc){showToast('沒有符合的記錄');return;}
-  const parts=[];if(mc)parts.push(`${mc} 筆飲食/運動`);if(sc)parts.push(`${sc} 筆症狀`);
+  if(!mc&&!ec&&!sc){showToast('沒有符合的記錄');return;}
+  const parts=[];
+  if(mc)parts.push(`${mc} 筆飲食`);
+  if(ec)parts.push(`${ec} 筆運動`);
+  if(sc)parts.push(`${sc} 筆症狀`);
   if(!confirm(`確定刪除 ${parts.join('、')}（${d} 之前）？`))return;
-  if(meal){entries=entries.filter(e=>e.date>=d);saveEntries();}
+  if(meal||exer){
+    entries=entries.filter(e=>{
+      if(e.date>=d)return true;
+      if(e.type==='meal'&&meal)return false;
+      if(e.type==='exercise'&&exer)return false;
+      return true;
+    });
+    saveEntries();
+  }
   if(sym){saveSymptoms(loadSymptoms().filter(s=>s.date>=d));}
   rerender();closeClearSheet();showToast(`已清除 ${parts.join('、')}`);
 }
@@ -1606,104 +1633,105 @@ function doEditSym(id,ctx){closeSwipe();openSymptomSheet(id);}
 // editEntry 需要處理 symptom
 
 // ══ 統計 ══════════════════════════════════════════════════════════
-let statPeriod='month'; // 'month' | 'year'
+let statPeriod='month'; // 'day' | 'month' | 'year'
 let _statsInited=false;
-let statYear=new Date().getFullYear(),statMonth=new Date().getMonth();
+let statYear=new Date().getFullYear(),statMonth=new Date().getMonth(),statDay=new Date().toISOString().slice(0,10);
+
 function initStatPeriod(){
-  // 找最新有症狀的月份作為預設
   const syms=loadSymptoms();
   if(!syms.length)return;
   const latest=syms.map(s=>s.date).sort().pop();
-  if(latest){statYear=parseInt(latest.slice(0,4));statMonth=parseInt(latest.slice(5,7))-1;}
+  if(latest){
+    statYear=parseInt(latest.slice(0,4));
+    statMonth=parseInt(latest.slice(5,7))-1;
+    statDay=latest;
+  }
 }
 
 function renderStats(){
   const el=document.getElementById('viewStats');
+  if(!el)return;
   const syms=loadSymptoms();
-  const now=new Date();
 
-  // 篩選範圍
+  // 篩選
   let filtered,label;
-  if(statPeriod==='month'){
-    const y=statYear,m=statMonth;
-    const prefix=`${y}-${String(m+1).padStart(2,'0')}`;
+  if(statPeriod==='day'){
+    filtered=syms.filter(s=>s.date===statDay);
+    label=statDay.replace(/-/g,'/');
+  } else if(statPeriod==='month'){
+    const prefix=`${statYear}-${String(statMonth+1).padStart(2,'0')}`;
     filtered=syms.filter(s=>s.date.startsWith(prefix));
-    label=`${y} 年 ${m+1} 月`;
+    label=`${statYear}/${statMonth+1}`;
   } else {
     filtered=syms.filter(s=>s.date.startsWith(String(statYear)));
     label=`${statYear} 年`;
   }
 
-  // 統計
   const tagCount={};
   filtered.forEach(s=>(s.tags||[]).forEach(t=>{tagCount[t]=(tagCount[t]||0)+1;}));
-
   const sorted=Object.entries(tagCount).sort((a,b)=>b[1]-a[1]);
   const maxCount=sorted[0]?.[1]||1;
-
-  // 月份切換列
-  const months=[];
-  for(let i=0;i<12;i++) months.push(i);
+  const avgSev=filtered.length?(filtered.reduce((a,s)=>a+(parseInt(s.severity)||5),0)/filtered.length).toFixed(1):null;
 
   el.innerHTML=`
-<div class="stat-period-bar">
+<div class="stat-period-bar" style="margin-bottom:12px">
+  <button class="stat-period-btn${statPeriod==='day'?' active':''}" onclick="statPeriod='day';renderStats()">日</button>
   <button class="stat-period-btn${statPeriod==='month'?' active':''}" onclick="statPeriod='month';renderStats()">月</button>
   <button class="stat-period-btn${statPeriod==='year'?' active':''}" onclick="statPeriod='year';renderStats()">年</button>
 </div>
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-  <button onclick="statNav(-1)" style="background:#f5f0e8;border:none;border-radius:10px;padding:8px 14px;font-size:18px;cursor:pointer">‹</button>
-  <span style="font-weight:700;font-size:16px;color:#2c2416">${label}</span>
-  <button onclick="statNav(1)" style="background:#f5f0e8;border:none;border-radius:10px;padding:8px 14px;font-size:18px;cursor:pointer">›</button>
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+  <button onclick="statNav(-1)" style="background:#f5f0e8;border:none;border-radius:10px;padding:8px 16px;font-size:20px;cursor:pointer">‹</button>
+  <span style="font-weight:700;font-size:17px;color:#2c2416">${label}</span>
+  <button onclick="statNav(1)" style="background:#f5f0e8;border:none;border-radius:10px;padding:8px 16px;font-size:20px;cursor:pointer">›</button>
 </div>
-
-${filtered.length===0?`<div class="empty"><div class="empty-icon">🩺</div><div style="font-size:15px;color:#aaa">這段期間沒有症狀記錄</div></div>`:`
-<div class="stat-section">
-  <div class="stat-title">症狀出現次數</div>
+${filtered.length===0
+  ? `<div class="empty"><div class="empty-icon">🩺</div><div style="font-size:15px;color:#aaa">這段期間沒有症狀記錄</div></div>`
+  : `<div class="stat-section">
+  <div class="stat-title">共 ${filtered.length} 筆 ${avgSev?`・平均嚴重度 ${avgSev}/10`:''}</div>
   <div class="stat-card">
-    ${sorted.length?sorted.map(([tag,cnt])=>`
+    ${sorted.map(([tag,cnt])=>`
     <div class="stat-row">
       <span style="font-size:13px;color:#2c2416;font-weight:600;min-width:72px">${esc(tag)}</span>
       <div class="stat-bar-wrap"><div class="stat-bar-fill" style="width:${Math.round(cnt/maxCount*100)}%"></div></div>
       <span class="stat-num">${cnt}</span>
-    </div>`).join(''):'<div style="color:#bbb;font-size:13px">無資料</div>'}
+    </div>`).join('')}
   </div>
 </div>
-
 <div class="stat-section">
-  <div class="stat-title">嚴重程度分布</div>
+  <div class="stat-title">嚴重程度</div>
   <div class="stat-card">
-    ${[['1-3','輕微','#4caf50'],['4-6','中等','#f59c00'],['7-10','嚴重','#e53935']].map(([range,label,color])=>{
-      const cnt=filtered.filter(s=>{const v=parseInt(s.severity)||5;if(range==='1-3')return v<=3;if(range==='4-6')return v>=4&&v<=6;return v>=7;}).length;
+    ${[['1–3','輕微','#4caf50',v=>v<=3],['4–6','中等','#f59c00',v=>v>=4&&v<=6],['7–10','嚴重','#e53935',v=>v>=7]].map(([range,label,color,fn])=>{
+      const cnt=filtered.filter(s=>fn(parseInt(s.severity)||5)).length;
       const pct=filtered.length?Math.round(cnt/filtered.length*100):0;
       return `<div class="stat-row">
-        <span style="font-size:13px;font-weight:600;min-width:52px;color:#2c2416">${label}</span>
+        <span style="font-size:13px;font-weight:600;min-width:60px;color:${color}">${label}</span>
         <div class="stat-bar-wrap"><div class="stat-bar-fill" style="width:${pct}%;background:${color}"></div></div>
         <span class="stat-num" style="color:${color}">${cnt}</span>
       </div>`;
     }).join('')}
-    <div style="padding-top:8px;text-align:center;font-size:13px;color:#8b6f47;font-weight:600">
-      平均嚴重程度：${filtered.length?(filtered.reduce((a,s)=>a+(parseInt(s.severity)||5),0)/filtered.length).toFixed(1):'-'} / 10
-    </div>
   </div>
 </div>
-
 <div class="stat-section">
-  <div class="stat-title">共 ${filtered.length} 筆記錄</div>
+  <div class="stat-title">最近記錄</div>
   <div class="stat-card">
-    ${filtered.slice().reverse().slice(0,5).map(s=>`
-    <div class="stat-row">
-      <span style="font-size:12px;color:#bbb;min-width:56px">${s.date.slice(5)} ${s.time}</span>
-      <span style="flex:1;font-size:13px;color:#2c2416">${(s.tags||[]).join('、')}</span>
-      <span class="sev-score" style="background:${sevColor(parseInt(s.severity)||5)}22;color:${sevColor(parseInt(s.severity)||5)}">${parseInt(s.severity)||5}/10</span>
-    </div>`).join('')}
-    ${filtered.length>5?`<div style="text-align:center;font-size:12px;color:#bbb;padding-top:6px">最近 5 筆，共 ${filtered.length} 筆</div>`:''}
+    ${filtered.slice().sort((a,b)=>b.date.localeCompare(a.date)||b.time.localeCompare(a.time)).slice(0,5).map(s=>{
+      const sv=parseInt(s.severity)||5;const sc=sevColor(sv);
+      return `<div class="stat-row">
+        <span style="font-size:12px;color:#bbb;min-width:60px">${s.date.slice(5)} ${s.time}</span>
+        <span style="flex:1;font-size:13px;color:#2c2416;margin:0 8px">${(s.tags||[]).join('、')}</span>
+        <span class="sev-score" style="background:${sc}22;color:${sc}">${sv}/10</span>
+      </div>`;
+    }).join('')}
+    ${filtered.length>5?`<div style="text-align:center;font-size:12px;color:#bbb;padding-top:6px">顯示最近 5 筆，共 ${filtered.length} 筆</div>`:''}
   </div>
-</div>
-`}`;
+</div>`}`;
 }
 
 function statNav(dir){
-  if(statPeriod==='month'){
+  if(statPeriod==='day'){
+    const d=new Date(statDay);d.setDate(d.getDate()+dir);
+    statDay=d.toISOString().slice(0,10);
+  } else if(statPeriod==='month'){
     statMonth+=dir;
     if(statMonth<0){statMonth=11;statYear--;}
     if(statMonth>11){statMonth=0;statYear++;}
