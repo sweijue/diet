@@ -430,13 +430,7 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
           <div class="bp-lbl">心率 bpm</div>
         </div>
       </div>
-      <div style="margin-bottom:14px">
-        <div class="form-label">服藥</div>
-        <button id="bpMedsBtn" onclick="toggleBpMeds()" style="background:#f5f0e8;border:none;border-radius:12px;padding:10px 20px;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px">
-          <span id="bpMedsIcon" class="bp-meds-off">💊</span>
-          <span id="bpMedsLabel" style="color:#bbb">未服藥</span>
-        </button>
-      </div>
+
       <div class="form-label">備注</div>
       <textarea id="bpNote" class="form-textarea" rows="2" placeholder="量測情況、姿勢…"></textarea>
       <input type="hidden" id="bpEditId" value="">
@@ -859,6 +853,7 @@ function renderTimeline(){
     <span class="day-name">${fmtDate(date)}</span>
     ${isToday?'<span class="today-badge">今天</span>':''}
     ${isInPeriod(date)?'<span style="font-size:15px;line-height:1">🩸</span>':''}
+    ${(()=>{const bps=loadBpRecords().filter(b=>b.date===date);return bps.length&&bps.some(b=>b.meds)?'<span style="font-size:15px;line-height:1">💊</span>':bps.length?'<span style="font-size:15px;line-height:1;filter:grayscale(1);opacity:.35">💊</span>':''})()}
     <span id="tbadge-${date}" style="display:${col?'inline-block':'none'};font-size:11px;background:#e8e2d8;color:#8b6f47;padding:2px 8px;border-radius:99px;font-weight:600">${de.length}筆</span>
   </div>
   <div style="display:flex;align-items:center;gap:8px">
@@ -1012,7 +1007,13 @@ function renderCalendar(){
     let dots='';if(active&&!photo){const en=(g[ds]||[]).slice(0,3);dots=`<div class="cal-dots">${en.map(e=>`<span class="cal-dot" style="background:${e.type==='meal'?'#c8a96e':e.type==='symptom'?'#9b7fc8':e.type==='bp'?'#5b8cbf':'#7aaa8a'}"></span>`).join('')}</div>`;}
     const cs=`background:${isSel?'#2c2416':other?'#f3f0ea':'#fff'};cursor:${other?'default':'pointer'}`;
     const cf=other?'':`onclick="calClick('${ds}')"`;
-    const pMark=!other&&isInPeriod(ds)?'<span style="position:absolute;top:3px;right:4px;font-size:10px;line-height:1;z-index:2">🩸</span>':'';
+    const bpDay=!other?loadBpRecords().filter(function(b){return b.date===ds;}):[];
+    const hasMedsDay=bpDay.some(function(b){return b.meds;});
+    const hasBpDay=bpDay.length>0;
+    const pMark=!other?
+      (isInPeriod(ds)?'<span style="position:absolute;top:3px;right:4px;font-size:10px;line-height:1;z-index:2">🩸</span>':'')
+      +(hasBpDay?'<span style="position:absolute;top:3px;right:'+(isInPeriod(ds)?'16':'4')+'px;font-size:10px;line-height:1;z-index:2;'+(hasMedsDay?'':'filter:grayscale(1);opacity:.4')+'">💊</span>':'')
+    :''
     return `<div class="cal-cell" style="${cs}" ${cf}>${pe}<div class="cal-cell-inner" style="position:relative">${pMark}<div class="cal-day-num" style="background:${nb};color:${nc};font-weight:${active?700:400}">${day}</div>${dots}</div></div>`;
   }).join('');
   const se=g[calSelected]||[];
@@ -1644,7 +1645,6 @@ let selSymTags=new Set(),selSeverityVal=5;
 function loadBpRecords(){try{return JSON.parse(localStorage.getItem('bp_records')||'[]');}catch{return[];}}
 function saveBpRecords(arr){localStorage.setItem('bp_records',JSON.stringify(arr));}
 
-var _bpMeds=false;
 
 
 // ══ 血壓批次解析 ══════════════════════════════════════════════════
@@ -1804,7 +1804,6 @@ function confirmBpBatch(){
 }
 function openBpSheet(editId){
   var now=new Date();
-  _bpMeds=false;
   document.getElementById('bpDate').value=todayDate();
   document.getElementById('bpTime').value=now.toTimeString().slice(0,5);
   document.getElementById('bpSys').value='';
@@ -1822,20 +1821,12 @@ function openBpSheet(editId){
       document.getElementById('bpHr').value=rec.hr||'';
       document.getElementById('bpNote').value=rec.note||'';
       document.getElementById('bpEditId').value=editId;
-      _bpMeds=rec.meds||false;
     }
   }
-  renderBpMedsBtn();
   document.getElementById('bpSheet').style.display='flex';
 }
 function closeBpSheet(){document.getElementById('bpSheet').style.display='none';}
 
-function toggleBpMeds(){_bpMeds=!_bpMeds;renderBpMedsBtn();}
-function renderBpMedsBtn(){
-  document.getElementById('bpMedsIcon').className=_bpMeds?'bp-meds-on':'bp-meds-off';
-  document.getElementById('bpMedsLabel').textContent=_bpMeds?'已服藥':'未服藥';
-  document.getElementById('bpMedsLabel').style.color=_bpMeds?'#5b8cbf':'#bbb';
-}
 
 function saveBp(){
   var date=document.getElementById('bpDate').value;
@@ -1848,7 +1839,7 @@ function saveBp(){
   if(!date){showToast('請選擇日期');return;}
   if(!sys||!dia){showToast('請輸入收縮壓和舒張壓');return;}
   var recs=loadBpRecords();
-  var rec={id:editId||uid(),date:date,time:time,sys:sys,dia:dia,hr:hr,meds:_bpMeds,note:note};
+  var rec={id:editId||uid(),date:date,time:time,sys:sys,dia:dia,hr:hr,meds:false,note:note};
   if(editId){var i=recs.findIndex(function(b){return b.id===editId;});if(i>=0)recs[i]=rec;else recs.push(rec);}
   else recs.push(rec);
   saveBpRecords(recs);
@@ -1885,18 +1876,18 @@ function buildBpSymCorrelationHtml(bpRecs, symRecs){
     var hi=isHighBp(avgSym.sys,avgSym.dia);
     html+='<div class="stat-row">'
       +'<span style="font-size:13px;font-weight:600;color:#9b7fc8;min-width:64px">有症狀日</span>'
-      +'<span style="font-size:15px;font-weight:800;color:'+(hi?'#e53935':'#2c2416')+'">'+avgSym.sys+'/'+avgSym.dia+'</span>'
-      +(hi?'<span style="font-size:11px;background:#fce4ec;color:#e53935;padding:2px 6px;border-radius:99px;margin-left:6px;font-weight:700">偏高</span>':'')
-      +'<span style="font-size:11px;color:#bbb;margin-left:6px">'+bpOnSym.length+' 筆</span>'
+      +'<span style="font-size:15px;font-weight:800;color:'+(hi?'#e53935':'#2c2416')+';min-width:76px">'+avgSym.sys+'/'+avgSym.dia+'</span>'
+      +(hi?'<span style="font-size:10px;background:#fce4ec;color:#e53935;padding:1px 5px;border-radius:99px;font-weight:700;white-space:nowrap">偏高</span>':'<span style="display:inline-block;min-width:32px"></span>')
+      +'<span style="font-size:11px;color:#bbb;margin-left:auto">'+bpOnSym.length+' 筆</span>'
       +'</div>';
   }
   if(avgNone){
     var hi2=isHighBp(avgNone.sys,avgNone.dia);
     html+='<div class="stat-row">'
       +'<span style="font-size:13px;font-weight:600;color:#8b6f47;min-width:64px">無症狀日</span>'
-      +'<span style="font-size:15px;font-weight:800;color:'+(hi2?'#e53935':'#2c2416')+'">'+avgNone.sys+'/'+avgNone.dia+'</span>'
-      +(hi2?'<span style="font-size:11px;background:#fce4ec;color:#e53935;padding:2px 6px;border-radius:99px;margin-left:6px;font-weight:700">偏高</span>':'')
-      +'<span style="font-size:11px;color:#bbb;margin-left:6px">'+bpNoSym.length+' 筆</span>'
+      +'<span style="font-size:15px;font-weight:800;color:'+(hi2?'#e53935':'#2c2416')+';min-width:76px">'+avgNone.sys+'/'+avgNone.dia+'</span>'
+      +(hi2?'<span style="font-size:10px;background:#fce4ec;color:#e53935;padding:1px 5px;border-radius:99px;font-weight:700;white-space:nowrap">偏高</span>':'<span style="display:inline-block;min-width:32px"></span>')
+      +'<span style="font-size:11px;color:#bbb;margin-left:auto">'+bpNoSym.length+' 筆</span>'
       +'</div>';
   }
   // 差值提示
@@ -2004,6 +1995,8 @@ function renderBpTab(){
     html+='</div>';
     html+='<span style="font-size:13px;color:#bbb;font-weight:600">週'+wd+'</span>';
     if(isInPeriod(date))html+='<span style="font-size:15px">🩸</span>';
+    var hasMeds=dayRecs.some(function(b){return b.meds;});
+    html+='<span data-date="'+date+'" onclick="toggleDayMeds(event,this.dataset.date)" style="font-size:18px;cursor:pointer;'+(hasMeds?'':'filter:grayscale(1);opacity:.35')+'">💊</span>';
     html+='</div>';
     // 症狀區塊
     if(daySyms.length){
@@ -2100,6 +2093,19 @@ function closeBpSwipe(){
   if(aR){aR.style.opacity='0';aR.style.pointerEvents='none';}
   _bpSwiped=null;
 }
+
+function toggleDayMeds(ev,date){
+  ev.stopPropagation();
+  var recs=loadBpRecords();
+  var dayRecs=recs.filter(function(b){return b.date===date;});
+  if(!dayRecs.length)return;
+  var hasMeds=dayRecs.some(function(b){return b.meds;});
+  // 切換：有吃→沒吃，沒吃→有吃（更新當天所有記錄）
+  dayRecs.forEach(function(b){b.meds=!hasMeds;});
+  saveBpRecords(recs);
+  renderBpTab();
+  rerender(); // 更新時間線
+}
 function bpTabNav(dir){
   bpTabMonth+=dir;
   if(bpTabMonth<0){bpTabMonth=11;bpTabYear--;}
@@ -2118,7 +2124,7 @@ function renderBpCard(e,ctx){
   var valHtml='<span class="bp-val'+(high?' high':'')+'">'
     +sys+'/'+dia+'</span><span style="font-size:12px;color:#8b6f47;margin-left:4px">mmHg</span>';
   var hrHtml=hr?'<span style="font-size:12px;color:#8b6f47;margin-left:8px">❤️ '+hr+'</span>':'';
-  var medsHtml='<span style="font-size:15px;margin-left:6px;'+(e.meds?'':'filter:grayscale(1);opacity:.35')+'">💊</span>';
+  var medsHtml='';
   var noteHtml=e.note?'<div class="tcard-note">'+esc(e.note)+'</div>':'';
   var ts="ontouchstart=\"tsStart(event,'"+e.id+"','"+ctx+"')\"";
   var tm="ontouchmove=\"tsMove(event,'"+e.id+"','"+ctx+"')\"";
@@ -2133,7 +2139,7 @@ function renderBpCard(e,ctx){
     +'<div class="tcard-row"><span class="tcard-name">🫀 血壓</span>'
     +(high?'<span style="font-size:11px;background:#fce4ec;color:#e53935;padding:2px 7px;border-radius:99px;font-weight:700;margin-left:4px">偏高</span>':'')
     +'</div>'
-    +'<div style="display:flex;align-items:center;margin:4px 0">'+valHtml+hrHtml+medsHtml+'</div>'
+    +'<div style="display:flex;align-items:center;margin:4px 0">'+valHtml+hrHtml+'</div>'
     +noteHtml
     +'</div></div></div>'
     +'<div class="tcard-action-right" id="aR-'+pid+'">'
@@ -2164,7 +2170,7 @@ function checkUrlBpImport(){
   if(hr)document.getElementById('bpHr').value=hr;
   document.getElementById('bpDate').value=date;
   document.getElementById('bpTime').value=time;
-  _bpMeds=meds==='1';renderBpMedsBtn();
+
   history.replaceState(null,'',window.location.pathname);
 }
 function loadSymptoms(){try{return JSON.parse(localStorage.getItem('symptoms')||'[]');}catch{return[];}}
