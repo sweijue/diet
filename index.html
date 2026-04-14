@@ -400,13 +400,15 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
     </div>
     <div class="sheet-body">
       <div style="margin-bottom:14px">
-        <div class="form-label">批次貼入多筆血壓</div>
-        <div style="display:flex;gap:8px;margin-bottom:6px">
-          <textarea id="bpBatchText" class="form-textarea" rows="5" style="flex:1;min-width:0" placeholder="從歐姆龍 App 複製貼上，支援多天多筆"></textarea>
-          <button onclick="bpBatchPaste()" style="background:#f5f0e8;border:none;border-radius:10px;padding:10px 12px;color:#8b6f47;font-size:20px;cursor:pointer;align-self:stretch">📋</button>
+        <button onclick="toggleBpBatchArea()" style="width:100%;background:#f0f4ff;border:1.5px dashed #5b8cbf;border-radius:12px;padding:10px;color:#5b8cbf;font-size:14px;font-weight:700;cursor:pointer">📋 批次貼入多筆血壓</button>
+        <div id="bpBatchArea2" style="display:none;margin-top:8px">
+          <div style="display:flex;gap:8px;margin-bottom:6px">
+            <textarea id="bpBatchText" class="form-textarea" rows="5" style="flex:1;min-width:0" placeholder="從歐姆龍 App 複製貼上，支援多天多筆"></textarea>
+            <button onclick="bpBatchPaste()" style="background:#f5f0e8;border:none;border-radius:10px;padding:10px 12px;color:#8b6f47;font-size:20px;cursor:pointer;align-self:stretch">📋</button>
+          </div>
+          <button onclick="parseBpBatch()" style="width:100%;background:#5b8cbf;border:none;border-radius:10px;padding:11px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">🔍 解析並預覽</button>
+          <div id="bpBatchPreview2" style="margin-top:8px"></div>
         </div>
-        <button onclick="parseBpBatch()" style="width:100%;background:#5b8cbf;border:none;border-radius:10px;padding:11px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">🔍 解析並預覽</button>
-        <div id="bpBatchPreview2" style="margin-top:8px"></div>
       </div>
       <div class="datetime-group" style="margin-bottom:14px">
         <div class="datetime-row">
@@ -420,17 +422,17 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
       </div>
       <div class="bp-input-row">
         <div class="bp-input-box">
-          <input type="number" id="bpSys" placeholder="120" min="60" max="250" inputmode="numeric" pattern="[0-9]*">
+          <input type="number" id="bpSys" placeholder="120" min="60" max="250" inputmode="decimal" pattern="[0-9]*">
           <div class="bp-lbl">收縮壓 mmHg</div>
         </div>
         <div class="bp-slash">/</div>
         <div class="bp-input-box">
-          <input type="number" id="bpDia" placeholder="80" min="40" max="150" inputmode="numeric" pattern="[0-9]*">
+          <input type="number" id="bpDia" placeholder="80" min="40" max="150" inputmode="decimal" pattern="[0-9]*">
           <div class="bp-lbl">舒張壓 mmHg</div>
         </div>
         <div class="bp-slash"> </div>
         <div class="bp-input-box">
-          <input type="number" id="bpHr" placeholder="72" min="30" max="220" inputmode="numeric" pattern="[0-9]*">
+          <input type="number" id="bpHr" placeholder="72" min="30" max="220" inputmode="decimal" pattern="[0-9]*">
           <div class="bp-lbl">心率 bpm</div>
         </div>
       </div>
@@ -1655,6 +1657,7 @@ function saveBpRecords(arr){localStorage.setItem('bp_records',JSON.stringify(arr
 
 
 // ══ 血壓批次解析 ══════════════════════════════════════════════════
+function toggleBpBatchArea(){var a=document.getElementById('bpBatchArea2');if(a)a.style.display=a.style.display==='none'?'block':'none';}
 async function bpBatchPaste(){
   try{
     const text=await navigator.clipboard.readText();
