@@ -355,6 +355,20 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
       <button class="sheet-save" onclick="saveSymptom()">儲存</button>
     </div>
     <div class="sheet-body">
+      <div style="margin-bottom:14px">
+        <button onclick="toggleBpBatch()" style="width:100%;background:#f0f4ff;border:1.5px dashed #5b8cbf;border-radius:12px;padding:11px;color:#5b8cbf;font-size:14px;font-weight:700;cursor:pointer">📋 批次貼入多筆血壓</button>
+        <div id="bpBatchArea" style="display:none;margin-top:8px">
+          <textarea id="bpBatchText" class="form-textarea" rows="6" placeholder="從歐姆龍 App 複製貼上，支援多天多筆：
+4月13日
+23:03
+132
+93
+56
+..."></textarea>
+          <button onclick="parseBpBatch()" style="width:100%;margin-top:6px;background:#5b8cbf;border:none;border-radius:10px;padding:11px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">🔍 解析並預覽</button>
+          <div id="bpBatchPreview" style="margin-top:8px"></div>
+        </div>
+      </div>
       <div class="datetime-group" style="margin-bottom:14px">
         <div class="datetime-row">
           <span class="datetime-label">日期</span>
@@ -395,6 +409,20 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
       <button class="sheet-save" onclick="saveBp()">儲存</button>
     </div>
     <div class="sheet-body">
+      <div style="margin-bottom:14px">
+        <button onclick="toggleBpBatch()" style="width:100%;background:#f0f4ff;border:1.5px dashed #5b8cbf;border-radius:12px;padding:11px;color:#5b8cbf;font-size:14px;font-weight:700;cursor:pointer">📋 批次貼入多筆血壓</button>
+        <div id="bpBatchArea" style="display:none;margin-top:8px">
+          <textarea id="bpBatchText" class="form-textarea" rows="6" placeholder="從歐姆龍 App 複製貼上，支援多天多筆：
+4月13日
+23:03
+132
+93
+56
+..."></textarea>
+          <button onclick="parseBpBatch()" style="width:100%;margin-top:6px;background:#5b8cbf;border:none;border-radius:10px;padding:11px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">🔍 解析並預覽</button>
+          <div id="bpBatchPreview" style="margin-top:8px"></div>
+        </div>
+      </div>
       <div class="datetime-group" style="margin-bottom:14px">
         <div class="datetime-row">
           <span class="datetime-label">日期</span>
@@ -1623,6 +1651,142 @@ function saveBpRecords(arr){localStorage.setItem('bp_records',JSON.stringify(arr
 
 var _bpMeds=false;
 
+
+// ══ 血壓批次解析 ══════════════════════════════════════════════════
+function toggleBpBatch(){
+  var a=document.getElementById('bpBatchArea');
+  a.style.display=a.style.display==='none'?'block':'none';
+}
+
+function parseOmronText(text){
+  var lines=text.split('\n').map(function(l){return l.trim();}).filter(function(l){return l;});
+  var results=[];
+  var curYear=new Date().getFullYear(),curMonth=null,curDate=null;
+
+  function extractNum(s){
+    var c=s.replace(/[^0-9]/g,'');
+    if(!c)return null;
+    var n=parseInt(c);
+    if(c.length===4&&c.endsWith('0')&&n>1000)return Math.round(n/10);
+    return n;
+  }
+  function isTime(s){return /\d{1,2}:\d{2}/.test(s);}
+  function extractTime(s){var m=s.match(/(\d{1,2}:\d{2})/);return m?m[1].padStart(5,'0'):null;}
+  function isBp(n){return n>=60&&n<=250;}
+  function isHr(n){return n>=30&&n<=200;}
+
+  // 標記每行
+  var tagged=lines.map(function(line,idx){
+    var ym=line.match(/(\d{4})年(\d{1,2})月/);
+    var dm=line.match(/(\d{1,2})月(\d{1,2})日/);
+    return {line:line,idx:idx,isTime:isTime(line),time:extractTime(line),
+            isYM:!!ym,ym:ym,isDM:!!dm,dm:dm,num:extractNum(line)};
+  });
+
+  // 傳播日期
+  var cy=curYear,cm=null,cd=null;
+  tagged.forEach(function(t){
+    if(t.isYM){cy=parseInt(t.ym[1]);cm=parseInt(t.ym[2]);}
+    if(t.isDM){cm=parseInt(t.dm[1]);cd=parseInt(t.dm[2]);}
+    t.year=cy;t.month=cm;t.date=cd;
+  });
+
+  var i=0;
+  while(i<tagged.length){
+    var t=tagged[i];
+    if(t.num!==null&&isBp(t.num)&&t.date){
+      var j=i+1,candidates=[];
+      while(j<tagged.length&&candidates.length<2){
+        if(tagged[j].isDM||tagged[j].isYM)break;
+        if(tagged[j].num!==null)candidates.push(tagged[j]);
+        j++;
+      }
+      if(candidates.length>=1&&isBp(candidates[0].num)){
+        var sys=t.num,dia=candidates[0].num;
+        var hr=candidates[1]&&isHr(candidates[1].num)?candidates[1].num:null;
+        var time='00:00';
+        for(var k=i-1;k>=Math.max(0,i-5);k--){
+          if(tagged[k].isTime){time=tagged[k].time;break;}
+        }
+        if(time==='00:00'){
+          var endIdx=hr?candidates[1].idx:candidates[0].idx;
+          for(var k2=endIdx+1;k2<=Math.min(tagged.length-1,endIdx+3);k2++){
+            if(tagged[k2].isTime){time=tagged[k2].time;break;}
+          }
+        }
+        var mo=String(t.month).padStart(2,'0');
+        var da=String(t.date).padStart(2,'0');
+        results.push({date:t.year+'-'+mo+'-'+da,time:time,sys:sys,dia:dia,hr:hr});
+        i=hr?candidates[1].idx+1:candidates[0].idx+1;
+        continue;
+      }
+    }
+    i++;
+  }
+  return results;
+}
+
+function parseBpBatch(){
+  var text=document.getElementById('bpBatchText').value.trim();
+  if(!text){showToast('請先貼上文字');return;}
+  var parsed=parseOmronText(text);
+  if(!parsed.length){showToast('找不到血壓數值，請確認格式');return;}
+
+  // 去重：跟現有記錄比對
+  var existing=loadBpRecords();
+  var newRecs=[],dupRecs=[];
+  parsed.forEach(function(p){
+    var dup=existing.find(function(e){
+      return e.date===p.date&&e.sys===p.sys&&e.dia===p.dia;
+    });
+    if(dup)dupRecs.push(p);
+    else newRecs.push(p);
+  });
+
+  // 顯示預覽
+  var prev=document.getElementById('bpBatchPreview');
+  var html='<div style="background:#faf8f5;border-radius:10px;padding:10px;font-size:13px">';
+  html+='<div style="font-weight:700;color:#2c2416;margin-bottom:6px">解析到 '+parsed.length+' 筆';
+  if(dupRecs.length)html+='，'+dupRecs.length+' 筆重複跳過';
+  html+='</div>';
+  newRecs.forEach(function(p){
+    var hi=isHighBp(p.sys,p.dia);
+    html+='<div style="display:flex;gap:8px;align-items:center;padding:4px 0;border-bottom:1px solid #f0ece6">';
+    html+='<span style="color:#bbb;min-width:80px">'+p.date.slice(5)+' '+p.time+'</span>';
+    html+='<span style="font-weight:700;color:'+(hi?'#e53935':'#2c2416')+'">'+p.sys+'/'+p.dia+'</span>';
+    if(p.hr)html+='<span style="color:#8b6f47">❤️'+p.hr+'</span>';
+    if(hi)html+='<span style="font-size:10px;background:#fce4ec;color:#e53935;padding:1px 5px;border-radius:99px">偏高</span>';
+    html+='</div>';
+  });
+  if(dupRecs.length){
+    html+='<div style="color:#bbb;margin-top:6px;font-size:12px">已跳過：';
+    html+=dupRecs.map(function(p){return p.date.slice(5)+' '+p.sys+'/'+p.dia;}).join('、');
+    html+='</div>';
+  }
+  if(newRecs.length){
+    html+='<button onclick="confirmBpBatch()" style="width:100%;margin-top:10px;background:#5b8cbf;border:none;border-radius:10px;padding:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">✅ 確認儲存 '+newRecs.length+' 筆</button>';
+  } else {
+    html+='<div style="color:#bbb;margin-top:8px;text-align:center">所有記錄都已存在</div>';
+  }
+  html+='</div>';
+  prev.innerHTML=html;
+  prev._newRecs=newRecs;
+}
+
+function confirmBpBatch(){
+  var prev=document.getElementById('bpBatchPreview');
+  var newRecs=prev._newRecs;
+  if(!newRecs||!newRecs.length)return;
+  var recs=loadBpRecords();
+  newRecs.forEach(function(p){
+    recs.push({id:uid(),date:p.date,time:p.time,sys:p.sys,dia:p.dia,hr:p.hr,meds:false,note:''});
+  });
+  saveBpRecords(recs);
+  rerender();
+  if(currentTab==='bp')renderBpTab();
+  closeBpSheet();
+  showToast('✅ 已儲存 '+newRecs.length+' 筆血壓記錄');
+}
 function openBpSheet(editId){
   var now=new Date();
   _bpMeds=false;
