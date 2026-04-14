@@ -2446,63 +2446,40 @@ function buildDemo(){
   const D=new Date();
   function ago(n){const x=new Date(D);x.setDate(x.getDate()-n);return `${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`;}
   return [
-    {id:'d01',type:'meal',date:ago(0),time:'07:30',mealType:'早餐',foods:[{name:'燕麥',qty:1,cal:150,id:'f1'},{name:'牛奶',qty:1,cal:150,id:'f2'},{name:'香蕉',qty:1,cal:90,id:'f3'}],note:'元氣早餐',photos:[]},
-    {id:'d02',type:'exercise',date:ago(0),time:'08:30',exerciseType:'跑步',duration:'35',distance:'5.2',calories:'310',note:'清晨慢跑，狀態很好',photos:[P.run]},
-    {id:'d03',type:'meal',date:ago(0),time:'12:00',mealType:'午餐',foods:[{name:'雞胸肉',qty:1,cal:165,id:'f4'},{name:'糙米飯',qty:1,cal:165,id:'f5'},{name:'花椰菜',qty:1,cal:35,id:'f6'}],note:'健身餐',photos:[P.bowl]},
-    {id:'d04',type:'meal',date:ago(0),time:'15:30',mealType:'點心',foods:[{name:'優格',qty:1,cal:100,id:'f7'},{name:'蘋果',qty:1,cal:80,id:'f8'}],note:'',photos:[]},
-    {id:'d05',type:'meal',date:ago(0),time:'19:00',mealType:'晚餐',foods:[{name:'鮭魚',qty:1,cal:200,id:'f9'},{name:'白飯',qty:1,cal:180,id:'fa'},{name:'菠菜',qty:1,cal:23,id:'fb'}],note:'',photos:[P.fish]},
-    {id:'d06',type:'meal',date:ago(1),time:'08:00',mealType:'早餐',foods:[{name:'吐司',qty:2,cal:140,id:'fc'},{name:'荷包蛋',qty:1,cal:90,id:'fd'},{name:'黑咖啡',qty:1,cal:5,id:'fe'}],note:'',photos:[]},
-    {id:'d07',type:'meal',date:ago(1),time:'12:30',mealType:'午餐',foods:[{name:'牛肉麵',qty:1,cal:550,id:'ff'}],note:'巷口新開的，湯底很濃郁',photos:[]},
-    {id:'d08',type:'exercise',date:ago(1),time:'18:00',exerciseType:'跑步',duration:'60',distance:'',calories:'280',note:'胸背日，臥推有進步',photos:[]},
-    {id:'d09',type:'meal',date:ago(1),time:'19:30',mealType:'晚餐',foods:[{name:'沙拉',qty:1,cal:50,id:'fg'},{name:'豆腐',qty:1,cal:80,id:'fh'}],note:'',photos:[]},
-    {id:'d10',type:'meal',date:ago(2),time:'09:00',mealType:'早餐',foods:[{name:'蛋餅',qty:1,cal:280,id:'fi'},{name:'豆漿',qty:1,cal:54,id:'fj'}],note:'早餐店',photos:[]},
-    {id:'d11',type:'exercise',date:ago(2),time:'10:30',exerciseType:'跑步',duration:'45',distance:'',calories:'150',note:'肩頸舒緩',photos:[]},
-    {id:'d12',type:'meal',date:ago(2),time:'13:00',mealType:'午餐',foods:[{name:'排骨便當',qty:1,cal:700,id:'fk'}],note:'',photos:[]},
-    {id:'d13',type:'meal',date:ago(2),time:'18:30',mealType:'晚餐',foods:[{name:'火鍋',qty:1,cal:500,id:'fl'}],note:'朋友聚餐',photos:[P.hot]},
-    {id:'d14',type:'meal',date:ago(2),time:'21:00',mealType:'宵夜',foods:[{name:'珍珠奶茶',qty:1,cal:450,id:'fm'}],note:'罪惡的一杯',photos:[]},
-    {id:'d15',type:'meal',date:ago(3),time:'07:30',mealType:'早餐',foods:[{name:'麥片',qty:1,cal:130,id:'fn'},{name:'牛奶',qty:1,cal:150,id:'fo'}],note:'',photos:[]},
-    {id:'d16',type:'exercise',date:ago(3),time:'08:00',exerciseType:'跑步',duration:'40',distance:'3.0',calories:'150',note:'通勤步行',photos:[]},
-    {id:'d17',type:'meal',date:ago(3),time:'12:00',mealType:'午餐',foods:[{name:'義大利麵',qty:1,cal:350,id:'fp'},{name:'拿鐵',qty:1,cal:150,id:'fq'}],note:'',photos:[]},
-    {id:'d18',type:'meal',date:ago(3),time:'18:30',mealType:'晚餐',foods:[{name:'滷肉飯',qty:1,cal:450,id:'fr'},{name:'味噌湯',qty:1,cal:40,id:'fs'}],note:'',photos:[]},
-    {id:'d19',type:'meal',date:ago(4),time:'08:30',mealType:'早餐',foods:[{name:'包子',qty:2,cal:440,id:'ft'},{name:'豆漿',qty:1,cal:54,id:'fu'}],note:'',photos:[]},
-    {id:'d20',type:'exercise',date:ago(4),time:'17:00',exerciseType:'跑步',duration:'50',distance:'15.0',calories:'350',note:'騎到淡水河邊',photos:[P.bike]},
-    {id:'d21',type:'meal',date:ago(4),time:'12:00',mealType:'午餐',foods:[{name:'壽司',qty:1,cal:350,id:'fv'},{name:'味噌湯',qty:1,cal:40,id:'fw'}],note:'迴轉壽司',photos:[]},
-    {id:'d22',type:'meal',date:ago(4),time:'19:00',mealType:'晚餐',foods:[{name:'雞腿便當',qty:1,cal:680,id:'fx'}],note:'',photos:[]},
+    {id:'d01',type:'meal',date:ago(0),time:'08:00',mealType:'早餐',foods:[{name:'吐司',qty:1,cal:140,id:'f1'},{name:'荷包蛋',qty:1,cal:90,id:'f2'},{name:'豆漿',qty:1,cal:54,id:'f3'}],note:'',photos:[]},
+    {id:'d02',type:'meal',date:ago(0),time:'12:30',mealType:'午餐',foods:[{name:'雞腿便當',qty:1,cal:680,id:'f4'}],note:'',photos:[]},
+    {id:'d03',type:'exercise',date:ago(0),time:'18:00',exerciseType:'🚶 坡走 10%',duration:'40',distance:'',calories:'156',note:'',photos:[]},
+    {id:'d04',type:'meal',date:ago(0),time:'19:30',mealType:'晚餐',foods:[{name:'白飯',qty:1,cal:180,id:'f5'},{name:'滷雞腿',qty:1,cal:250,id:'f6'},{name:'燙青菜',qty:1,cal:30,id:'f7'}],note:'',photos:[]},
+    {id:'d05',type:'meal',date:ago(1),time:'07:30',mealType:'早餐',foods:[{name:'燕麥',qty:1,cal:150,id:'f8'},{name:'牛奶',qty:1,cal:150,id:'f9'}],note:'',photos:[]},
+    {id:'d06',type:'meal',date:ago(1),time:'12:00',mealType:'午餐',foods:[{name:'牛肉麵',qty:1,cal:550,id:'fa'}],note:'',photos:[]},
+    {id:'d07',type:'exercise',date:ago(1),time:'17:30',exerciseType:'🏃 跑步',duration:'30',distance:'4.5',calories:'294',note:'',photos:[]},
+    {id:'d08',type:'meal',date:ago(1),time:'19:00',mealType:'晚餐',foods:[{name:'鮭魚',qty:1,cal:200,id:'fb'},{name:'糙米飯',qty:1,cal:165,id:'fc'},{name:'花椰菜',qty:1,cal:35,id:'fd'}],note:'',photos:[]},
+    {id:'d09',type:'meal',date:ago(2),time:'09:00',mealType:'早午餐',foods:[{name:'蛋餅',qty:1,cal:280,id:'fe'},{name:'豆漿',qty:1,cal:54,id:'ff'}],note:'',photos:[]},
+    {id:'d10',type:'meal',date:ago(2),time:'13:00',mealType:'午餐',foods:[{name:'排骨便當',qty:1,cal:700,id:'fg'}],note:'',photos:[]},
+    {id:'d11',type:'meal',date:ago(2),time:'19:30',mealType:'晚餐',foods:[{name:'火鍋',qty:1,cal:500,id:'fh'}],note:'朋友聚餐',photos:[]},
   ];
 }
 
 function buildDemoSymptoms(){
   const D=new Date();
   function ago(n){const x=new Date(D);x.setDate(x.getDate()-n);return `${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`;}
-  function agoM(n){const x=new Date(D);x.setDate(x.getDate()-n);x.setMonth(x.getMonth()-1);return `${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`;}
   return [
-    // 本月
-    {id:'s01',date:ago(0), time:'09:00',tags:['頭痛'],severity:'3',note:'久坐後頸部緊繃'},
-    {id:'s02',date:ago(1), time:'22:00',tags:['失眠','疲勞'],severity:'5',note:'睡前思慮太多'},
-    {id:'s03',date:ago(2), time:'14:00',tags:['頭痛','頭暈'],severity:'5',note:'下午低血糖感'},
-    {id:'s04',date:ago(4), time:'07:30',tags:['喉嚨痛'],severity:'3',note:'早起有點乾'},
-    {id:'s05',date:ago(5), time:'19:00',tags:['肚子痛'],severity:'8',note:'晚餐後不舒服'},
-    {id:'s06',date:ago(6), time:'10:00',tags:['疲勞'],severity:'3',note:''},
-    {id:'s07',date:ago(8), time:'08:00',tags:['頭痛'],severity:'5',note:'睡眠不足'},
-    {id:'s08',date:ago(9), time:'20:00',tags:['背痛'],severity:'3',note:'久坐工作'},
-    {id:'s09',date:ago(10),time:'15:00',tags:['過敏'],severity:'5',note:'換季過敏，眼睛癢'},
-    {id:'s10',date:ago(12),time:'09:30',tags:['疲勞','頭痛'],severity:'8',note:'感冒前兆'},
-    {id:'s11',date:ago(13),time:'11:00',tags:['發燒','咳嗽'],severity:'8',note:'發燒 38.5 度'},
-    {id:'s12',date:ago(14),time:'09:00',tags:['咳嗽','疲勞'],severity:'5',note:'退燒後仍咳'},
-    {id:'s13',date:ago(16),time:'21:00',tags:['失眠'],severity:'5',note:''},
-    {id:'s14',date:ago(18),time:'14:00',tags:['頭痛'],severity:'3',note:''},
-    {id:'s15',date:ago(20),time:'08:00',tags:['肚子痛','噁心'],severity:'5',note:'腸胃不適'},
-    // 上個月
-    {id:'s16',date:agoM(2), time:'10:00',tags:['頭痛'],severity:'5',note:''},
-    {id:'s17',date:agoM(4), time:'19:00',tags:['疲勞','背痛'],severity:'3',note:''},
-    {id:'s18',date:agoM(6), time:'09:00',tags:['失眠'],severity:'8',note:'連續三天睡不好'},
-    {id:'s19',date:agoM(8), time:'15:00',tags:['頭暈'],severity:'3',note:'久站後'},
-    {id:'s20',date:agoM(10),time:'20:00',tags:['生理痛'],severity:'8',note:''},
-    {id:'s21',date:agoM(12),time:'08:30',tags:['喉嚨痛','發燒'],severity:'8',note:''},
-    {id:'s22',date:agoM(15),time:'14:00',tags:['過敏'],severity:'5',note:''},
-    {id:'s23',date:agoM(18),time:'09:00',tags:['頭痛','疲勞'],severity:'5',note:''},
-    {id:'s24',date:agoM(22),time:'21:00',tags:['肚子痛'],severity:'3',note:''},
-    {id:'s25',date:agoM(25),time:'10:00',tags:['背痛'],severity:'3',note:'運動後'},
+    {id:'s01',date:ago(0),time:'09:30',tags:['頭痛'],severity:'4',note:'久坐後頸部緊繃'},
+    {id:'s02',date:ago(1),time:'21:00',tags:['疲勞'],severity:'3',note:''},
+    {id:'s03',date:ago(2),time:'14:00',tags:['頭暈','噁心'],severity:'5',note:'下午低血糖感'},
+  ];
+}
+
+function buildDemoBp(){
+  const D=new Date();
+  function ago(n){const x=new Date(D);x.setDate(x.getDate()-n);return `${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`;}
+  return [
+    {id:'bp01',date:ago(0),time:'07:45',sys:128,dia:84,hr:72,meds:true,note:''},
+    {id:'bp02',date:ago(0),time:'21:00',sys:132,dia:86,hr:75,meds:false,note:''},
+    {id:'bp03',date:ago(1),time:'07:30',sys:125,dia:82,hr:70,meds:true,note:''},
+    {id:'bp04',date:ago(1),time:'22:00',sys:130,dia:88,hr:74,meds:false,note:''},
+    {id:'bp05',date:ago(2),time:'08:00',sys:122,dia:80,hr:68,meds:true,note:''},
+    {id:'bp06',date:ago(2),time:'21:30',sys:135,dia:90,hr:76,meds:false,note:''},
   ];
 }
 function loadPeriods(){try{return JSON.parse(localStorage.getItem('periods')||'[]');}catch{return[];}}
@@ -2593,9 +2570,16 @@ function renderPeriodList(){
 }
 
 loadEntries();
-if(!entries.length&&!loadSymptoms().length){
+if(!entries.length&&!loadSymptoms().length&&!loadBpRecords().length){
   entries=buildDemo();saveEntries();
   saveSymptoms(buildDemoSymptoms());
+  saveBpRecords(buildDemoBp());
+  // 經期示範（前三天）
+  const D=new Date(),p=[];
+  const s=new Date(D);s.setDate(s.getDate()-2);
+  const e2=new Date(D);
+  p.push({id:'per01',start:`${s.getFullYear()}-${pad(s.getMonth()+1)}-${pad(s.getDate())}`,end:`${e2.getFullYear()}-${pad(e2.getMonth()+1)}-${pad(e2.getDate())}`});
+  savePeriods(p);
 }
 renderChips();
 renderTimeline();
