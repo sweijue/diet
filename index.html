@@ -213,8 +213,7 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
             </div>
             <button class="dropdown-item" onclick="exportData()">📤 匯出備份</button>
             <button class="dropdown-item" onclick="document.getElementById('importInput').click()">📥 匯入資料</button>
-            <button class="dropdown-item" onclick="loadDemoData()">🎭 載入示範資料</button>
-            <button class="dropdown-item" onclick="openCollapseSheet()">📅 收合設定</button>
+<button class="dropdown-item" onclick="openCollapseSheet()">📅 收合設定</button>
             <button class="dropdown-item" onclick="openWeightSheet()">⚖️ 設定體重</button>
             <button class="dropdown-item" onclick="openClearSheet()">🗑 清除舊資料</button>
           </div>
@@ -224,7 +223,7 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
     <div class="tab-bar">
       <button class="tab-btn active" id="tabTimeline" onclick="switchTab('timeline')">⏱ 時間線</button>
       <button class="tab-btn" id="tabCalendar" onclick="switchTab('calendar')">📅 日曆</button>
-      <button class="tab-btn" id="tabStats" onclick="switchTab('stats')">📊 統計</button>
+      <button class="tab-btn" id="tabStats" onclick="switchTab('stats')">🩺 症狀統計</button>
     </div>
   </div>
   <div id="viewTimeline"></div>
@@ -1872,8 +1871,10 @@ function renderPeriodList(){
 }
 
 loadEntries();
-if(!entries.length){entries=buildDemo();saveEntries();}
-if(!loadSymptoms().length){saveSymptoms(buildDemoSymptoms());}
+if(!entries.length&&!loadSymptoms().length){
+  entries=buildDemo();saveEntries();
+  saveSymptoms(buildDemoSymptoms());
+}
 renderChips();
 renderTimeline();
 setTimeout(scrollToToday,100);
