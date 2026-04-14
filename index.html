@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
@@ -64,21 +63,21 @@ button{cursor:pointer}
 .tcard-wrap{position:relative;overflow:hidden;margin-bottom:11px}
 /* 右側：編輯（橘）+ 刪除（紅），左滑顯示 */
 .tcard-action-right{
-position:absolute;right:0;top:0;bottom:0;
-display:flex;align-items:stretch;
-opacity:0;pointer-events:none;
-border-radius:0 12px 12px 0;
-overflow:hidden;
+  position:absolute;right:0;top:0;bottom:0;
+  display:flex;align-items:stretch;
+  opacity:0;pointer-events:none;
+  border-radius:0 12px 12px 0;
+  overflow:hidden;
 }
 .btn-swipe-edit{
-width:68px;background:#c8a96e;color:#2c2416;border:none;
-font-size:12px;font-weight:700;cursor:pointer;
-display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  width:68px;background:#c8a96e;color:#2c2416;border:none;
+  font-size:12px;font-weight:700;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
 }
 .btn-swipe-del{
-width:68px;background:#e06060;color:#fff;border:none;
-font-size:12px;font-weight:700;cursor:pointer;
-display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  width:68px;background:#e06060;color:#fff;border:none;
+  font-size:12px;font-weight:700;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
 }
 .tcard-inner{transition:transform .22s ease;display:flex;align-items:flex-start;position:relative;z-index:1}
 /* 時間欄 */
@@ -149,6 +148,29 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;gap
 .lb-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.18);border:none;color:#fff;width:42px;height:42px;border-radius:50%;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 #lightbox-prev{left:12px}
 #lightbox-next{right:12px}
+/* ── 症狀 ── */
+.tcard-body.symptom{border-left:3px solid #9b7fc8;}
+.symptom-tag{display:inline-block;padding:3px 9px;border-radius:99px;background:#f0eafc;color:#6b4fa0;font-size:12px;font-weight:600;margin:2px 3px 2px 0}
+.symptom-severity{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700;margin-left:4px}
+.sev-mild{background:#e8f5e9;color:#4caf50}
+.sev-moderate{background:#fff8e1;color:#f59c00}
+.sev-severe{background:#fce4ec;color:#e53935}
+/* ── 統計 tab ── */
+#viewStats{padding:14px 14px 100px}
+.stat-section{margin-bottom:22px}
+.stat-title{font-size:13px;font-weight:700;color:#8b6f47;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px}
+.stat-period-bar{display:flex;gap:6px;margin-bottom:14px}
+.stat-period-btn{flex:1;padding:8px;border-radius:10px;border:1.5px solid #e0d8cc;background:#fdf9f4;color:#8b6f47;font-size:13px;font-weight:600;cursor:pointer}
+.stat-period-btn.active{background:#9b7fc8;border-color:#9b7fc8;color:#fff}
+.stat-card{background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f5f0e8}
+.stat-row:last-child{border-bottom:none}
+.stat-bar-wrap{flex:1;margin:0 10px;height:6px;background:#f0eafc;border-radius:3px;overflow:hidden}
+.stat-bar-fill{height:100%;background:#9b7fc8;border-radius:3px;transition:width .4s}
+.stat-num{font-size:13px;font-weight:700;color:#6b4fa0;min-width:24px;text-align:right}
+.cal-dot-symptom{background:#9b7fc8}
+.sym-sev-btn{flex:1;padding:10px 6px;border-radius:10px;border:2px solid transparent;font-size:13px;font-weight:700;cursor:pointer;transition:border-color .15s}
+.sym-sev-btn.active{border-color:#6b4fa0}
 .collapse-opt{padding:7px 13px;border-radius:20px;border:1.5px solid #d8cfc4;background:#fdf9f4;color:#8b6f47;font-size:13px;font-weight:600;cursor:pointer}
 .collapse-opt.active{background:#c8a96e;border-color:#c8a96e;color:#fff}
 #exActionSheet{position:fixed;inset:0;z-index:400;display:none}
@@ -166,7 +188,6 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;gap
 .clear-info{font-size:13px;color:#999;margin-bottom:16px}
 .btn-clear-confirm{width:100%;padding:14px;border-radius:10px;background:#d44;color:#fff;border:none;font-weight:700;font-size:16px}
 </style>
-
 </head>
 <body>
 <div id="app">
@@ -198,14 +219,15 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;gap
     <div class="tab-bar">
       <button class="tab-btn active" id="tabTimeline" onclick="switchTab('timeline')">⏱ 時間線</button>
       <button class="tab-btn" id="tabCalendar" onclick="switchTab('calendar')">📅 日曆</button>
+      <button class="tab-btn" id="tabStats" onclick="switchTab('stats')">📊 統計</button>
     </div>
   </div>
   <div id="viewTimeline"></div>
   <div id="viewCalendar" style="display:none"></div>
+  <div id="viewStats" style="display:none"></div>
 </div>
 
 <button id="fab" onclick="toggleFabMenu()">+</button>
-
 <div id="fabMenu">
   <div class="fab-item">
     <div class="fab-item-label">記錄用餐</div>
@@ -214,6 +236,10 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;gap
   <div class="fab-item">
     <div class="fab-item-label">記錄運動</div>
     <button class="fab-item-btn" style="background:#7aaa8a;color:#fff" onclick="openAdd('exercise');closeFabMenu()">🏃</button>
+  </div>
+  <div class="fab-item">
+    <div class="fab-item-label">身體症狀</div>
+    <button class="fab-item-btn" style="background:#9b7fc8;color:#fff" onclick="openSymptomSheet();closeFabMenu()">🩺</button>
   </div>
   <div class="fab-item">
     <div class="fab-item-label">經期紀錄</div>
@@ -300,6 +326,42 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;gap
 </div>
 
 <!-- Period Sheet -->
+<div id="symptomSheet" class="sheet-overlay" style="display:none" onclick="if(event.target===this)closeSymptomSheet()">
+  <div class="sheet">
+    <div class="sheet-header">
+      <button class="sheet-cancel" onclick="closeSymptomSheet()">取消</button>
+      <span style="font-weight:700;font-size:16px;color:#2c2416">🩺 身體症狀</span>
+      <button class="sheet-save" onclick="saveSymptom()">儲存</button>
+    </div>
+    <div class="sheet-body">
+      <div class="datetime-group" style="margin-bottom:14px">
+        <div class="datetime-row">
+          <span class="datetime-label">日期</span>
+          <input type="date" id="symDate" class="datetime-input">
+        </div>
+        <div class="datetime-row">
+          <span class="datetime-label">時間</span>
+          <input type="time" id="symTime" class="datetime-input">
+        </div>
+      </div>
+      <div class="form-label">症狀（可多選）</div>
+      <div id="symTagsWrap" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px"></div>
+      <div style="display:flex;gap:8px;margin-bottom:14px">
+        <input type="text" id="symCustomInput" class="form-input" placeholder="自訂症狀" style="flex:1">
+        <button onclick="addCustomSymTag()" style="padding:10px 14px;background:#f0eafc;color:#6b4fa0;border:none;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer">＋</button>
+      </div>
+      <div class="form-label">嚴重程度</div>
+      <div style="display:flex;gap:8px;margin-bottom:14px">
+        <button class="sym-sev-btn sev-mild" data-val="輕微" onclick="selSeverity(this)">😕 輕微</button>
+        <button class="sym-sev-btn sev-moderate" data-val="普通" onclick="selSeverity(this)">😣 普通</button>
+        <button class="sym-sev-btn sev-severe" data-val="嚴重" onclick="selSeverity(this)">😫 嚴重</button>
+      </div>
+      <div class="form-label">備注</div>
+      <textarea id="symNote" class="form-textarea" rows="2" placeholder="其他說明…"></textarea>
+      <input type="hidden" id="symEditId" value="">
+    </div>
+  </div>
+</div>
 
 <div id="periodSheet" class="sheet-overlay" style="display:none" onclick="closePeriodIfBg(event)">
   <div class="sheet">
@@ -654,7 +716,7 @@ function calcStorage(){
   }catch{}
 }
 function grouped(){
-  const g={};entries.forEach(e=>{(g[e.date]=g[e.date]||[]).push(e);});
+  const g={};allEntries().forEach(e=>{(g[e.date]=g[e.date]||[]).push(e);});
   Object.keys(g).forEach(d=>g[d].sort((a,b)=>a.time.localeCompare(b.time)));
   return g;
 }
@@ -712,6 +774,7 @@ function renderTimeline(){
 
 /* ── 通用卡片 ── */
 function renderCard(e,ctx){
+  if(e.type==='symptom') return renderSymptomCard(e,ctx);
   const isMeal=e.type==='meal';
   const photos=e.photos||[];
   const imgHtml=photos.length?`<div class="tcard-imgs">${photos.slice(0,3).map((p,i)=>`<img class="tcard-img" src="${p}" loading="lazy" style="flex:${photos.length===1?'unset;width:100%':'1'}" onclick="openLightboxEntry(event,'${e.id}',${i})">`).join('')}</div>`:'';
@@ -805,7 +868,15 @@ function doEdit(id,ctx){closeSwipe();editEntry(id);}
 function doDel(id,ctx){
   closeSwipe();
   if(!confirm('確定刪除？'))return;
-  entries=entries.filter(e=>e.id!=id);saveEntries();rerender();
+  // 先嘗試從 entries 刪，再嘗試從 symptoms 刪
+  const before=entries.length;
+  entries=entries.filter(e=>e.id!=id);
+  if(entries.length<before){saveEntries();}
+  else{
+    const syms=loadSymptoms().filter(s=>s.id!=id);
+    saveSymptoms(syms);
+  }
+  rerender();
 }
 
 /* ── 日曆 ── */
@@ -831,7 +902,7 @@ function renderCalendar(){
     const nc=other?'#ccc':isSel?'#f7f4ef':isTd?'#2c2416':dow===0?'#c0756a':dow===6?'#7090c0':'#2c2416';
     const nb=isTd?'#c8a96e':'transparent';
     const pe=photo?`<img class="cal-cell-photo" src="${photo}" loading="lazy" style="opacity:${isSel?.35:.55}">`:'';
-    let dots='';if(active&&!photo){const en=(g[ds]||[]).slice(0,3);dots=`<div class="cal-dots">${en.map(e=>`<span class="cal-dot" style="background:${e.type==='meal'?'#c8a96e':'#7aaa8a'}"></span>`).join('')}</div>`;}
+    let dots='';if(active&&!photo){const en=(g[ds]||[]).slice(0,3);dots=`<div class="cal-dots">${en.map(e=>`<span class="cal-dot" style="background:${e.type==='meal'?'#c8a96e':e.type==='symptom'?'#9b7fc8':'#7aaa8a'}"></span>`).join('')}</div>`;}
     const cs=`background:${isSel?'#2c2416':other?'#f3f0ea':'#fff'};cursor:${other?'default':'pointer'}`;
     const cf=other?'':`onclick="calClick('${ds}')"`;
     const pMark=!other&&isInPeriod(ds)?'<span style="position:absolute;top:3px;right:4px;font-size:10px;line-height:1;z-index:2">🩸</span>':'';
@@ -1314,7 +1385,8 @@ function exportData(){
   const periods=JSON.parse(localStorage.getItem('periods')||'[]');
   const customEx=loadCustomEx();
   const weight=loadWeight()||undefined;
-  const backup={version:3,entries,periods,customEx,weight};
+  const symptoms=JSON.parse(localStorage.getItem('symptoms')||'[]');
+  const backup={version:4,entries,periods,customEx,weight,symptoms};
   const json=JSON.stringify(backup,null,2);const blob=new Blob([json],{type:'application/json'});
   const url=URL.createObjectURL(blob);const a=document.createElement('a');const d=new Date();
   a.href=url;a.download=`diet_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}.json`;
@@ -1325,15 +1397,16 @@ function importData(event){
   r.onload=ev=>{try{
     const raw=JSON.parse(ev.target.result);
     // support old format (array), v2 ({entries,periods}), v3 (+customEx,weight)
-    let data,pdata,exdata,wdata;
+    let data,pdata,exdata,wdata,symdata=[];
     if(Array.isArray(raw)){data=raw;pdata=[];exdata=[];wdata=null;}
     else if(raw.entries!=null){
       data=raw.entries||[];pdata=raw.periods||[];
       exdata=raw.customEx||[];wdata=raw.weight||null;
+      symdata=raw.symptoms||[];
     } else throw new Error();
-    const pInfo=pdata.length?`、${pdata.length} 筆經期`:'';
+    const pInfo=pdata.length?`、${pdata.length} 筆經期`:'';const symInfo=symdata.length?`、${symdata.length} 筆症狀`:'';
     const exInfo=exdata.length?`、${exdata.length} 個運動類別`:'';
-    if(confirm(`匯入 ${data.length} 筆記錄${pInfo}${exInfo}？\n將與現有資料合併`)){
+    if(confirm(`匯入 ${data.length} 筆記錄${pInfo}${exInfo}${symInfo}？\n將與現有資料合併`)){
       // merge entries
       const ids=new Set(entries.map(e=>e.id));
       entries=[...entries,...data.filter(e=>!ids.has(e.id))];
@@ -1352,9 +1425,15 @@ function importData(event){
         const merged=[...existing,...exdata.filter(x=>!names.has(x.name))];
         saveCustomEx(merged);renderChips();
       }
+      // merge symptoms
+      if(symdata.length){
+        const exSym=JSON.parse(localStorage.getItem('symptoms')||'[]');
+        const sids=new Set(exSym.map(s=>s.id));
+        localStorage.setItem('symptoms',JSON.stringify([...exSym,...symdata.filter(s=>!sids.has(s.id))]));
+      }
       // 體重：只在本機未設定時才帶入
       if(wdata&&!loadWeight()){saveWeightVal(wdata);}
-      rerender();showToast(`✅ 成功匯入 ${data.length} 筆記錄${pInfo}${exInfo}`);
+      rerender();showToast(`✅ 成功匯入 ${data.length} 筆記錄${pInfo}${exInfo}${symInfo}`);
     }}catch{showToast('❌ 檔案格式錯誤');}};r.readAsText(file);event.target.value='';
 }
 function openClearSheet(){
@@ -1376,6 +1455,210 @@ function confirmClear(){
 }
 function toggleDropdown(){const m=document.getElementById('dropdownMenu');if(m.style.display==='none'){m.style.display='block';calcStorage();}else m.style.display='none';}
 function closeDropdown(){document.getElementById('dropdownMenu').style.display='none';}
+
+function allEntries(){
+  const syms=loadSymptoms().map(s=>({...s,type:'symptom'}));
+  return [...entries,...syms].sort((a,b)=>a.date.localeCompare(b.date)||a.time.localeCompare(b.time));
+}
+
+// ══ 症狀記錄 ══════════════════════════════════════════════════════
+
+const DEFAULT_SYMPTOMS=['頭痛','疲勞','肚子痛','噁心','失眠','頭暈','生理痛','背痛','喉嚨痛','發燒','咳嗽','過敏'];
+let selSymTags=new Set(),selSeverityVal='普通';
+
+function loadSymptoms(){try{return JSON.parse(localStorage.getItem('symptoms')||'[]');}catch{return[];}}
+function saveSymptoms(arr){localStorage.setItem('symptoms',JSON.stringify(arr));}
+
+function openSymptomSheet(editId){
+  const now=new Date();
+  document.getElementById('symDate').value=editId?'':todayDate();
+  document.getElementById('symTime').value=editId?'':now.toTimeString().slice(0,5);
+  document.getElementById('symNote').value='';
+  document.getElementById('symEditId').value='';
+  selSymTags=new Set();selSeverityVal='普通';
+  if(editId){
+    const s=loadSymptoms().find(x=>x.id===editId);
+    if(s){
+      document.getElementById('symDate').value=s.date;
+      document.getElementById('symTime').value=s.time;
+      document.getElementById('symNote').value=s.note||'';
+      document.getElementById('symEditId').value=editId;
+      selSymTags=new Set(s.tags||[]);
+      selSeverityVal=s.severity||'普通';
+    }
+  }
+  renderSymTagsUI();renderSevUI();
+  document.getElementById('symptomSheet').style.display='flex';
+}
+function closeSymptomSheet(){document.getElementById('symptomSheet').style.display='none';}
+
+function renderSymTagsUI(){
+  const wrap=document.getElementById('symTagsWrap');
+  // 合併預設＋自訂（已選的放最前）
+  const syms=loadSymptoms();
+  const customTags=[...new Set(syms.flatMap(s=>s.tags||[]).filter(t=>!DEFAULT_SYMPTOMS.includes(t)))];
+  const allTags=[...DEFAULT_SYMPTOMS,...customTags];
+  // 已選的也確保出現
+  selSymTags.forEach(t=>{if(!allTags.includes(t))allTags.push(t);});
+  wrap.innerHTML=allTags.map(t=>{
+    const on=selSymTags.has(t);
+    return `<button onclick="toggleSymTag('${esc(t)}')" style="padding:6px 12px;border-radius:99px;border:1.5px solid ${on?'#9b7fc8':'#d8cfc4'};background:${on?'#f0eafc':'#fdf9f4'};color:${on?'#6b4fa0':'#8b6f47'};font-size:13px;font-weight:600;cursor:pointer">${esc(t)}</button>`;
+  }).join('');
+}
+function toggleSymTag(t){if(selSymTags.has(t))selSymTags.delete(t);else selSymTags.add(t);renderSymTagsUI();}
+function addCustomSymTag(){
+  const inp=document.getElementById('symCustomInput');
+  const v=inp.value.trim();if(!v)return;
+  selSymTags.add(v);inp.value='';renderSymTagsUI();
+}
+function selSeverity(btn){
+  selSeverityVal=btn.dataset.val;renderSevUI();
+}
+function renderSevUI(){
+  document.querySelectorAll('.sym-sev-btn').forEach(b=>{
+    b.classList.toggle('active',b.dataset.val===selSeverityVal);
+  });
+}
+function saveSymptom(){
+  const date=document.getElementById('symDate').value;
+  const time=document.getElementById('symTime').value;
+  const note=document.getElementById('symNote').value.trim();
+  const editId=document.getElementById('symEditId').value;
+  if(!date){showToast('請選擇日期');return;}
+  if(!selSymTags.size){showToast('請選擇至少一個症狀');return;}
+  const syms=loadSymptoms();
+  const entry={id:editId||uid(),date,time,tags:[...selSymTags],severity:selSeverityVal,note};
+  if(editId){const i=syms.findIndex(s=>s.id===editId);if(i>=0)syms[i]=entry;else syms.push(entry);}
+  else syms.push(entry);
+  saveSymptoms(syms);
+  closeSymptomSheet();rerender();showToast('✅ 已記錄症狀');
+}
+
+function renderSymptomCard(e,ctx){
+  const sevClass={'輕微':'sev-mild','普通':'sev-moderate','嚴重':'sev-severe'}[e.severity]||'sev-moderate';
+  const pid=ctx+'-'+e.id;
+  return `<div class="tcard-wrap" id="wrap-${pid}">
+  <div class="tcard-inner" id="inn-${pid}"
+    ontouchstart="tsStart(event,'${e.id}','${ctx}')"
+    ontouchmove="tsMove(event,'${e.id}','${ctx}')"
+    ontouchend="tsEnd(event,'${e.id}','${ctx}')">
+    <div class="tcard-time">${e.time}</div>
+    <div class="tcard-body symptom">
+      <div class="tcard-content">
+        <div class="tcard-row">
+          <span class="tcard-name">🩺 身體症狀</span>
+          <span class="symptom-severity ${sevClass}">${e.severity||'普通'}</span>
+        </div>
+        <div style="margin:4px 0 2px">${(e.tags||[]).map(t=>`<span class="symptom-tag">${esc(t)}</span>`).join('')}</div>
+        ${e.note?`<div class="tcard-note">${esc(e.note)}</div>`:''}
+      </div>
+    </div>
+  </div>
+  <div class="tcard-action-right" id="aR-${pid}">
+    <button class="btn-swipe-edit" onclick="doEditSym('${e.id}','${ctx}')">✏️<span>編輯</span></button>
+    <button class="btn-swipe-del" onclick="doDel('${e.id}','${ctx}')">🗑<span>刪除</span></button>
+  </div>
+</div>`;
+}
+function doEditSym(id,ctx){closeSwipe();openSymptomSheet(id);}
+
+// grouped() 需要包含 symptom entries
+// editEntry 需要處理 symptom
+
+// ══ 統計 ══════════════════════════════════════════════════════════
+let statPeriod='month'; // 'month' | 'year'
+let statYear=new Date().getFullYear(),statMonth=new Date().getMonth();
+
+function renderStats(){
+  const el=document.getElementById('viewStats');
+  const syms=loadSymptoms();
+  const now=new Date();
+
+  // 篩選範圍
+  let filtered,label;
+  if(statPeriod==='month'){
+    const y=statYear,m=statMonth;
+    const prefix=`${y}-${String(m+1).padStart(2,'0')}`;
+    filtered=syms.filter(s=>s.date.startsWith(prefix));
+    label=`${y} 年 ${m+1} 月`;
+  } else {
+    filtered=syms.filter(s=>s.date.startsWith(String(statYear)));
+    label=`${statYear} 年`;
+  }
+
+  // 統計
+  const tagCount={};
+  filtered.forEach(s=>(s.tags||[]).forEach(t=>{tagCount[t]=(tagCount[t]||0)+1;}));
+  const sevCount={輕微:0,普通:0,嚴重:0};
+  filtered.forEach(s=>sevCount[s.severity||'普通']++);
+  const sorted=Object.entries(tagCount).sort((a,b)=>b[1]-a[1]);
+  const maxCount=sorted[0]?.[1]||1;
+
+  // 月份切換列
+  const months=[];
+  for(let i=0;i<12;i++) months.push(i);
+
+  el.innerHTML=`
+<div class="stat-period-bar">
+  <button class="stat-period-btn${statPeriod==='month'?' active':''}" onclick="statPeriod='month';renderStats()">月</button>
+  <button class="stat-period-btn${statPeriod==='year'?' active':''}" onclick="statPeriod='year';renderStats()">年</button>
+</div>
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+  <button onclick="statNav(-1)" style="background:#f5f0e8;border:none;border-radius:10px;padding:8px 14px;font-size:18px;cursor:pointer">‹</button>
+  <span style="font-weight:700;font-size:16px;color:#2c2416">${label}</span>
+  <button onclick="statNav(1)" style="background:#f5f0e8;border:none;border-radius:10px;padding:8px 14px;font-size:18px;cursor:pointer">›</button>
+</div>
+
+${filtered.length===0?`<div class="empty"><div class="empty-icon">🩺</div><div style="font-size:15px;color:#aaa">這段期間沒有症狀記錄</div></div>`:`
+<div class="stat-section">
+  <div class="stat-title">症狀出現次數</div>
+  <div class="stat-card">
+    ${sorted.length?sorted.map(([tag,cnt])=>`
+    <div class="stat-row">
+      <span style="font-size:13px;color:#2c2416;font-weight:600;min-width:72px">${esc(tag)}</span>
+      <div class="stat-bar-wrap"><div class="stat-bar-fill" style="width:${Math.round(cnt/maxCount*100)}%"></div></div>
+      <span class="stat-num">${cnt}</span>
+    </div>`).join(''):'<div style="color:#bbb;font-size:13px">無資料</div>'}
+  </div>
+</div>
+
+<div class="stat-section">
+  <div class="stat-title">嚴重程度分布</div>
+  <div class="stat-card" style="display:flex;gap:10px;justify-content:space-around;padding:16px">
+    ${[['輕微','sev-mild','😕'],['普通','sev-moderate','😣'],['嚴重','sev-severe','😫']].map(([k,cls,icon])=>`
+    <div style="text-align:center">
+      <div style="font-size:26px">${icon}</div>
+      <div class="symptom-severity ${cls}" style="margin:6px auto;display:block">${k}</div>
+      <div style="font-size:20px;font-weight:800;color:#6b4fa0">${sevCount[k]}</div>
+    </div>`).join('')}
+  </div>
+</div>
+
+<div class="stat-section">
+  <div class="stat-title">共 ${filtered.length} 筆記錄</div>
+  <div class="stat-card">
+    ${filtered.slice().reverse().slice(0,5).map(s=>`
+    <div class="stat-row">
+      <span style="font-size:12px;color:#bbb;min-width:56px">${s.date.slice(5)} ${s.time}</span>
+      <span style="flex:1;font-size:13px;color:#2c2416">${(s.tags||[]).join('、')}</span>
+      <span class="symptom-severity ${{'輕微':'sev-mild','普通':'sev-moderate','嚴重':'sev-severe'}[s.severity||'普通']}">${s.severity||'普通'}</span>
+    </div>`).join('')}
+    ${filtered.length>5?`<div style="text-align:center;font-size:12px;color:#bbb;padding-top:6px">最近 5 筆，共 ${filtered.length} 筆</div>`:''}
+  </div>
+</div>
+`}`;
+}
+
+function statNav(dir){
+  if(statPeriod==='month'){
+    statMonth+=dir;
+    if(statMonth<0){statMonth=11;statYear--;}
+    if(statMonth>11){statMonth=0;statYear++;}
+  } else {
+    statYear+=dir;
+  }
+  renderStats();
+}
 function rerender(){renderTimeline();if(currentTab==='calendar')renderCalendar();}
 
 /* ── Demo 資料（含 SVG 假照片） ── */
@@ -1420,7 +1703,40 @@ function buildDemo(){
   ];
 }
 
-/* ── 經期 ── */
+function buildDemoSymptoms(){
+  const D=new Date();
+  function ago(n){const x=new Date(D);x.setDate(x.getDate()-n);return `${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`;}
+  function agoM(n){const x=new Date(D);x.setDate(x.getDate()-n);x.setMonth(x.getMonth()-1);return `${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`;}
+  return [
+    // 本月
+    {id:'s01',date:ago(0), time:'09:00',tags:['頭痛'],severity:'輕微',note:'久坐後頸部緊繃'},
+    {id:'s02',date:ago(1), time:'22:00',tags:['失眠','疲勞'],severity:'普通',note:'睡前思慮太多'},
+    {id:'s03',date:ago(2), time:'14:00',tags:['頭痛','頭暈'],severity:'普通',note:'下午低血糖感'},
+    {id:'s04',date:ago(4), time:'07:30',tags:['喉嚨痛'],severity:'輕微',note:'早起有點乾'},
+    {id:'s05',date:ago(5), time:'19:00',tags:['肚子痛'],severity:'嚴重',note:'晚餐後不舒服'},
+    {id:'s06',date:ago(6), time:'10:00',tags:['疲勞'],severity:'輕微',note:''},
+    {id:'s07',date:ago(8), time:'08:00',tags:['頭痛'],severity:'普通',note:'睡眠不足'},
+    {id:'s08',date:ago(9), time:'20:00',tags:['背痛'],severity:'輕微',note:'久坐工作'},
+    {id:'s09',date:ago(10),time:'15:00',tags:['過敏'],severity:'普通',note:'換季過敏，眼睛癢'},
+    {id:'s10',date:ago(12),time:'09:30',tags:['疲勞','頭痛'],severity:'嚴重',note:'感冒前兆'},
+    {id:'s11',date:ago(13),time:'11:00',tags:['發燒','咳嗽'],severity:'嚴重',note:'發燒 38.5 度'},
+    {id:'s12',date:ago(14),time:'09:00',tags:['咳嗽','疲勞'],severity:'普通',note:'退燒後仍咳'},
+    {id:'s13',date:ago(16),time:'21:00',tags:['失眠'],severity:'普通',note:''},
+    {id:'s14',date:ago(18),time:'14:00',tags:['頭痛'],severity:'輕微',note:''},
+    {id:'s15',date:ago(20),time:'08:00',tags:['肚子痛','噁心'],severity:'普通',note:'腸胃不適'},
+    // 上個月
+    {id:'s16',date:agoM(2), time:'10:00',tags:['頭痛'],severity:'普通',note:''},
+    {id:'s17',date:agoM(4), time:'19:00',tags:['疲勞','背痛'],severity:'輕微',note:''},
+    {id:'s18',date:agoM(6), time:'09:00',tags:['失眠'],severity:'嚴重',note:'連續三天睡不好'},
+    {id:'s19',date:agoM(8), time:'15:00',tags:['頭暈'],severity:'輕微',note:'久站後'},
+    {id:'s20',date:agoM(10),time:'20:00',tags:['生理痛'],severity:'嚴重',note:''},
+    {id:'s21',date:agoM(12),time:'08:30',tags:['喉嚨痛','發燒'],severity:'嚴重',note:''},
+    {id:'s22',date:agoM(15),time:'14:00',tags:['過敏'],severity:'普通',note:''},
+    {id:'s23',date:agoM(18),time:'09:00',tags:['頭痛','疲勞'],severity:'普通',note:''},
+    {id:'s24',date:agoM(22),time:'21:00',tags:['肚子痛'],severity:'輕微',note:''},
+    {id:'s25',date:agoM(25),time:'10:00',tags:['背痛'],severity:'輕微',note:'運動後'},
+  ];
+}
 function loadPeriods(){try{return JSON.parse(localStorage.getItem('periods')||'[]');}catch{return[];}}
 function savePeriods(a){localStorage.setItem('periods',JSON.stringify(a));}
 
@@ -1510,10 +1826,10 @@ function renderPeriodList(){
 
 loadEntries();
 if(!entries.length){entries=buildDemo();saveEntries();}
+if(!loadSymptoms().length){saveSymptoms(buildDemoSymptoms());}
 renderChips();
 renderTimeline();
 setTimeout(scrollToToday,100);
 </script>
-
 </body>
 </html>
