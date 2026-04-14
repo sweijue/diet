@@ -152,9 +152,15 @@ button{cursor:pointer}
 .tcard-body.symptom{border-left:3px solid #9b7fc8;}
 .symptom-tag{display:inline-block;padding:3px 9px;border-radius:99px;background:#f0eafc;color:#6b4fa0;font-size:12px;font-weight:600;margin:2px 3px 2px 0}
 .symptom-severity{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700;margin-left:4px}
-.sev-mild{background:#e8f5e9;color:#4caf50}
-.sev-moderate{background:#fff8e1;color:#f59c00}
-.sev-severe{background:#fce4ec;color:#e53935}
+.sev-score{font-size:11px;font-weight:700;padding:2px 7px;border-radius:99px}
+/* slider */
+.sev-slider-wrap{background:#f5f0e8;border-radius:12px;padding:12px 14px 10px;margin-bottom:14px}
+.sev-slider-row{display:flex;align-items:center;gap:10px}
+.sev-score-display{min-width:36px;text-align:center;font-size:22px;font-weight:800;color:#6b4fa0}
+.sev-emoji-display{font-size:22px;min-width:30px;text-align:center}
+input[type=range].sev-range{-webkit-appearance:none;appearance:none;flex:1;height:6px;border-radius:3px;outline:none;cursor:pointer}
+input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#9b7fc8;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.sev-labels{display:flex;justify-content:space-between;font-size:10px;color:#bbb;margin-top:4px;padding:0 2px}
 /* ── 統計 tab ── */
 #viewStats{padding:14px 14px 100px}
 .stat-section{margin-bottom:22px}
@@ -169,8 +175,6 @@ button{cursor:pointer}
 .stat-bar-fill{height:100%;background:#9b7fc8;border-radius:3px;transition:width .4s}
 .stat-num{font-size:13px;font-weight:700;color:#6b4fa0;min-width:24px;text-align:right}
 .cal-dot-symptom{background:#9b7fc8}
-.sym-sev-btn{flex:1;padding:10px 6px;border-radius:10px;border:2px solid transparent;font-size:13px;font-weight:700;cursor:pointer;transition:border-color .15s}
-.sym-sev-btn.active{border-color:#6b4fa0}
 .collapse-opt{padding:7px 13px;border-radius:20px;border:1.5px solid #d8cfc4;background:#fdf9f4;color:#8b6f47;font-size:13px;font-weight:600;cursor:pointer}
 .collapse-opt.active{background:#c8a96e;border-color:#c8a96e;color:#fff}
 #exActionSheet{position:fixed;inset:0;z-index:400;display:none}
@@ -209,6 +213,7 @@ button{cursor:pointer}
             </div>
             <button class="dropdown-item" onclick="exportData()">📤 匯出備份</button>
             <button class="dropdown-item" onclick="document.getElementById('importInput').click()">📥 匯入資料</button>
+            <button class="dropdown-item" onclick="loadDemoData()">🎭 載入示範資料</button>
             <button class="dropdown-item" onclick="openCollapseSheet()">📅 收合設定</button>
             <button class="dropdown-item" onclick="openWeightSheet()">⚖️ 設定體重</button>
             <button class="dropdown-item" onclick="openClearSheet()">🗑 清除舊資料</button>
@@ -351,10 +356,13 @@ button{cursor:pointer}
         <button onclick="addCustomSymTag()" style="padding:10px 14px;background:#f0eafc;color:#6b4fa0;border:none;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer">＋</button>
       </div>
       <div class="form-label">嚴重程度</div>
-      <div style="display:flex;gap:8px;margin-bottom:14px">
-        <button class="sym-sev-btn sev-mild" data-val="輕微" onclick="selSeverity(this)">😕 輕微</button>
-        <button class="sym-sev-btn sev-moderate" data-val="普通" onclick="selSeverity(this)">😣 普通</button>
-        <button class="sym-sev-btn sev-severe" data-val="嚴重" onclick="selSeverity(this)">😫 嚴重</button>
+      <div class="sev-slider-wrap">
+        <div class="sev-slider-row">
+          <span class="sev-emoji-display" id="sevEmoji">😐</span>
+          <input type="range" class="sev-range" id="sevRange" min="1" max="10" value="5" oninput="onSevSlider()">
+          <span class="sev-score-display" id="sevScore">5</span>
+        </div>
+        <div class="sev-labels"><span>輕微</span><span>嚴重</span></div>
       </div>
       <div class="form-label">備注</div>
       <textarea id="symNote" class="form-textarea" rows="2" placeholder="其他說明…"></textarea>
@@ -1464,7 +1472,7 @@ function allEntries(){
 // ══ 症狀記錄 ══════════════════════════════════════════════════════
 
 const DEFAULT_SYMPTOMS=['頭痛','疲勞','肚子痛','噁心','失眠','頭暈','生理痛','背痛','喉嚨痛','發燒','咳嗽','過敏'];
-let selSymTags=new Set(),selSeverityVal='普通';
+let selSymTags=new Set(),selSeverityVal=5;
 
 function loadSymptoms(){try{return JSON.parse(localStorage.getItem('symptoms')||'[]');}catch{return[];}}
 function saveSymptoms(arr){localStorage.setItem('symptoms',JSON.stringify(arr));}
@@ -1475,7 +1483,7 @@ function openSymptomSheet(editId){
   document.getElementById('symTime').value=editId?'':now.toTimeString().slice(0,5);
   document.getElementById('symNote').value='';
   document.getElementById('symEditId').value='';
-  selSymTags=new Set();selSeverityVal='普通';
+  selSymTags=new Set();selSeverityVal=5;
   if(editId){
     const s=loadSymptoms().find(x=>x.id===editId);
     if(s){
@@ -1484,7 +1492,7 @@ function openSymptomSheet(editId){
       document.getElementById('symNote').value=s.note||'';
       document.getElementById('symEditId').value=editId;
       selSymTags=new Set(s.tags||[]);
-      selSeverityVal=s.severity||'普通';
+      selSeverityVal=parseInt(s.severity)||5;
     }
   }
   renderSymTagsUI();renderSevUI();
@@ -1511,13 +1519,26 @@ function addCustomSymTag(){
   const v=inp.value.trim();if(!v)return;
   selSymTags.add(v);inp.value='';renderSymTagsUI();
 }
-function selSeverity(btn){
-  selSeverityVal=btn.dataset.val;renderSevUI();
+function sevEmoji(v){
+  if(v<=2)return '😊';if(v<=4)return '😐';if(v<=6)return '😕';if(v<=8)return '😣';return '😫';
+}
+function sevColor(v){
+  if(v<=3)return '#4caf50';if(v<=6)return '#f59c00';return '#e53935';
+}
+function onSevSlider(){
+  const v=parseInt(document.getElementById('sevRange').value);
+  selSeverityVal=v;
+  document.getElementById('sevScore').textContent=v;
+  document.getElementById('sevEmoji').textContent=sevEmoji(v);
+  // 更新 slider 軌道顏色
+  const pct=(v-1)/9*100;
+  document.getElementById('sevRange').style.background=
+    `linear-gradient(to right,${sevColor(v)} 0%,${sevColor(v)} ${pct}%,#e0d8cc ${pct}%,#e0d8cc 100%)`;
 }
 function renderSevUI(){
-  document.querySelectorAll('.sym-sev-btn').forEach(b=>{
-    b.classList.toggle('active',b.dataset.val===selSeverityVal);
-  });
+  const v=parseInt(selSeverityVal)||5;
+  const el=document.getElementById('sevRange');
+  if(el){el.value=v;onSevSlider();}
 }
 function saveSymptom(){
   const date=document.getElementById('symDate').value;
@@ -1535,7 +1556,7 @@ function saveSymptom(){
 }
 
 function renderSymptomCard(e,ctx){
-  const sevClass={'輕微':'sev-mild','普通':'sev-moderate','嚴重':'sev-severe'}[e.severity]||'sev-moderate';
+  const sevNum=parseInt(e.severity)||5;const sevC=sevColor(sevNum);
   const pid=ctx+'-'+e.id;
   return `<div class="tcard-wrap" id="wrap-${pid}">
   <div class="tcard-inner" id="inn-${pid}"
@@ -1547,7 +1568,7 @@ function renderSymptomCard(e,ctx){
       <div class="tcard-content">
         <div class="tcard-row">
           <span class="tcard-name">🩺 身體症狀</span>
-          <span class="symptom-severity ${sevClass}">${e.severity||'普通'}</span>
+          <span class="sev-score" style="background:${sevC}22;color:${sevC}">${sevNum}/10</span>
         </div>
         <div style="margin:4px 0 2px">${(e.tags||[]).map(t=>`<span class="symptom-tag">${esc(t)}</span>`).join('')}</div>
         ${e.note?`<div class="tcard-note">${esc(e.note)}</div>`:''}
@@ -1589,8 +1610,7 @@ function renderStats(){
   // 統計
   const tagCount={};
   filtered.forEach(s=>(s.tags||[]).forEach(t=>{tagCount[t]=(tagCount[t]||0)+1;}));
-  const sevCount={輕微:0,普通:0,嚴重:0};
-  filtered.forEach(s=>sevCount[s.severity||'普通']++);
+
   const sorted=Object.entries(tagCount).sort((a,b)=>b[1]-a[1]);
   const maxCount=sorted[0]?.[1]||1;
 
@@ -1624,13 +1644,19 @@ ${filtered.length===0?`<div class="empty"><div class="empty-icon">🩺</div><div
 
 <div class="stat-section">
   <div class="stat-title">嚴重程度分布</div>
-  <div class="stat-card" style="display:flex;gap:10px;justify-content:space-around;padding:16px">
-    ${[['輕微','sev-mild','😕'],['普通','sev-moderate','😣'],['嚴重','sev-severe','😫']].map(([k,cls,icon])=>`
-    <div style="text-align:center">
-      <div style="font-size:26px">${icon}</div>
-      <div class="symptom-severity ${cls}" style="margin:6px auto;display:block">${k}</div>
-      <div style="font-size:20px;font-weight:800;color:#6b4fa0">${sevCount[k]}</div>
-    </div>`).join('')}
+  <div class="stat-card">
+    ${[['1-3','輕微','#4caf50'],['4-6','中等','#f59c00'],['7-10','嚴重','#e53935']].map(([range,label,color])=>{
+      const cnt=filtered.filter(s=>{const v=parseInt(s.severity)||5;if(range==='1-3')return v<=3;if(range==='4-6')return v>=4&&v<=6;return v>=7;}).length;
+      const pct=filtered.length?Math.round(cnt/filtered.length*100):0;
+      return `<div class="stat-row">
+        <span style="font-size:13px;font-weight:600;min-width:52px;color:#2c2416">${label}</span>
+        <div class="stat-bar-wrap"><div class="stat-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+        <span class="stat-num" style="color:${color}">${cnt}</span>
+      </div>`;
+    }).join('')}
+    <div style="padding-top:8px;text-align:center;font-size:13px;color:#8b6f47;font-weight:600">
+      平均嚴重程度：${filtered.length?(filtered.reduce((a,s)=>a+(parseInt(s.severity)||5),0)/filtered.length).toFixed(1):'-'} / 10
+    </div>
   </div>
 </div>
 
@@ -1641,7 +1667,7 @@ ${filtered.length===0?`<div class="empty"><div class="empty-icon">🩺</div><div
     <div class="stat-row">
       <span style="font-size:12px;color:#bbb;min-width:56px">${s.date.slice(5)} ${s.time}</span>
       <span style="flex:1;font-size:13px;color:#2c2416">${(s.tags||[]).join('、')}</span>
-      <span class="symptom-severity ${{'輕微':'sev-mild','普通':'sev-moderate','嚴重':'sev-severe'}[s.severity||'普通']}">${s.severity||'普通'}</span>
+      <span class="sev-score" style="background:${sevColor(parseInt(s.severity)||5)}22;color:${sevColor(parseInt(s.severity)||5)}">${parseInt(s.severity)||5}/10</span>
     </div>`).join('')}
     ${filtered.length>5?`<div style="text-align:center;font-size:12px;color:#bbb;padding-top:6px">最近 5 筆，共 ${filtered.length} 筆</div>`:''}
   </div>
@@ -1673,6 +1699,27 @@ const P={
   hot:   makePhoto('#c0756a','🍲 火鍋'),
   bike:  makePhoto('#7aaa8a','🚴 騎車'),
 };
+
+function loadDemoData(){
+  if(!confirm('載入示範資料？\n將與現有資料合併，不會覆蓋已有記錄。'))return;
+  closeDropdown();
+  // entries demo
+  const demo=buildDemo();
+  const ids=new Set(entries.map(e=>e.id));
+  const newEntries=demo.filter(e=>!ids.has(e.id));
+  entries=[...entries,...newEntries];
+  entries.sort((a,b)=>a.date.localeCompare(b.date));
+  saveEntries();
+  // symptoms demo
+  const demoPeriods=buildDemoSymptoms();
+  const existing=loadSymptoms();
+  const sids=new Set(existing.map(s=>s.id));
+  const newSyms=demoPeriods.filter(s=>!sids.has(s.id));
+  saveSymptoms([...existing,...newSyms]);
+  rerender();
+  if(currentTab==='stats')renderStats();
+  showToast(`✅ 已載入示範資料`);
+}
 
 function buildDemo(){
   const D=new Date();
@@ -1709,32 +1756,32 @@ function buildDemoSymptoms(){
   function agoM(n){const x=new Date(D);x.setDate(x.getDate()-n);x.setMonth(x.getMonth()-1);return `${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`;}
   return [
     // 本月
-    {id:'s01',date:ago(0), time:'09:00',tags:['頭痛'],severity:'輕微',note:'久坐後頸部緊繃'},
-    {id:'s02',date:ago(1), time:'22:00',tags:['失眠','疲勞'],severity:'普通',note:'睡前思慮太多'},
-    {id:'s03',date:ago(2), time:'14:00',tags:['頭痛','頭暈'],severity:'普通',note:'下午低血糖感'},
-    {id:'s04',date:ago(4), time:'07:30',tags:['喉嚨痛'],severity:'輕微',note:'早起有點乾'},
-    {id:'s05',date:ago(5), time:'19:00',tags:['肚子痛'],severity:'嚴重',note:'晚餐後不舒服'},
-    {id:'s06',date:ago(6), time:'10:00',tags:['疲勞'],severity:'輕微',note:''},
-    {id:'s07',date:ago(8), time:'08:00',tags:['頭痛'],severity:'普通',note:'睡眠不足'},
-    {id:'s08',date:ago(9), time:'20:00',tags:['背痛'],severity:'輕微',note:'久坐工作'},
-    {id:'s09',date:ago(10),time:'15:00',tags:['過敏'],severity:'普通',note:'換季過敏，眼睛癢'},
-    {id:'s10',date:ago(12),time:'09:30',tags:['疲勞','頭痛'],severity:'嚴重',note:'感冒前兆'},
-    {id:'s11',date:ago(13),time:'11:00',tags:['發燒','咳嗽'],severity:'嚴重',note:'發燒 38.5 度'},
-    {id:'s12',date:ago(14),time:'09:00',tags:['咳嗽','疲勞'],severity:'普通',note:'退燒後仍咳'},
-    {id:'s13',date:ago(16),time:'21:00',tags:['失眠'],severity:'普通',note:''},
-    {id:'s14',date:ago(18),time:'14:00',tags:['頭痛'],severity:'輕微',note:''},
-    {id:'s15',date:ago(20),time:'08:00',tags:['肚子痛','噁心'],severity:'普通',note:'腸胃不適'},
+    {id:'s01',date:ago(0), time:'09:00',tags:['頭痛'],severity:'3',note:'久坐後頸部緊繃'},
+    {id:'s02',date:ago(1), time:'22:00',tags:['失眠','疲勞'],severity:'5',note:'睡前思慮太多'},
+    {id:'s03',date:ago(2), time:'14:00',tags:['頭痛','頭暈'],severity:'5',note:'下午低血糖感'},
+    {id:'s04',date:ago(4), time:'07:30',tags:['喉嚨痛'],severity:'3',note:'早起有點乾'},
+    {id:'s05',date:ago(5), time:'19:00',tags:['肚子痛'],severity:'8',note:'晚餐後不舒服'},
+    {id:'s06',date:ago(6), time:'10:00',tags:['疲勞'],severity:'3',note:''},
+    {id:'s07',date:ago(8), time:'08:00',tags:['頭痛'],severity:'5',note:'睡眠不足'},
+    {id:'s08',date:ago(9), time:'20:00',tags:['背痛'],severity:'3',note:'久坐工作'},
+    {id:'s09',date:ago(10),time:'15:00',tags:['過敏'],severity:'5',note:'換季過敏，眼睛癢'},
+    {id:'s10',date:ago(12),time:'09:30',tags:['疲勞','頭痛'],severity:'8',note:'感冒前兆'},
+    {id:'s11',date:ago(13),time:'11:00',tags:['發燒','咳嗽'],severity:'8',note:'發燒 38.5 度'},
+    {id:'s12',date:ago(14),time:'09:00',tags:['咳嗽','疲勞'],severity:'5',note:'退燒後仍咳'},
+    {id:'s13',date:ago(16),time:'21:00',tags:['失眠'],severity:'5',note:''},
+    {id:'s14',date:ago(18),time:'14:00',tags:['頭痛'],severity:'3',note:''},
+    {id:'s15',date:ago(20),time:'08:00',tags:['肚子痛','噁心'],severity:'5',note:'腸胃不適'},
     // 上個月
-    {id:'s16',date:agoM(2), time:'10:00',tags:['頭痛'],severity:'普通',note:''},
-    {id:'s17',date:agoM(4), time:'19:00',tags:['疲勞','背痛'],severity:'輕微',note:''},
-    {id:'s18',date:agoM(6), time:'09:00',tags:['失眠'],severity:'嚴重',note:'連續三天睡不好'},
-    {id:'s19',date:agoM(8), time:'15:00',tags:['頭暈'],severity:'輕微',note:'久站後'},
-    {id:'s20',date:agoM(10),time:'20:00',tags:['生理痛'],severity:'嚴重',note:''},
-    {id:'s21',date:agoM(12),time:'08:30',tags:['喉嚨痛','發燒'],severity:'嚴重',note:''},
-    {id:'s22',date:agoM(15),time:'14:00',tags:['過敏'],severity:'普通',note:''},
-    {id:'s23',date:agoM(18),time:'09:00',tags:['頭痛','疲勞'],severity:'普通',note:''},
-    {id:'s24',date:agoM(22),time:'21:00',tags:['肚子痛'],severity:'輕微',note:''},
-    {id:'s25',date:agoM(25),time:'10:00',tags:['背痛'],severity:'輕微',note:'運動後'},
+    {id:'s16',date:agoM(2), time:'10:00',tags:['頭痛'],severity:'5',note:''},
+    {id:'s17',date:agoM(4), time:'19:00',tags:['疲勞','背痛'],severity:'3',note:''},
+    {id:'s18',date:agoM(6), time:'09:00',tags:['失眠'],severity:'8',note:'連續三天睡不好'},
+    {id:'s19',date:agoM(8), time:'15:00',tags:['頭暈'],severity:'3',note:'久站後'},
+    {id:'s20',date:agoM(10),time:'20:00',tags:['生理痛'],severity:'8',note:''},
+    {id:'s21',date:agoM(12),time:'08:30',tags:['喉嚨痛','發燒'],severity:'8',note:''},
+    {id:'s22',date:agoM(15),time:'14:00',tags:['過敏'],severity:'5',note:''},
+    {id:'s23',date:agoM(18),time:'09:00',tags:['頭痛','疲勞'],severity:'5',note:''},
+    {id:'s24',date:agoM(22),time:'21:00',tags:['肚子痛'],severity:'3',note:''},
+    {id:'s25',date:agoM(25),time:'10:00',tags:['背痛'],severity:'3',note:'運動後'},
   ];
 }
 function loadPeriods(){try{return JSON.parse(localStorage.getItem('periods')||'[]');}catch{return[];}}
