@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
@@ -63,21 +64,21 @@ button{cursor:pointer}
 .tcard-wrap{position:relative;overflow:hidden;margin-bottom:11px}
 /* 右側：編輯（橘）+ 刪除（紅），左滑顯示 */
 .tcard-action-right{
-  position:absolute;right:0;top:0;bottom:0;
-  display:flex;align-items:stretch;
-  opacity:0;pointer-events:none;
-  border-radius:0 12px 12px 0;
-  overflow:hidden;
+position:absolute;right:0;top:0;bottom:0;
+display:flex;align-items:stretch;
+opacity:0;pointer-events:none;
+border-radius:0 12px 12px 0;
+overflow:hidden;
 }
 .btn-swipe-edit{
-  width:68px;background:#c8a96e;color:#2c2416;border:none;
-  font-size:12px;font-weight:700;cursor:pointer;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+width:68px;background:#c8a96e;color:#2c2416;border:none;
+font-size:12px;font-weight:700;cursor:pointer;
+display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
 }
 .btn-swipe-del{
-  width:68px;background:#e06060;color:#fff;border:none;
-  font-size:12px;font-weight:700;cursor:pointer;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+width:68px;background:#e06060;color:#fff;border:none;
+font-size:12px;font-weight:700;cursor:pointer;
+display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
 }
 .tcard-inner{transition:transform .22s ease;display:flex;align-items:flex-start;position:relative;z-index:1}
 /* 時間欄 */
@@ -203,6 +204,7 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
 .clear-info{font-size:13px;color:#999;margin-bottom:16px}
 .btn-clear-confirm{width:100%;padding:14px;border-radius:10px;background:#d44;color:#fff;border:none;font-weight:700;font-size:16px}
 </style>
+
 </head>
 <body>
 <div id="app">
@@ -245,6 +247,7 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
 </div>
 
 <button id="fab" onclick="toggleFabMenu()">+</button>
+
 <div id="fabMenu">
   <div class="fab-item">
     <div class="fab-item-label">記錄用餐</div>
@@ -347,6 +350,7 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
 </div>
 
 <!-- Period Sheet -->
+
 <div id="symptomSheet" class="sheet-overlay" style="display:none" onclick="if(event.target===this)closeSymptomSheet()">
   <div class="sheet">
     <div class="sheet-header">
@@ -416,25 +420,28 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
       </div>
       <div class="bp-input-row">
         <div class="bp-input-box">
-          <input type="number" id="bpSys" placeholder="120" min="60" max="250">
+          <input type="number" id="bpSys" placeholder="120" min="60" max="250" inputmode="numeric" pattern="[0-9]*">
           <div class="bp-lbl">收縮壓 mmHg</div>
         </div>
         <div class="bp-slash">/</div>
         <div class="bp-input-box">
-          <input type="number" id="bpDia" placeholder="80" min="40" max="150">
+          <input type="number" id="bpDia" placeholder="80" min="40" max="150" inputmode="numeric" pattern="[0-9]*">
           <div class="bp-lbl">舒張壓 mmHg</div>
         </div>
         <div class="bp-slash"> </div>
         <div class="bp-input-box">
-          <input type="number" id="bpHr" placeholder="72" min="30" max="220">
+          <input type="number" id="bpHr" placeholder="72" min="30" max="220" inputmode="numeric" pattern="[0-9]*">
           <div class="bp-lbl">心率 bpm</div>
         </div>
       </div>
 
-      <div class="form-label">備注</div>
-      <textarea id="bpNote" class="form-textarea" rows="2" placeholder="量測情況、姿勢…"></textarea>
-      <input type="hidden" id="bpEditId" value="">
-    </div>
+```
+  <div class="form-label">備注</div>
+  <textarea id="bpNote" class="form-textarea" rows="2" placeholder="量測情況、姿勢…"></textarea>
+  <input type="hidden" id="bpEditId" value="">
+</div>
+```
+
   </div>
 </div>
 
@@ -2681,5 +2688,6 @@ renderTimeline();
 setTimeout(scrollToToday,100);
 checkUrlBpImport();
 </script>
+
 </body>
 </html>
