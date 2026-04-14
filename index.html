@@ -356,18 +356,13 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
     </div>
     <div class="sheet-body">
       <div style="margin-bottom:14px">
-        <button onclick="toggleBpBatch()" style="width:100%;background:#f0f4ff;border:1.5px dashed #5b8cbf;border-radius:12px;padding:11px;color:#5b8cbf;font-size:14px;font-weight:700;cursor:pointer">📋 批次貼入多筆血壓</button>
-        <div id="bpBatchArea" style="display:none;margin-top:8px">
-          <textarea id="bpBatchText" class="form-textarea" rows="6" placeholder="從歐姆龍 App 複製貼上，支援多天多筆：
-4月13日
-23:03
-132
-93
-56
-..."></textarea>
-          <button onclick="parseBpBatch()" style="width:100%;margin-top:6px;background:#5b8cbf;border:none;border-radius:10px;padding:11px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">🔍 解析並預覽</button>
-          <div id="bpBatchPreview" style="margin-top:8px"></div>
+        <div class="form-label">批次貼入多筆血壓</div>
+        <div style="display:flex;gap:8px;margin-bottom:6px">
+          <textarea id="bpBatchText" class="form-textarea" rows="5" style="flex:1;min-width:0" placeholder="從歐姆龍 App 複製貼上，支援多天多筆"></textarea>
+          <button onclick="bpBatchPaste()" style="background:#f5f0e8;border:none;border-radius:10px;padding:10px 12px;color:#8b6f47;font-size:20px;cursor:pointer;align-self:stretch">📋</button>
         </div>
+        <button onclick="parseBpBatch()" style="width:100%;background:#5b8cbf;border:none;border-radius:10px;padding:11px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">🔍 解析並預覽</button>
+        <div id="bpBatchPreview" style="margin-top:8px"></div>
       </div>
       <div class="datetime-group" style="margin-bottom:14px">
         <div class="datetime-row">
@@ -410,18 +405,13 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
     </div>
     <div class="sheet-body">
       <div style="margin-bottom:14px">
-        <button onclick="toggleBpBatch()" style="width:100%;background:#f0f4ff;border:1.5px dashed #5b8cbf;border-radius:12px;padding:11px;color:#5b8cbf;font-size:14px;font-weight:700;cursor:pointer">📋 批次貼入多筆血壓</button>
-        <div id="bpBatchArea" style="display:none;margin-top:8px">
-          <textarea id="bpBatchText" class="form-textarea" rows="6" placeholder="從歐姆龍 App 複製貼上，支援多天多筆：
-4月13日
-23:03
-132
-93
-56
-..."></textarea>
-          <button onclick="parseBpBatch()" style="width:100%;margin-top:6px;background:#5b8cbf;border:none;border-radius:10px;padding:11px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">🔍 解析並預覽</button>
-          <div id="bpBatchPreview" style="margin-top:8px"></div>
+        <div class="form-label">批次貼入多筆血壓</div>
+        <div style="display:flex;gap:8px;margin-bottom:6px">
+          <textarea id="bpBatchText" class="form-textarea" rows="5" style="flex:1;min-width:0" placeholder="從歐姆龍 App 複製貼上，支援多天多筆"></textarea>
+          <button onclick="bpBatchPaste()" style="background:#f5f0e8;border:none;border-radius:10px;padding:10px 12px;color:#8b6f47;font-size:20px;cursor:pointer;align-self:stretch">📋</button>
         </div>
+        <button onclick="parseBpBatch()" style="width:100%;background:#5b8cbf;border:none;border-radius:10px;padding:11px;color:#fff;font-size:14px;font-weight:700;cursor:pointer">🔍 解析並預覽</button>
+        <div id="bpBatchPreview2" style="margin-top:8px"></div>
       </div>
       <div class="datetime-group" style="margin-bottom:14px">
         <div class="datetime-row">
@@ -1653,9 +1643,14 @@ var _bpMeds=false;
 
 
 // ══ 血壓批次解析 ══════════════════════════════════════════════════
-function toggleBpBatch(){
-  var a=document.getElementById('bpBatchArea');
-  a.style.display=a.style.display==='none'?'block':'none';
+async function bpBatchPaste(){
+  try{
+    const text=await navigator.clipboard.readText();
+    if(text){document.getElementById('bpBatchText').value=text;showToast('✅ 已貼上');}
+    else showToast('剪貼簿是空的');
+  }catch(e){
+    showToast('請直接點文字框長按貼上');
+  }
 }
 
 function parseOmronText(text){
@@ -1744,7 +1739,7 @@ function parseBpBatch(){
   });
 
   // 顯示預覽
-  var prev=document.getElementById('bpBatchPreview');
+  var prev=document.getElementById('bpBatchPreview')||document.getElementById('bpBatchPreview2');
   var html='<div style="background:#faf8f5;border-radius:10px;padding:10px;font-size:13px">';
   html+='<div style="font-weight:700;color:#2c2416;margin-bottom:6px">解析到 '+parsed.length+' 筆';
   if(dupRecs.length)html+='，'+dupRecs.length+' 筆重複跳過';
@@ -1774,7 +1769,7 @@ function parseBpBatch(){
 }
 
 function confirmBpBatch(){
-  var prev=document.getElementById('bpBatchPreview');
+  var prev=document.getElementById('bpBatchPreview')||document.getElementById('bpBatchPreview2');
   var newRecs=prev._newRecs;
   if(!newRecs||!newRecs.length)return;
   var recs=loadBpRecords();
