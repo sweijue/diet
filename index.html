@@ -2419,6 +2419,7 @@ const P={
   fish:  makePhoto('#5b8cbf','🐟 鮭魚餐'),
   hot:   makePhoto('#c0756a','🍲 火鍋'),
   bike:  makePhoto('#7aaa8a','🚴 騎車'),
+  walk:  makePhoto('#9b7fc8','🚶 坡走'),
 };
 
 function loadDemoData(){
@@ -2447,13 +2448,13 @@ function buildDemo(){
   function ago(n){const x=new Date(D);x.setDate(x.getDate()-n);return `${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`;}
   return [
     {id:'d01',type:'meal',date:ago(0),time:'08:00',mealType:'早餐',foods:[{name:'吐司',qty:1,cal:140,id:'f1'},{name:'荷包蛋',qty:1,cal:90,id:'f2'},{name:'豆漿',qty:1,cal:54,id:'f3'}],note:'',photos:[]},
-    {id:'d02',type:'meal',date:ago(0),time:'12:30',mealType:'午餐',foods:[{name:'雞腿便當',qty:1,cal:680,id:'f4'}],note:'',photos:[]},
-    {id:'d03',type:'exercise',date:ago(0),time:'18:00',exerciseType:'🚶 坡走 10%',duration:'40',distance:'',calories:'156',note:'',photos:[]},
+    {id:'d02',type:'meal',date:ago(0),time:'12:30',mealType:'午餐',foods:[{name:'雞腿便當',qty:1,cal:680,id:'f4'}],note:'',photos:[P.bowl]},
+    {id:'d03',type:'exercise',date:ago(0),time:'18:00',exerciseType:'🚶 坡走 10%',duration:'40',distance:'',calories:'156',note:'',photos:[P.walk]},
     {id:'d04',type:'meal',date:ago(0),time:'19:30',mealType:'晚餐',foods:[{name:'白飯',qty:1,cal:180,id:'f5'},{name:'滷雞腿',qty:1,cal:250,id:'f6'},{name:'燙青菜',qty:1,cal:30,id:'f7'}],note:'',photos:[]},
     {id:'d05',type:'meal',date:ago(1),time:'07:30',mealType:'早餐',foods:[{name:'燕麥',qty:1,cal:150,id:'f8'},{name:'牛奶',qty:1,cal:150,id:'f9'}],note:'',photos:[]},
     {id:'d06',type:'meal',date:ago(1),time:'12:00',mealType:'午餐',foods:[{name:'牛肉麵',qty:1,cal:550,id:'fa'}],note:'',photos:[]},
     {id:'d07',type:'exercise',date:ago(1),time:'17:30',exerciseType:'🏃 跑步',duration:'30',distance:'4.5',calories:'294',note:'',photos:[]},
-    {id:'d08',type:'meal',date:ago(1),time:'19:00',mealType:'晚餐',foods:[{name:'鮭魚',qty:1,cal:200,id:'fb'},{name:'糙米飯',qty:1,cal:165,id:'fc'},{name:'花椰菜',qty:1,cal:35,id:'fd'}],note:'',photos:[]},
+    {id:'d08',type:'meal',date:ago(1),time:'19:00',mealType:'晚餐',foods:[{name:'鮭魚',qty:1,cal:200,id:'fb'},{name:'糙米飯',qty:1,cal:165,id:'fc'},{name:'花椰菜',qty:1,cal:35,id:'fd'}],note:'',photos:[P.fish]},
     {id:'d09',type:'meal',date:ago(2),time:'09:00',mealType:'早午餐',foods:[{name:'蛋餅',qty:1,cal:280,id:'fe'},{name:'豆漿',qty:1,cal:54,id:'ff'}],note:'',photos:[]},
     {id:'d10',type:'meal',date:ago(2),time:'13:00',mealType:'午餐',foods:[{name:'排骨便當',qty:1,cal:700,id:'fg'}],note:'',photos:[]},
     {id:'d11',type:'meal',date:ago(2),time:'19:30',mealType:'晚餐',foods:[{name:'火鍋',qty:1,cal:500,id:'fh'}],note:'朋友聚餐',photos:[]},
