@@ -1968,8 +1968,11 @@ function renderBpTab(){
 
   // 每日記錄列表（左滑編輯刪除，含當日症狀）
   var allSyms=loadSymptoms();
+  var monthSymsAll=allSyms.filter(function(s){return s.date.startsWith(prefix);});
   var byDate={};
   month.forEach(function(b){(byDate[b.date]=byDate[b.date]||[]).push(b);});
+  // 有症狀但沒有血壓記錄的日期也加進來
+  monthSymsAll.forEach(function(s){if(!byDate[s.date])byDate[s.date]=[];});
   var dates=Object.keys(byDate).sort(function(a,b){return b.localeCompare(a);});
   dates.forEach(function(date){
     var dayRecs=byDate[date];
@@ -1995,8 +1998,10 @@ function renderBpTab(){
     html+='</div>';
     html+='<span style="font-size:13px;color:#bbb;font-weight:600">週'+wd+'</span>';
     if(isInPeriod(date))html+='<span style="font-size:15px">🩸</span>';
-    var hasMeds=dayRecs.some(function(b){return b.meds;});
-    html+='<span data-date="'+date+'" onclick="toggleDayMeds(event,this.dataset.date)" style="font-size:18px;cursor:pointer;'+(hasMeds?'':'filter:grayscale(1);opacity:.35')+'">💊</span>';
+    if(dayRecs.length){
+      var hasMeds=dayRecs.some(function(b){return b.meds;});
+      html+='<span data-date="'+date+'" onclick="toggleDayMeds(event,this.dataset.date)" style="font-size:18px;cursor:pointer;'+(hasMeds?'':'filter:grayscale(1);opacity:.35')+'">💊</span>';
+    }
     html+='</div>';
     // 症狀區塊
     if(daySyms.length){
@@ -2024,7 +2029,9 @@ function renderBpTab(){
       html+=' ontouchmove="bpSwipeMove(event,this.dataset.bpid)"';
       html+=' ontouchend="bpSwipeEnd(event,this.dataset.bpid)"';
       html+=' style="background:#faf8f5;border-radius:10px;border-left:3px solid '+(high?'#e53935':'#5b8cbf')+';padding:9px 12px;display:flex;align-items:center;gap:10px">';
+      var isMorn=parseInt(b.time.slice(0,2))<12;
       html+='<span style="font-size:12px;color:#bbb;min-width:40px">'+b.time+'</span>';
+      html+='<span style="font-size:13px;margin-left:-4px">'+(isMorn?'☀️':'🌙')+'</span>';
       html+='<span style="font-size:18px;font-weight:800;color:'+bpColor+'">'+b.sys+'/'+b.dia+'</span>';
       html+='<span style="font-size:11px;color:#bbb">mmHg</span>';
       if(b.hr)html+='<span style="font-size:12px;color:#8b6f47;margin-left:2px">❤️'+b.hr+'</span>';
@@ -2385,8 +2392,58 @@ function renderStats(){
     html+='<div class="stat-card">'+recentRows;
     if(filtered.length>5)html+='<div style="text-align:center;font-size:12px;color:#bbb;padding-top:6px">顯示最近 5 筆，共 '+filtered.length+' 筆</div>';
     html+='</div></div>';
-    // 血壓與症狀關聯
-    html+=buildBpSymCorrelationHtml(loadBpRecords().filter(function(b){return filtered.some(function(s){return s.date===b.date||true;});}),filtered);
+    // 血壓與症狀關聯（整體平均）
+    var _bpAll=loadBpRecords();
+    html+=buildBpSymCorrelationHtml(_bpAll,filtered);
+
+    // B：按症狀分類血壓
+    if(_bpAll.length){
+      var bpByTag={};
+      filtered.forEach(function(s){
+        (s.tags||[]).forEach(function(tag){
+          if(!bpByTag[tag])bpByTag[tag]={with:[],without:[]};
+          var dayBp=_bpAll.filter(function(b){return b.date===s.date;});
+          dayBp.forEach(function(b){bpByTag[tag].with.push(b);});
+        });
+      });
+      // 計算各症狀的平均（with vs 其餘血壓記錄）
+      var tagRows2=[];
+      Object.keys(bpByTag).forEach(function(tag){
+        var w=bpByTag[tag].with;
+        if(!w.length)return;
+        var withSys=Math.round(w.reduce(function(a,b){return a+b.sys;},0)/w.length);
+        var withDia=Math.round(w.reduce(function(a,b){return a+b.dia;},0)/w.length);
+        var withDates=new Set(w.map(function(b){return b.date;}));
+        var wo=_bpAll.filter(function(b){return !withDates.has(b.date);});
+        if(!wo.length)return;
+        var woSys=Math.round(wo.reduce(function(a,b){return a+b.sys;},0)/wo.length);
+        var woDia=Math.round(wo.reduce(function(a,b){return a+b.dia;},0)/wo.length);
+        var diff=withSys-woSys;
+        var hi=isHighBp(withSys,withDia);
+        tagRows2.push({tag:tag,withSys:withSys,withDia:withDia,woSys:woSys,woDia:woDia,diff:diff,hi:hi,n:withDates.size});
+      });
+      tagRows2.sort(function(a,b){return Math.abs(b.diff)-Math.abs(a.diff);});
+      if(tagRows2.length){
+        html+='<div class="stat-section">';
+        html+='<div class="stat-title">各症狀當日血壓</div>';
+        html+='<div class="stat-card">';
+        tagRows2.slice(0,6).forEach(function(r){
+          html+='<div class="stat-row" style="flex-wrap:nowrap;gap:4px">';
+          html+='<span style="font-size:12px;font-weight:600;color:#6b4fa0;min-width:56px">'+r.tag+'</span>';
+          html+='<span style="font-size:14px;font-weight:800;color:'+(r.hi?'#e53935':'#2c2416')+';min-width:72px">'+r.withSys+'/'+r.withDia+'</span>';
+          if(Math.abs(r.diff)>=3){
+            var up=r.diff>0;
+            html+='<span style="font-size:11px;color:'+(up?'#e53935':'#4caf50')+';font-weight:700;white-space:nowrap">'+(up?'▲':'▼')+Math.abs(r.diff)+'</span>';
+          } else {
+            html+='<span style="min-width:20px"></span>';
+          }
+          html+='<span style="font-size:11px;color:#bbb;margin-left:auto">'+r.n+'天</span>';
+          html+='</div>';
+        });
+        html+='<div style="font-size:11px;color:#bbb;padding-top:6px">▲▼ 為與無此症狀日相比的差值</div>';
+        html+='</div></div>';
+      }
+    }
   }
   el.innerHTML=html;
 }
