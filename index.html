@@ -2338,13 +2338,30 @@ function renderStats(){
       +'<span class="stat-num" style="color:'+color+'">'+cnt+'</span>'
       +'</div>';
   }).join('');
+  var _bpForRecent=loadBpRecords();
   const recentRows=filtered.slice().sort(function(a,b){return b.date.localeCompare(a.date)||b.time.localeCompare(a.time);}).slice(0,5).map(function(s){
     const sv=parseInt(s.severity)||5;const sc=sevColor(sv);
-    return '<div class="stat-row">'
+    const dayBps=_bpForRecent.filter(function(b){return b.date===s.date;});
+    const hasBp=dayBps.length>0;
+    // 展開的血壓列表
+    const bpDetail=dayBps.map(function(b){
+      var hi=isHighBp(b.sys,b.dia);
+      return '<div style="display:flex;align-items:center;gap:8px;padding:4px 0 4px 12px;border-top:1px solid #f5f0fc">'
+        +'<span style="font-size:11px;color:#bbb;min-width:40px">'+b.time+'</span>'
+        +'<span style="font-size:13px;font-weight:800;color:'+(hi?'#e53935':'#2c2416')+'">'+b.sys+'/'+b.dia+'</span>'
+        +(b.hr?'<span style="font-size:11px;color:#8b6f47">❤️'+b.hr+'</span>':'')
+        +(hi?'<span style="font-size:10px;background:#fce4ec;color:#e53935;padding:1px 5px;border-radius:99px;font-weight:700">偏高</span>':'')
+        +'</div>';
+    }).join('');
+    return '<div>'
+      +'<div class="stat-row" style="cursor:'+(hasBp?'pointer':'default')+'" data-sid="'+s.id+'" id="srec-'+s.id+'" '+(hasBp?'onclick="toggleStatBp(this.dataset.sid)"':'')+'>'
       +'<span style="font-size:12px;color:#bbb;min-width:60px">'+s.date.slice(5)+' '+s.time+'</span>'
       +(isInPeriod(s.date)?'<span style="font-size:13px;margin-right:2px">🩸</span>':'')
-      +'<span style="flex:1;font-size:13px;color:#2c2416;margin:0 8px">'+(s.tags||[]).join('、')+'</span>'
+      +'<span style="flex:1;font-size:13px;color:#2c2416;margin:0 4px">'+(s.tags||[]).join('、')+'</span>'
       +'<span class="sev-score" style="background:'+sc+'22;color:'+sc+'">'+sv+'/10</span>'
+      +(hasBp?'<span style="font-size:11px;color:#9b7fc8;margin-left:4px">🫀▾</span>':'')
+      +'</div>'
+      +(hasBp?'<div id="sbp-'+s.id+'" style="display:none">'+bpDetail+'</div>':'')
       +'</div>';
   }).join('');
 
@@ -2428,16 +2445,26 @@ function renderStats(){
         html+='<div class="stat-title">各症狀當日血壓</div>';
         html+='<div class="stat-card">';
         tagRows2.slice(0,6).forEach(function(r){
-          html+='<div class="stat-row" style="flex-wrap:nowrap;gap:4px">';
-          html+='<span style="font-size:12px;font-weight:600;color:#6b4fa0;min-width:56px">'+r.tag+'</span>';
-          html+='<span style="font-size:14px;font-weight:800;color:'+(r.hi?'#e53935':'#2c2416')+';min-width:72px">'+r.withSys+'/'+r.withDia+'</span>';
+          // 重疊率：有此症狀的天數中，血壓偏高的天數
+          var symDatesArr=[];
+          filtered.forEach(function(s){if((s.tags||[]).includes(r.tag))symDatesArr.push(s.date);});
+          var symDateSet=new Set(symDatesArr);
+          var highDays=Array.from(symDateSet).filter(function(d){
+            return _bpAll.filter(function(b){return b.date===d;}).some(function(b){return isHighBp(b.sys,b.dia);});
+          }).length;
+          var totalDaysWithBp=Array.from(symDateSet).filter(function(d){return _bpAll.some(function(b){return b.date===d;});}).length;
+          var overlapTxt=totalDaysWithBp?highDays+'/'+totalDaysWithBp+'天偏高':'';
+          html+='<div style="padding:8px 0;border-bottom:1px solid #f5f0e8">';
+          html+='<div style="display:flex;align-items:center;gap:4px;margin-bottom:3px">';
+          html+='<span style="font-size:13px;font-weight:700;color:#6b4fa0;min-width:56px">'+r.tag+'</span>';
+          html+='<span style="font-size:15px;font-weight:800;color:'+(r.hi?'#e53935':'#2c2416')+';min-width:72px">'+r.withSys+'/'+r.withDia+'</span>';
           if(Math.abs(r.diff)>=3){
             var up=r.diff>0;
-            html+='<span style="font-size:11px;color:'+(up?'#e53935':'#4caf50')+';font-weight:700;white-space:nowrap">'+(up?'▲':'▼')+Math.abs(r.diff)+'</span>';
-          } else {
-            html+='<span style="min-width:20px"></span>';
+            html+='<span style="font-size:11px;color:'+(up?'#e53935':'#4caf50')+';font-weight:700;white-space:nowrap;background:'+(up?'#fce4ec':'#e8f5e9')+';padding:1px 5px;border-radius:99px">'+(up?'▲':'▼')+Math.abs(r.diff)+'</span>';
           }
           html+='<span style="font-size:11px;color:#bbb;margin-left:auto">'+r.n+'天</span>';
+          html+='</div>';
+          if(overlapTxt)html+='<div style="font-size:11px;color:#8b6f47;padding-left:2px">📊 '+overlapTxt+'（'+Math.round(highDays/totalDaysWithBp*100)+'%）</div>';
           html+='</div>';
         });
         html+='<div style="font-size:11px;color:#bbb;padding-top:6px">▲▼ 為與無此症狀日相比的差值</div>';
@@ -2448,6 +2475,17 @@ function renderStats(){
   el.innerHTML=html;
 }
 
+
+function toggleStatBp(sid){
+  var el=document.getElementById('sbp-'+sid);
+  var row=document.getElementById('srec-'+sid);
+  if(!el)return;
+  var open=el.style.display==='none';
+  el.style.display=open?'block':'none';
+  // 更新箭頭方向
+  var arrow=row?row.querySelector('span:last-child'):null;
+  if(arrow&&arrow.textContent.includes('▾')){arrow.textContent=open?'🫀▴':'🫀▾';}
+}
 function statNav2(p){statPeriod=p;renderStats();}
 function statNav(dir){
   if(statPeriod==='day'){
