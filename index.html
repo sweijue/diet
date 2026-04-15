@@ -34,12 +34,12 @@ button{cursor:pointer}
 .tab-bar{display:flex}
 .tab-btn{flex:1;padding:10px 0;border:none;background:transparent;font-size:15px;font-weight:400;letter-spacing:.5px;color:#5a4a35;border-bottom:2px solid transparent;transition:all .2s}
 .tab-btn.active{color:#c8a96e;font-weight:700;border-bottom:2px solid #c8a96e}
-#fab{position:fixed;bottom:28px;right:calc(50% - 220px);width:58px;height:58px;border-radius:50%;background:#c8a96e;color:#2c2416;border:none;font-size:30px;box-shadow:0 4px 18px rgba(44,36,22,.35);z-index:150;display:flex;align-items:center;justify-content:center;transition:transform .2s}
+#fab{position:fixed;bottom:98px;right:calc(50% - 220px);width:58px;height:58px;border-radius:50%;background:#c8a96e;color:#2c2416;border:none;font-size:30px;box-shadow:0 4px 18px rgba(44,36,22,.35);z-index:150;display:flex;align-items:center;justify-content:center;transition:transform .2s}
 #fab:active{transform:scale(.93)}
 @media(max-width:480px){#fab{right:20px}}
-#fabMenu{position:fixed;bottom:100px;right:calc(50% - 220px);z-index:149;display:none;flex-direction:column;gap:10px;align-items:flex-end}
+#fabMenu{position:fixed;bottom:168px;right:calc(50% - 220px);z-index:149;display:none;flex-direction:column;gap:10px;align-items:flex-end}
 @media(max-width:480px){#fabMenu{right:20px}}
-@media(max-width:480px){#filterBtn,#filterPanel{right:20px}}
+@media(max-width:480px){#fab{bottom:98px;right:20px}#fabMenu{right:20px;bottom:168px}#filterBtn{right:20px;bottom:28px}#filterPanel{right:88px;bottom:28px}}
 .fab-item{display:flex;align-items:center;gap:10px;animation:slideUp .2s ease}
 .fab-item-label{background:#2c2416;color:#f7f4ef;padding:6px 13px;border-radius:99px;font-size:14px;font-weight:600;white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,.3)}
 .fab-item-btn{width:46px;height:46px;border-radius:50%;border:none;font-size:20px;box-shadow:0 2px 10px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center}
@@ -245,20 +245,22 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
   <div id="viewStats" style="display:none"></div>
 </div>
 
-<div id="filterBtn" style="position:fixed;bottom:98px;right:calc(50% - 220px);z-index:150;display:none">
+<!-- 篩選按鈕：右下角最低，展開向左 -->
+<div id="filterBtn" style="position:fixed;bottom:28px;right:calc(50% - 220px);z-index:150;display:none">
   <button onclick="toggleTimelineFilter()" id="filterBtnEl" style="width:58px;height:58px;border-radius:50%;background:#e8e2d8;color:#5a4a35;border:none;box-shadow:0 4px 18px rgba(44,36,22,.25);display:flex;align-items:center;justify-content:center;transition:transform .2s"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#5a4a35" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></button>
 </div>
-<div id="filterPanel" style="position:fixed;bottom:155px;right:calc(50% - 220px);z-index:150;display:none;background:#2c2416;border-radius:14px;padding:10px;box-shadow:0 4px 18px rgba(0,0,0,.4);animation:slideUp .2s ease">
-  <div style="font-size:11px;color:#8b6f47;font-weight:700;text-align:center;margin-bottom:8px;letter-spacing:1px">顯示類型</div>
-  <div style="display:flex;flex-direction:column;gap:6px">
-    <button onclick="setTimelineFilter('all')" id="fAll" style="padding:8px 16px;border-radius:99px;border:none;font-size:13px;font-weight:700;cursor:pointer;background:#c8a96e;color:#2c2416">全部</button>
-    <button onclick="setTimelineFilter('meal')" id="fMeal" style="padding:8px 16px;border-radius:99px;border:none;font-size:13px;font-weight:700;cursor:pointer;background:#3d3020;color:#c8a96e">🍽 飲食</button>
-    <button onclick="setTimelineFilter('exercise')" id="fEx" style="padding:8px 16px;border-radius:99px;border:none;font-size:13px;font-weight:700;cursor:pointer;background:#3d3020;color:#7aaa8a">🏃 運動</button>
-    <button onclick="setTimelineFilter('bp')" id="fBp" style="padding:8px 16px;border-radius:99px;border:none;font-size:13px;font-weight:700;cursor:pointer;background:#3d3020;color:#5b8cbf">🫀 血壓</button>
-    <button onclick="setTimelineFilter('symptom')" id="fSym" style="padding:8px 16px;border-radius:99px;border:none;font-size:13px;font-weight:700;cursor:pointer;background:#3d3020;color:#9b7fc8">🩺 症狀</button>
+<!-- 篩選展開選單：向左展開（水平排列） -->
+<div id="filterPanel" style="position:fixed;bottom:28px;right:calc(50% - 220px + 68px);z-index:149;display:none;flex-direction:row-reverse;gap:8px;align-items:center">
+  <div style="display:flex;flex-direction:row-reverse;gap:8px;align-items:center">
+    <button onclick="setTimelineFilter('all')" id="fAll" style="width:46px;height:46px;border-radius:50%;border:none;font-size:12px;font-weight:800;cursor:pointer;box-shadow:0 2px 10px rgba(44,36,22,.2);background:#f5f0e8;color:#2c2416;display:flex;align-items:center;justify-content:center;animation:slideUp .15s ease">全</button>
+    <button onclick="setTimelineFilter('meal')" id="fMeal" style="width:46px;height:46px;border-radius:50%;border:none;font-size:20px;cursor:pointer;box-shadow:0 2px 10px rgba(44,36,22,.2);background:#f5f0e8;display:flex;align-items:center;justify-content:center;animation:slideUp .2s ease">🍽</button>
+    <button onclick="setTimelineFilter('exercise')" id="fEx" style="width:46px;height:46px;border-radius:50%;border:none;font-size:20px;cursor:pointer;box-shadow:0 2px 10px rgba(44,36,22,.2);background:#f5f0e8;display:flex;align-items:center;justify-content:center;animation:slideUp .25s ease">🏃</button>
+    <button onclick="setTimelineFilter('bp')" id="fBp" style="width:46px;height:46px;border-radius:50%;border:none;font-size:20px;cursor:pointer;box-shadow:0 2px 10px rgba(44,36,22,.2);background:#f5f0e8;display:flex;align-items:center;justify-content:center;animation:slideUp .3s ease">🫀</button>
+    <button onclick="setTimelineFilter('symptom')" id="fSym" style="width:46px;height:46px;border-radius:50%;border:none;font-size:20px;cursor:pointer;box-shadow:0 2px 10px rgba(44,36,22,.2);background:#f5f0e8;display:flex;align-items:center;justify-content:center;animation:slideUp .35s ease">🩺</button>
   </div>
 </div>
-<button id="fab" onclick="toggleFabMenu()">+</button>
+<!-- 新增按鈕：右下角上方 -->
+<button id="fab" onclick="toggleFabMenu()" style="bottom:98px">+</button>
 <div id="fabMenu">
   <div class="fab-item">
     <div class="fab-item-label">記錄用餐</div>
@@ -1053,7 +1055,7 @@ function switchTab(tab){
   currentTab=tab;
   if(currentSwiped)closeSwipe();
   document.getElementById('viewTimeline').style.display=tab==='timeline'?'block':'none';
-  document.getElementById('filterBtn').style.display=tab==='timeline'?'block':'none';
+  document.getElementById('filterBtn').style.display=tab==='timeline'?'flex':'none';
   if(tab!=='timeline'){document.getElementById('filterPanel').style.display='none';}
   document.getElementById('viewCalendar').style.display=tab==='calendar'?'block':'none';
   document.getElementById('viewBp').style.display=tab==='bp'?'block':'none';
@@ -1062,6 +1064,11 @@ function switchTab(tab){
   document.getElementById('tabCalendar').className='tab-btn'+(tab==='calendar'?' active':'');
   document.getElementById('tabBp').className='tab-btn'+(tab==='bp'?' active':'');
   document.getElementById('tabStats').className='tab-btn'+(tab==='stats'?' active':'');
+  // FAB 只在時間線和日曆顯示
+  var showFab=tab==='timeline'||tab==='calendar';
+  document.getElementById('fab').style.display=showFab?'flex':'none';
+  document.getElementById('fabMenu').style.display='none';
+  if(!showFab)closeFabMenu();
   if(tab==='calendar')renderCalendar();
   else if(tab==='bp')renderBpTab();
   else if(tab==='stats'){if(!_statsInited){initStatPeriod();_statsInited=true;}renderStats();}
@@ -1102,7 +1109,13 @@ function toggleFabMenu(){
   document.getElementById('fabMenu').style.display=fabOpen?'flex':'none';
   document.getElementById('fab').style.transform=fabOpen?'rotate(45deg)':'none';
 }
-function closeFabMenu(){fabOpen=false;document.getElementById('fabMenu').style.display='none';document.getElementById('fab').style.transform='none';}
+
+function closeFabMenu(){
+  fabOpen=false;
+  document.getElementById('fabMenu').style.display='none';
+  document.getElementById('fab').style.transform='none';
+
+}
 
 document.addEventListener('click',ev=>{
   if(fabOpen&&!document.getElementById('fab').contains(ev.target)&&!document.getElementById('fabMenu').contains(ev.target))closeFabMenu();
@@ -2541,7 +2554,7 @@ var _tlFilter=new Set(['all']); // Set of active types
 
 function toggleTimelineFilter(){
   var p=document.getElementById('filterPanel');
-  p.style.display=p.style.display==='none'?'block':'none';
+  p.style.display=p.style.display==='none'?'flex':'none';
 }
 
 function setTimelineFilter(type){
@@ -2565,9 +2578,10 @@ function updateFilterUI(){
     var btn=document.getElementById(map[k]);
     if(!btn)return;
     var on=_tlFilter.has(k);
-    btn.style.background=on?colors[k]:'#3d3020';
-    btn.style.color=on?textColors[k]:colors[k];
-    btn.style.fontWeight=on?'800':'600';
+    btn.style.background=on?colors[k]:'#f5f0e8';
+    btn.style.color=on?textColors[k]:'#8b6f47';
+    btn.style.opacity=on?'1':'0.7';
+    btn.style.transform=on?'scale(1.12)':'scale(1)';
   });
   // 更新篩選按鈕：有篩選時漏斗填色
   var el=document.getElementById('filterBtnEl');
