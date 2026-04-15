@@ -246,7 +246,7 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
 </div>
 
 <!-- 篩選按鈕：右下角最低，展開向左 -->
-<div id="filterBtn" style="position:fixed;bottom:28px;right:calc(50% - 220px + 68px);z-index:150;display:none">
+<div id="filterBtn" style="position:fixed;bottom:28px;right:calc(50% - 220px + 68px);z-index:150;display:flex">
   <button onclick="toggleTimelineFilter()" id="filterBtnEl" style="width:58px;height:58px;border-radius:50%;background:#e8e2d8;color:#5a4a35;border:none;box-shadow:0 4px 18px rgba(44,36,22,.25);display:flex;align-items:center;justify-content:center;transition:transform .2s"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#5a4a35" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></button>
 </div>
 <!-- 篩選展開選單：向左展開（水平排列） -->
@@ -2770,6 +2770,7 @@ if(!entries.length&&!loadSymptoms().length&&!loadBpRecords().length){
 }
 renderChips();
 renderTimeline();
+document.getElementById('filterBtn').style.display='flex';
 setTimeout(scrollToToday,100);
 checkUrlBpImport();
 </script>
