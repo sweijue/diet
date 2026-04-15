@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
@@ -40,6 +39,7 @@ button{cursor:pointer}
 @media(max-width:480px){#fab{right:20px}}
 #fabMenu{position:fixed;bottom:100px;right:calc(50% - 220px);z-index:149;display:none;flex-direction:column;gap:10px;align-items:flex-end}
 @media(max-width:480px){#fabMenu{right:20px}}
+@media(max-width:480px){#filterBtn,#filterPanel{right:20px}}
 .fab-item{display:flex;align-items:center;gap:10px;animation:slideUp .2s ease}
 .fab-item-label{background:#2c2416;color:#f7f4ef;padding:6px 13px;border-radius:99px;font-size:14px;font-weight:600;white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,.3)}
 .fab-item-btn{width:46px;height:46px;border-radius:50%;border:none;font-size:20px;box-shadow:0 2px 10px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center}
@@ -64,21 +64,21 @@ button{cursor:pointer}
 .tcard-wrap{position:relative;overflow:hidden;margin-bottom:11px}
 /* 右側：編輯（橘）+ 刪除（紅），左滑顯示 */
 .tcard-action-right{
-position:absolute;right:0;top:0;bottom:0;
-display:flex;align-items:stretch;
-opacity:0;pointer-events:none;
-border-radius:0 12px 12px 0;
-overflow:hidden;
+  position:absolute;right:0;top:0;bottom:0;
+  display:flex;align-items:stretch;
+  opacity:0;pointer-events:none;
+  border-radius:0 12px 12px 0;
+  overflow:hidden;
 }
 .btn-swipe-edit{
-width:68px;background:#c8a96e;color:#2c2416;border:none;
-font-size:12px;font-weight:700;cursor:pointer;
-display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  width:68px;background:#c8a96e;color:#2c2416;border:none;
+  font-size:12px;font-weight:700;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
 }
 .btn-swipe-del{
-width:68px;background:#e06060;color:#fff;border:none;
-font-size:12px;font-weight:700;cursor:pointer;
-display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  width:68px;background:#e06060;color:#fff;border:none;
+  font-size:12px;font-weight:700;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
 }
 .tcard-inner{transition:transform .22s ease;display:flex;align-items:flex-start;position:relative;z-index:1}
 /* 時間欄 */
@@ -204,7 +204,6 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
 .clear-info{font-size:13px;color:#999;margin-bottom:16px}
 .btn-clear-confirm{width:100%;padding:14px;border-radius:10px;background:#d44;color:#fff;border:none;font-weight:700;font-size:16px}
 </style>
-
 </head>
 <body>
 <div id="app">
@@ -246,8 +245,20 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
   <div id="viewStats" style="display:none"></div>
 </div>
 
+<div id="filterBtn" style="position:fixed;bottom:98px;right:calc(50% - 220px);z-index:150;display:none">
+  <button onclick="toggleTimelineFilter()" id="filterBtnEl" style="width:58px;height:58px;border-radius:50%;background:#e8e2d8;color:#5a4a35;border:none;box-shadow:0 4px 18px rgba(44,36,22,.25);display:flex;align-items:center;justify-content:center;transition:transform .2s"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#5a4a35" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></button>
+</div>
+<div id="filterPanel" style="position:fixed;bottom:155px;right:calc(50% - 220px);z-index:150;display:none;background:#2c2416;border-radius:14px;padding:10px;box-shadow:0 4px 18px rgba(0,0,0,.4);animation:slideUp .2s ease">
+  <div style="font-size:11px;color:#8b6f47;font-weight:700;text-align:center;margin-bottom:8px;letter-spacing:1px">顯示類型</div>
+  <div style="display:flex;flex-direction:column;gap:6px">
+    <button onclick="setTimelineFilter('all')" id="fAll" style="padding:8px 16px;border-radius:99px;border:none;font-size:13px;font-weight:700;cursor:pointer;background:#c8a96e;color:#2c2416">全部</button>
+    <button onclick="setTimelineFilter('meal')" id="fMeal" style="padding:8px 16px;border-radius:99px;border:none;font-size:13px;font-weight:700;cursor:pointer;background:#3d3020;color:#c8a96e">🍽 飲食</button>
+    <button onclick="setTimelineFilter('exercise')" id="fEx" style="padding:8px 16px;border-radius:99px;border:none;font-size:13px;font-weight:700;cursor:pointer;background:#3d3020;color:#7aaa8a">🏃 運動</button>
+    <button onclick="setTimelineFilter('bp')" id="fBp" style="padding:8px 16px;border-radius:99px;border:none;font-size:13px;font-weight:700;cursor:pointer;background:#3d3020;color:#5b8cbf">🫀 血壓</button>
+    <button onclick="setTimelineFilter('symptom')" id="fSym" style="padding:8px 16px;border-radius:99px;border:none;font-size:13px;font-weight:700;cursor:pointer;background:#3d3020;color:#9b7fc8">🩺 症狀</button>
+  </div>
+</div>
 <button id="fab" onclick="toggleFabMenu()">+</button>
-
 <div id="fabMenu">
   <div class="fab-item">
     <div class="fab-item-label">記錄用餐</div>
@@ -350,7 +361,6 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
 </div>
 
 <!-- Period Sheet -->
-
 <div id="symptomSheet" class="sheet-overlay" style="display:none" onclick="if(event.target===this)closeSymptomSheet()">
   <div class="sheet">
     <div class="sheet-header">
@@ -437,11 +447,10 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
         </div>
       </div>
 
-  <div class="form-label">備注</div>
-  <textarea id="bpNote" class="form-textarea" rows="2" placeholder="量測情況、姿勢…"></textarea>
-  <input type="hidden" id="bpEditId" value="">
-</div>
-
+      <div class="form-label">備注</div>
+      <textarea id="bpNote" class="form-textarea" rows="2" placeholder="量測情況、姿勢…"></textarea>
+      <input type="hidden" id="bpEditId" value="">
+    </div>
   </div>
 </div>
 
@@ -841,7 +850,15 @@ function toggleDay(date){
 }
 
 function renderTimeline(){
-  const g=grouped(),dates=sortedDates(g),el=document.getElementById('viewTimeline');
+  var fullG=grouped();
+  // 套用篩選
+  var g={};
+  Object.keys(fullG).forEach(function(date){
+    var day=fullG[date];
+    if(_tlFilter.has('all')){g[date]=day;}
+    else{var filtered=day.filter(function(e){return _tlFilter.has(e.type);});if(filtered.length)g[date]=filtered;}
+  });
+  const dates=sortedDates(g),el=document.getElementById('viewTimeline');
   if(!dates.length){
     el.innerHTML='<div class="empty"><div class="empty-icon">📓</div><div style="font-size:16px;color:#aaa">還沒有任何記錄</div><div style="font-size:13px;color:#ccc;margin-top:6px">點右下角 + 開始記錄</div></div>';
     return;
@@ -1036,6 +1053,8 @@ function switchTab(tab){
   currentTab=tab;
   if(currentSwiped)closeSwipe();
   document.getElementById('viewTimeline').style.display=tab==='timeline'?'block':'none';
+  document.getElementById('filterBtn').style.display=tab==='timeline'?'block':'none';
+  if(tab!=='timeline'){document.getElementById('filterPanel').style.display='none';}
   document.getElementById('viewCalendar').style.display=tab==='calendar'?'block':'none';
   document.getElementById('viewBp').style.display=tab==='bp'?'block':'none';
   document.getElementById('viewStats').style.display=tab==='stats'?'block':'none';
@@ -1833,7 +1852,16 @@ function openBpSheet(editId){
   }
   document.getElementById('bpSheet').style.display='flex';
 }
-function closeBpSheet(){document.getElementById('bpSheet').style.display='none';}
+function closeBpSheet(){
+  document.getElementById('bpSheet').style.display='none';
+  // 清空批次區
+  var ta=document.getElementById('bpBatchText');
+  if(ta)ta.value='';
+  var prev=document.getElementById('bpBatchPreview2');
+  if(prev){prev.innerHTML='';prev._newRecs=null;}
+  var area=document.getElementById('bpBatchArea2');
+  if(area)area.style.display='none';
+}
 
 
 function saveBp(){
@@ -2508,6 +2536,48 @@ function statNav(dir){
   }
   renderStats();
 }
+
+var _tlFilter=new Set(['all']); // Set of active types
+
+function toggleTimelineFilter(){
+  var p=document.getElementById('filterPanel');
+  p.style.display=p.style.display==='none'?'block':'none';
+}
+
+function setTimelineFilter(type){
+  if(type==='all'){
+    _tlFilter=new Set(['all']);
+  } else {
+    _tlFilter.delete('all');
+    if(_tlFilter.has(type)) _tlFilter.delete(type);
+    else _tlFilter.add(type);
+    if(_tlFilter.size===0) _tlFilter=new Set(['all']);
+  }
+  updateFilterUI();
+  renderTimeline();
+}
+
+function updateFilterUI(){
+  var map={all:'fAll',meal:'fMeal',exercise:'fEx',bp:'fBp',symptom:'fSym'};
+  var colors={all:'#c8a96e',meal:'#c8a96e',exercise:'#7aaa8a',bp:'#5b8cbf',symptom:'#9b7fc8'};
+  var textColors={all:'#2c2416',meal:'#2c2416',exercise:'#fff',bp:'#fff',symptom:'#fff'};
+  Object.keys(map).forEach(function(k){
+    var btn=document.getElementById(map[k]);
+    if(!btn)return;
+    var on=_tlFilter.has(k);
+    btn.style.background=on?colors[k]:'#3d3020';
+    btn.style.color=on?textColors[k]:colors[k];
+    btn.style.fontWeight=on?'800':'600';
+  });
+  // 更新篩選按鈕：有篩選時漏斗填色
+  var el=document.getElementById('filterBtnEl');
+  if(!el)return;
+  var isFiltered=!_tlFilter.has('all');
+  var svgFill=isFiltered?'#5a4a35':'none';
+  var svgStroke='#5a4a35';
+  el.innerHTML='<svg width="24" height="24" viewBox="0 0 24 24" fill="'+svgFill+'" stroke="'+svgStroke+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>';
+  el.style.background=isFiltered?'#c8b89a':'#e8e2d8';
+}
 function rerender(){renderTimeline();if(currentTab==='calendar')renderCalendar();}
 
 /* ── Demo 資料（含 SVG 假照片） ── */
@@ -2689,6 +2759,5 @@ renderTimeline();
 setTimeout(scrollToToday,100);
 checkUrlBpImport();
 </script>
-
 </body>
 </html>
