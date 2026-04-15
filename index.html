@@ -39,7 +39,7 @@ button{cursor:pointer}
 @media(max-width:480px){#fab{right:20px}}
 #fabMenu{position:fixed;bottom:100px;right:calc(50% - 220px);z-index:149;display:none;flex-direction:column;gap:10px;align-items:flex-end}
 @media(max-width:480px){#fabMenu{right:20px}}
-@media(max-width:480px){#fab{bottom:28px;right:20px}#fabMenu{right:20px;bottom:100px}#filterBtn{right:88px;bottom:28px}#filterPanel{right:146px;bottom:28px}}
+@media(max-width:480px){#fab{bottom:28px;right:20px}#fabMenu{right:20px;bottom:100px}#filterBtn{right:96px;bottom:28px}#filterPanel{right:154px;bottom:28px}}
 .fab-item{display:flex;align-items:center;gap:10px;animation:slideUp .2s ease}
 .fab-item-label{background:#2c2416;color:#f7f4ef;padding:6px 13px;border-radius:99px;font-size:14px;font-weight:600;white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,.3)}
 .fab-item-btn{width:46px;height:46px;border-radius:50%;border:none;font-size:20px;box-shadow:0 2px 10px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center}
@@ -246,11 +246,11 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
 </div>
 
 <!-- 篩選按鈕：右下角最低，展開向左 -->
-<div id="filterBtn" style="position:fixed;bottom:28px;right:calc(50% - 220px + 68px);z-index:150;display:flex">
+<div id="filterBtn" style="position:fixed;bottom:28px;right:calc(50% - 220px + 76px);z-index:150;display:flex">
   <button onclick="toggleTimelineFilter()" id="filterBtnEl" style="width:58px;height:58px;border-radius:50%;background:#e8e2d8;color:#5a4a35;border:none;box-shadow:0 4px 18px rgba(44,36,22,.25);display:flex;align-items:center;justify-content:center;transition:transform .2s"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#5a4a35" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></button>
 </div>
 <!-- 篩選展開選單：向左展開（水平排列） -->
-<div id="filterPanel" style="position:fixed;bottom:28px;right:calc(50% - 220px + 126px);z-index:149;display:none;flex-direction:row-reverse;gap:8px;align-items:center">
+<div id="filterPanel" style="position:fixed;bottom:28px;right:calc(50% - 220px + 134px);z-index:149;display:none;flex-direction:row-reverse;gap:8px;align-items:center">
   <div style="display:flex;flex-direction:row-reverse;gap:8px;align-items:center">
     <button onclick="setTimelineFilter('all')" id="fAll" style="width:46px;height:46px;border-radius:50%;border:none;font-size:12px;font-weight:800;cursor:pointer;box-shadow:0 2px 10px rgba(44,36,22,.2);background:#f5f0e8;color:#2c2416;display:flex;align-items:center;justify-content:center;animation:slideUp .15s ease">全</button>
     <button onclick="setTimelineFilter('meal')" id="fMeal" style="width:46px;height:46px;border-radius:50%;border:none;font-size:20px;cursor:pointer;box-shadow:0 2px 10px rgba(44,36,22,.2);background:#f5f0e8;display:flex;align-items:center;justify-content:center;animation:slideUp .2s ease">🍽</button>
@@ -2550,7 +2550,13 @@ function statNav(dir){
   renderStats();
 }
 
-var _tlFilter=new Set(['all']); // Set of active types
+var _tlFilter=(function(){
+  try{
+    var saved=JSON.parse(localStorage.getItem('tl_filter')||'null');
+    if(saved&&Array.isArray(saved)&&saved.length)return new Set(saved);
+  }catch{}
+  return new Set(['all']);
+})();
 
 function toggleTimelineFilter(){
   var p=document.getElementById('filterPanel');
@@ -2566,6 +2572,7 @@ function setTimelineFilter(type){
     else _tlFilter.add(type);
     if(_tlFilter.size===0) _tlFilter=new Set(['all']);
   }
+  localStorage.setItem('tl_filter',JSON.stringify(Array.from(_tlFilter)));
   updateFilterUI();
   renderTimeline();
 }
@@ -2771,6 +2778,7 @@ if(!entries.length&&!loadSymptoms().length&&!loadBpRecords().length){
 renderChips();
 renderTimeline();
 document.getElementById('filterBtn').style.display='flex';
+updateFilterUI();
 setTimeout(scrollToToday,100);
 checkUrlBpImport();
 </script>
