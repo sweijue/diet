@@ -822,6 +822,100 @@ function fmtDate(s){const d=new Date(s+'T00:00:00');return `${d.getMonth()+1}月
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2);}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',2800);}
+
+// ══ IndexedDB 圖片儲存 ════════════════════════════════════════════
+var _idb=null;
+function openPhotoDb(){
+  return new Promise(function(resolve,reject){
+    if(_idb){resolve(_idb);return;}
+    var req=indexedDB.open('DietPhotos',1);
+    req.onupgradeneeded=function(e){
+      e.target.result.createObjectStore('photos');
+    };
+    req.onsuccess=function(e){_idb=e.target.result;resolve(_idb);};
+    req.onerror=function(){reject(req.error);};
+  });
+}
+function savePhoto(id,base64){
+  return openPhotoDb().then(function(db){
+    return new Promise(function(resolve){
+      var tx=db.transaction('photos','readwrite');
+      tx.objectStore('photos').put(base64,id);
+      tx.oncomplete=resolve;
+    });
+  });
+}
+function getPhoto(id){
+  return openPhotoDb().then(function(db){
+    return new Promise(function(resolve){
+      var req=db.transaction('photos').objectStore('photos').get(id);
+      req.onsuccess=function(){resolve(req.result||null);};
+      req.onerror=function(){resolve(null);};
+    });
+  });
+}
+function deletePhoto(id){
+  return openPhotoDb().then(function(db){
+    return new Promise(function(resolve){
+      var tx=db.transaction('photos','readwrite');
+      tx.objectStore('photos').delete(id);
+      tx.oncomplete=resolve;
+    });
+  });
+}
+function getAllPhotos(){
+  return openPhotoDb().then(function(db){
+    return new Promise(function(resolve){
+      var result={};
+      var req=db.transaction('photos').objectStore('photos').openCursor();
+      req.onsuccess=function(e){
+        var cursor=e.target.result;
+        if(cursor){result[cursor.key]=cursor.value;cursor.continue();}
+        else resolve(result);
+      };
+      req.onerror=function(){resolve({});};
+    });
+  });
+}
+function isBase64Photo(s){return typeof s==='string'&&(s.startsWith('data:image')||s.startsWith('data:application'));}
+function newPhotoId(){return 'photo_'+uid();}
+
+// 遷移舊資料：把 entries 裡的 base64 照片搬到 IDB
+async function migratePhotosToIdb(){
+  let migrated=0;
+  const updated=[];
+  for(let i=0;i<entries.length;i++){
+    const e=entries[i];
+    if(!e.photos||!e.photos.length){updated.push(e);continue;}
+    const newPhotos=[];
+    for(let j=0;j<e.photos.length;j++){
+      const p=e.photos[j];
+      if(isBase64Photo(p)){
+        const pid=newPhotoId();
+        await savePhoto(pid,p);
+        newPhotos.push(pid);
+        migrated++;
+      } else {
+        newPhotos.push(p); // 已經是 ID
+      }
+    }
+    updated.push({...e,photos:newPhotos});
+  }
+  if(migrated>0){
+    entries=updated;
+    saveEntries();
+    console.log('遷移照片到 IDB：'+migrated+' 張');
+  }
+}
+
+// 把圖片 ID 載入到 DOM img 元素
+function loadPhotoIntoImg(el,photoId){
+  if(isBase64Photo(photoId)){el.src=photoId;return;} // 相容舊格式
+  getPhoto(photoId).then(function(b64){
+    if(b64)el.src=b64;
+    else el.style.display='none';
+  });
+}
 function loadEntries(){try{entries=JSON.parse(localStorage.getItem(STORE_KEY))||[];}catch{entries=[];}}
 function saveEntries(){try{localStorage.setItem(STORE_KEY,JSON.stringify(entries));}catch{showToast('儲存失敗：空間不足');}}
 function calcStorage(){
@@ -905,7 +999,8 @@ function renderCard(e,ctx){
   if(e.type==='bp') return renderBpCard(e,ctx);
   const isMeal=e.type==='meal';
   const photos=e.photos||[];
-  const imgHtml=photos.length?`<div class="tcard-imgs">${photos.slice(0,3).map((p,i)=>`<img class="tcard-img" src="${p}" loading="lazy" style="flex:${photos.length===1?'unset;width:100%':'1'}" onclick="openLightboxEntry(event,'${e.id}',${i})">`).join('')}</div>`:'';
+  const imgHtml=photos.length?`<div class="tcard-imgs">${photos.slice(0,3).map((p,i)=>`<img class="tcard-img" id="cimg-${e.id}-${i}" loading="lazy" style="flex:${photos.length===1?'unset;width:100%':'1'};background:#f0ece6" onclick="openLightboxEntry(event,'${e.id}',${i})">`).join('')}</div>`:'';
+  if(photos.length){setTimeout(()=>{photos.slice(0,3).forEach((p,i)=>{const el=document.getElementById('cimg-'+e.id+'-'+i);if(el)loadPhotoIntoImg(el,p);});},0);};
   const tagsHtml=isMeal&&e.foods?.length?`<div class="tags">${e.foods.map(f=>`<span class="tag">${esc(f.name)}</span>`).join('')}</div>`:'';
   const mealCal=isMeal?(e.foods||[]).reduce((a,f)=>a+Math.round((f.cal||0)*(f.qty||1)),0):0;
   const hasUnknown=isMeal&&(e.foods||[]).some(f=>f.cal===0||f.cal===-1);
@@ -1016,7 +1111,7 @@ function renderCalendar(){
   const dim=new Date(calYear,calMonth+1,0).getDate();
   const pmd=new Date(calYear,calMonth,0).getDate();
   const today=new Date();
-  const getPhoto=ds=>{const e=(g[ds]||[]).find(e=>e.photos?.length);return e?e.photos[0]:null;};
+  const getPhoto=ds=>{const e=(g[ds]||[]).find(e=>e.photos?.length);return e?(e.photos[0]||null):null;};
   const hasAct=ds=>!!(g[ds]?.length);
   let cells=[];
   for(let i=0;i<firstDay;i++){const d=pmd-firstDay+1+i,m=calMonth===0?12:calMonth,y=calMonth===0?calYear-1:calYear;cells.push({day:d,year:y,month:m,other:true});}
@@ -1031,7 +1126,9 @@ function renderCalendar(){
     const dow=i%7;
     const nc=other?'#ccc':isSel?'#f7f4ef':isTd?'#2c2416':dow===0?'#c0756a':dow===6?'#7090c0':'#2c2416';
     const nb=isTd?'#c8a96e':'transparent';
-    const pe=photo?`<img class="cal-cell-photo" src="${photo}" loading="lazy" style="opacity:${isSel?.35:.55}">`:'';
+    const calImgId='calimg-'+ds;
+    const pe=photo?`<img class="cal-cell-photo" id="${calImgId}" loading="lazy" style="opacity:${isSel?.35:.55}">`:'';
+    if(photo){setTimeout(()=>{const el=document.getElementById(calImgId);if(el)loadPhotoIntoImg(el,photo);},0);};
     let dots='';if(active&&!photo){const en=(g[ds]||[]).slice(0,3);dots=`<div class="cal-dots">${en.map(e=>`<span class="cal-dot" style="background:${e.type==='meal'?'#c8a96e':e.type==='symptom'?'#9b7fc8':e.type==='bp'?'#5b8cbf':'#7aaa8a'}"></span>`).join('')}</div>`;}
     const cs=`background:${isSel?'#2c2416':other?'#f3f0ea':'#fff'};cursor:${other?'default':'pointer'}`;
     const cf=other?'':`onclick="calClick('${ds}')"`;
@@ -1418,7 +1515,9 @@ function saveEntry(){
       note:document.getElementById('fExNote').value,photos:exPhotos};
   }
   if(editId)entries=entries.map(e=>e.id==editId?entry:e);else entries.push(entry);
-  saveEntries();closeAdd();rerender();
+  saveEntries();closeAdd();
+  if(currentTab==='timeline')rerenderDay(entry.date);
+  else if(currentTab==='calendar')renderCalendar();
 }
 
 function handlePhotos(event,kind){
@@ -1476,7 +1575,7 @@ function compressAndAdd(file, kind){
   const reader=new FileReader();
   reader.onload=ev=>{
     const img=new Image();
-    img.onload=()=>{
+    img.onload=async ()=>{
       let w=img.width, h=img.height;
       if(w>h){if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}}
       else{if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}}
@@ -1484,10 +1583,11 @@ function compressAndAdd(file, kind){
       canvas.width=w; canvas.height=h;
       canvas.getContext('2d').drawImage(img,0,0,w,h);
       const data=canvas.toDataURL('image/jpeg',Q);
-      if(kind==='meal') mealPhotos.push(data);
-      else exPhotos.push(data);
+      const pid=newPhotoId();
+      await savePhoto(pid,data);
+      if(kind==='meal') mealPhotos.push(pid);
+      else exPhotos.push(pid);
       renderPhotoGrid(kind);
-      showToast('📋 已貼上照片');
     };
     img.src=ev.target.result;
   };
@@ -1499,7 +1599,11 @@ function renderPhotoGrid(kind){
   const grid=document.getElementById(kind==='meal'?'photoGrid':'exPhotoGrid');
   const up=document.getElementById(kind==='meal'?'photoUploadArea':'exPhotoUploadArea');
   if(!grid)return;
-  grid.innerHTML=arr.map((p,i)=>`<div class="photo-thumb"><img src="${p}"><button class="photo-thumb-remove" onclick="removePhoto('${kind}',${i})">✕</button></div>`).join('');
+  grid.innerHTML=arr.map((p,i)=>`<div class="photo-thumb"><img id="pgimg-${kind}-${i}" style="background:#f0ece6"><button class="photo-thumb-remove" onclick="removePhoto('${kind}',${i})">✕</button></div>`).join('');
+  arr.forEach((p,i)=>{
+    const el=document.getElementById('pgimg-'+kind+'-'+i);
+    if(el)loadPhotoIntoImg(el,p);
+  });
   if(up)up.style.display=arr.length>=9?'none':'flex';
 }
 function removePhoto(kind,i){if(kind==='meal')mealPhotos.splice(i,1);else exPhotos.splice(i,1);renderPhotoGrid(kind);}
@@ -1533,7 +1637,10 @@ function openLightboxEntry(ev,id,idx){
   lbPhotos=e.photos||[];lbIdx=idx;showLb();
 }
 function showLb(){
-  document.getElementById('lightbox-img').src=lbPhotos[lbIdx];
+  const lbImg=document.getElementById('lightbox-img');
+  lbImg.src='';lbImg.style.opacity='0';
+  loadPhotoIntoImg(lbImg,lbPhotos[lbIdx]);
+  lbImg.onload=()=>{lbImg.style.opacity='1';};
   document.getElementById('lightbox-prev').style.display=lbPhotos.length>1?'flex':'none';
   document.getElementById('lightbox-next').style.display=lbPhotos.length>1?'flex':'none';
   document.getElementById('lightbox').style.display='flex';
@@ -1543,21 +1650,27 @@ function lbBgClick(ev){if(ev.target===document.getElementById('lightbox'))closeL
 function lbPrev(ev){ev.stopPropagation();lbIdx=(lbIdx-1+lbPhotos.length)%lbPhotos.length;showLb();}
 function lbNext(ev){ev.stopPropagation();lbIdx=(lbIdx+1)%lbPhotos.length;showLb();}
 
-function exportData(){
-  const periods=JSON.parse(localStorage.getItem('periods')||'[]');
+async function exportData(){
+  const periods=loadPeriods();
   const customEx=loadCustomEx();
   const weight=loadWeight()||undefined;
-  const symptoms=JSON.parse(localStorage.getItem('symptoms')||'[]');
-  const bpData=JSON.parse(localStorage.getItem('bp_records')||'[]');
-  const backup={version:5,entries,periods,customEx,weight,symptoms,bpData};
+  const symptoms=loadSymptoms();
+  const bpData=loadBpRecords();
+  // 把 IDB 照片打包進 entries（匯出時還原成 base64）
+  const allPhotos=await getAllPhotos();
+  const exportEntries=entries.map(function(e){
+    if(!e.photos||!e.photos.length)return e;
+    return {...e,photos:e.photos.map(function(pid){return allPhotos[pid]||pid;})};
+  });
+  const backup={version:6,entries:exportEntries,periods,customEx,weight,symptoms,bpData};
   const json=JSON.stringify(backup,null,2);const blob=new Blob([json],{type:'application/json'});
   const url=URL.createObjectURL(blob);const a=document.createElement('a');const d=new Date();
   a.href=url;a.download=`diet_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}.json`;
   a.click();URL.revokeObjectURL(url);closeDropdown();showToast('已匯出備份');
 }
-function importData(event){
+async function importData(event){
   const file=event.target.files[0];if(!file)return;const r=new FileReader();
-  r.onload=ev=>{try{
+  r.onload=async ev=>{try{
     const raw=JSON.parse(ev.target.result);
     // support old format (array), v2 ({entries,periods}), v3 (+customEx,weight)
     let data,pdata,exdata,wdata,symdata=[],bpImport=[];
@@ -1573,7 +1686,18 @@ function importData(event){
     if(confirm(`匯入 ${data.length} 筆記錄${pInfo}${exInfo}${symInfo}${bpInfo}？\n將與現有資料合併`)){
       // merge entries
       const ids=new Set(entries.map(e=>e.id));
-      entries=[...entries,...data.filter(e=>!ids.has(e.id))];
+      // 匯入時把照片存進 IDB，entries 只存 ID
+      const importEntries=data.filter(e=>!ids.has(e.id));
+      const photoSavePromises=[];
+      importEntries.forEach(function(e){
+        if(!e.photos||!e.photos.length)return;
+        e.photos=e.photos.map(function(p){
+          if(isBase64Photo(p)){const pid=newPhotoId();photoSavePromises.push(savePhoto(pid,p));return pid;}
+          return p;
+        });
+      });
+      await Promise.all(photoSavePromises);
+      entries=[...entries,...importEntries];
       entries.sort((a,b)=>a.date.localeCompare(b.date));saveEntries();
       // merge periods
       if(pdata.length){
@@ -1683,8 +1807,13 @@ let selSymTags=new Set(),selSeverityVal=5;
 
 
 // ══ 血壓記錄 ══════════════════════════════════════════════════════
-function loadBpRecords(){try{return JSON.parse(localStorage.getItem('bp_records')||'[]');}catch{return[];}}
-function saveBpRecords(arr){localStorage.setItem('bp_records',JSON.stringify(arr));}
+var _bpCache=null;
+function loadBpRecords(){
+  if(_bpCache)return _bpCache;
+  try{_bpCache=JSON.parse(localStorage.getItem('bp_records')||'[]');}catch{_bpCache=[];}
+  return _bpCache;
+}
+function saveBpRecords(arr){_bpCache=arr;localStorage.setItem('bp_records',JSON.stringify(arr));}
 
 
 
@@ -1894,7 +2023,10 @@ function saveBp(){
   if(editId){var i=recs.findIndex(function(b){return b.id===editId;});if(i>=0)recs[i]=rec;else recs.push(rec);}
   else recs.push(rec);
   saveBpRecords(recs);
-  closeBpSheet();rerender();showToast('✅ 已記錄血壓');
+  closeBpSheet();
+  rerenderDay(rec.date);
+  if(currentTab==='calendar')renderCalendar();
+  showToast('✅ 已記錄血壓');
 }
 
 function isHighBp(sys,dia){return sys>=140||dia>=90;}
@@ -2230,8 +2362,13 @@ function checkUrlBpImport(){
 
   history.replaceState(null,'',window.location.pathname);
 }
-function loadSymptoms(){try{return JSON.parse(localStorage.getItem('symptoms')||'[]');}catch{return[];}}
-function saveSymptoms(arr){localStorage.setItem('symptoms',JSON.stringify(arr));}
+var _symCache=null;
+function loadSymptoms(){
+  if(_symCache)return _symCache;
+  try{_symCache=JSON.parse(localStorage.getItem('symptoms')||'[]');}catch{_symCache=[];}
+  return _symCache;
+}
+function saveSymptoms(arr){_symCache=arr;localStorage.setItem('symptoms',JSON.stringify(arr));}
 
 function openSymptomSheet(editId){
   const now=new Date();
@@ -2308,7 +2445,10 @@ function saveSymptom(){
   if(editId){const i=syms.findIndex(s=>s.id===editId);if(i>=0)syms[i]=entry;else syms.push(entry);}
   else syms.push(entry);
   saveSymptoms(syms);
-  closeSymptomSheet();rerender();showToast('✅ 已記錄症狀');
+  closeSymptomSheet();
+  if(currentTab==='timeline')rerenderDay(entry.date);
+  else if(currentTab==='calendar')renderCalendar();
+  showToast('✅ 已記錄症狀');
 }
 
 function renderSymptomCard(e,ctx){
@@ -2601,7 +2741,45 @@ function updateFilterUI(){
   el.innerHTML='<svg width="24" height="24" viewBox="0 0 24 24" fill="'+svgFill+'" stroke="'+svgStroke+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>';
   el.style.background=isFiltered?'#c8b89a':'#e8e2d8';
 }
+function rerenderDay(date){
+  // 只重建時間線裡的單一日期，其他日期不動
+  if(currentTab!=='timeline')return;
+  const g=grouped();
+  const el=document.getElementById('tday-'+date);
+  if(!el){renderTimeline();return;} // 新日期，全部重建
+  const de=g[date]||[];
+  const dayCal=de.filter(e=>e.type==='meal').flatMap(e=>e.foods||[]).reduce((a,f)=>a+(f.cal||0)*(f.qty||1),0);
+  const dayBurn=de.filter(e=>e.type==='exercise').reduce((a,e)=>a+(+e.calories||0),0);
+  const isToday=date===todayDate(),col=isCollapsed(date);
+  const calHtml=dayCal>0?`<div style="color:#8b6f47;font-weight:600">${Math.round(dayCal)} kcal</div>`:'';
+  const burnHtml=dayBurn>0?`<div style="color:#5a9a6a">−${dayBurn} kcal</div>`:'';
+  const bps=loadBpRecords().filter(b=>b.date===date);
+  const medsIcon=bps.length&&bps.some(b=>b.meds)?'<span style="font-size:15px;line-height:1">💊</span>':bps.length?'<span style="font-size:15px;line-height:1;filter:grayscale(1);opacity:.35">💊</span>':'';
+  el.innerHTML=`
+<div class="day-header" onclick="toggleDay('${date}')">
+  <div class="day-title">
+    ${isToday?'<span class="day-dot"></span>':''}
+    <span class="day-name">${fmtDate(date)}</span>
+    ${isToday?'<span class="today-badge">今天</span>':''}
+    ${isInPeriod(date)?'<span style="font-size:15px;line-height:1">🩸</span>':''}
+    ${medsIcon}
+    <span id="tbadge-${date}" style="display:${col?'inline-block':'none'};font-size:11px;background:#e8e2d8;color:#8b6f47;padding:2px 8px;border-radius:99px;font-weight:600">${de.length}筆</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <div class="day-cal">${calHtml}${burnHtml}</div>
+    <span id="tarrow-${date}" style="color:#c8b89a;font-size:16px;transition:transform .2s;transform:${col?'rotate(-90deg)':'rotate(0deg)'}">▾</span>
+  </div>
+</div>
+<div id="tbody-${date}" style="display:${col?'none':'block'}">
+  <div class="timeline-entries">
+    <div class="timeline-line"></div>
+    ${de.map(e=>renderCard(e,'tl')).join('')}
+  </div>
+</div>`;
+}
+
 function rerender(){renderTimeline();if(currentTab==='calendar')renderCalendar();}
+function rerenderFull(){renderTimeline();if(currentTab==='calendar')renderCalendar();}
 
 /* ── Demo 資料（含 SVG 假照片） ── */
 function makePhoto(color,label){
@@ -2678,11 +2856,31 @@ function buildDemoBp(){
     {id:'bp06',date:ago(2),time:'21:30',sys:135,dia:90,hr:76,meds:false,note:''},
   ];
 }
-function loadPeriods(){try{return JSON.parse(localStorage.getItem('periods')||'[]');}catch{return[];}}
-function savePeriods(a){localStorage.setItem('periods',JSON.stringify(a));}
+var _periodCache=null;
+function loadPeriods(){
+  if(_periodCache)return _periodCache;
+  try{_periodCache=JSON.parse(localStorage.getItem('periods')||'[]');}catch{_periodCache=[];}
+  return _periodCache;
+}
+function savePeriods(a){_periodCache=a;_periodDateSet=null;localStorage.setItem('periods',JSON.stringify(a));}
 
+var _periodDateSet=null;
+function buildPeriodSet(){
+  _periodDateSet=null; // 清空，下次用到時重建
+}
 function isInPeriod(dateStr){
-  return loadPeriods().some(p=>dateStr>=p.start&&dateStr<=p.end);
+  // 懶惰建立：第一次呼叫時建 Set，之後直接查
+  if(!_periodDateSet){
+    _periodDateSet=new Set();
+    const ps=loadPeriods();
+    ps.forEach(function(p){
+      const s=new Date(p.start+'T00:00:00'),e=new Date(p.end+'T00:00:00');
+      for(let d=new Date(s);d<=e;d.setDate(d.getDate()+1)){
+        _periodDateSet.add(d.toISOString().slice(0,10));
+      }
+    });
+  }
+  return _periodDateSet.has(dateStr);
 }
 
 function openPeriodSheet(){
@@ -2777,11 +2975,21 @@ if(!entries.length&&!loadSymptoms().length&&!loadBpRecords().length){
   p.push({id:'per01',start:`${s.getFullYear()}-${pad(s.getMonth()+1)}-${pad(s.getDate())}`,end:`${e2.getFullYear()}-${pad(e2.getMonth()+1)}-${pad(e2.getDate())}`});
   savePeriods(p);
 }
+
+// ══ Service Worker ═══════════════════════════════════════════════
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/diet/sw.js', {scope:'/diet/'})
+    .then(()=>console.log('SW registered'))
+    .catch(e=>console.log('SW failed:',e));
+}
 renderChips();
-renderTimeline();
-document.getElementById('filterBtn').style.display='flex';
-updateFilterUI();
-setTimeout(scrollToToday,100);
+// 遷移舊照片到 IndexedDB，完成後渲染
+migratePhotosToIdb().then(function(){
+  renderTimeline();
+  document.getElementById('filterBtn').style.display='flex';
+  updateFilterUI();
+  setTimeout(scrollToToday,100);
+});
 checkUrlBpImport();
 </script>
 
