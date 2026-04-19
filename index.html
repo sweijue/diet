@@ -1111,7 +1111,7 @@ function renderCalendar(){
   const dim=new Date(calYear,calMonth+1,0).getDate();
   const pmd=new Date(calYear,calMonth,0).getDate();
   const today=new Date();
-  const getPhoto=ds=>{const e=(g[ds]||[]).find(e=>e.photos?.length);return e?(e.photos[0]||null):null;};
+  const getCalPhoto=ds=>{const e=(g[ds]||[]).find(e=>e.photos?.length);return e?(e.photos[0]||null):null;};
   const hasAct=ds=>!!(g[ds]?.length);
   let cells=[];
   for(let i=0;i<firstDay;i++){const d=pmd-firstDay+1+i,m=calMonth===0?12:calMonth,y=calMonth===0?calYear-1:calYear;cells.push({day:d,year:y,month:m,other:true});}
@@ -1120,7 +1120,7 @@ function renderCalendar(){
   while(cells.length%7)cells.push({day:nd++,year:ny,month:nm,other:true});
   const grid=cells.map((cell,i)=>{
     const{day,year,month,other}=cell,ds=`${year}-${pad(month)}-${pad(day)}`;
-    const photo=other?null:getPhoto(ds),active=other?false:hasAct(ds);
+    const photo=other?null:getCalPhoto(ds),active=other?false:hasAct(ds);
     const isSel=!other&&ds===calSelected;
     const isTd=!other&&day===today.getDate()&&month===(today.getMonth()+1)&&year===today.getFullYear();
     const dow=i%7;
@@ -1148,7 +1148,7 @@ function renderCalendar(){
   cells.forEach(function(cell){
     if(cell.other)return;
     const ds=`${cell.year}-${pad(cell.month)}-${pad(cell.day)}`;
-    const photo=getPhoto(ds);
+    const photo=getCalPhoto(ds);
     if(photo)calPhotoMap['calimg-'+ds]=photo;
   });
   el.innerHTML=`<div class="cal-nav"><button class="cal-nav-btn" onclick="calPrev()">‹</button><div class="cal-month">${calYear}年${calMonth+1}月</div><button class="cal-nav-btn" onclick="calNext()">›</button></div><div class="cal-weekdays">${WEEKDAYS.map((d,i)=>`<div class="cal-wd" style="color:${i===0?'#c0756a':i===6?'#7090c0':'#8b6f47'}">${d}</div>`).join('')}</div><div class="cal-grid">${grid}</div><div class="cal-selected-header"><div class="cal-selected-date">${fmtDate(calSelected)}</div></div><div class="cal-entries">${cardsHtml}</div>`;
