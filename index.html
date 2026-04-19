@@ -1144,12 +1144,20 @@ function renderCalendar(){
     ?se.map(e=>renderCard(e,'cal')).join('')
     :`<div style="text-align:center;padding:22px 0;color:#ccc;font-size:14px">這天還沒有記錄</div>`;
   el.innerHTML=`<div class="cal-nav"><button class="cal-nav-btn" onclick="calPrev()">‹</button><div class="cal-month">${calYear}年${calMonth+1}月</div><button class="cal-nav-btn" onclick="calNext()">›</button></div><div class="cal-weekdays">${WEEKDAYS.map((d,i)=>`<div class="cal-wd" style="color:${i===0?'#c0756a':i===6?'#7090c0':'#8b6f47'}">${d}</div>`).join('')}</div><div class="cal-grid">${grid}</div><div class="cal-selected-header"><div class="cal-selected-date">${fmtDate(calSelected)}</div></div><div class="cal-entries">${cardsHtml}</div>`;
-  // innerHTML 設定完後，掃描所有有 data-photo 的圖片元素
+  // innerHTML 寫入後，統一載入所有圖片（格子縮圖 + 卡片圖片）
   setTimeout(function(){
+    // 格子縮圖（data-photo）
     el.querySelectorAll('img[data-photo]').forEach(function(imgEl){
       loadPhotoIntoImg(imgEl, imgEl.dataset.photo);
     });
-  }, 0);
+    // 卡片圖片（cimg-xxx）：從 se 的 photos 直接載入
+    se.forEach(function(e){
+      (e.photos||[]).slice(0,3).forEach(function(p,i){
+        const imgEl=document.getElementById('cimg-'+e.id+'-'+i);
+        if(imgEl)loadPhotoIntoImg(imgEl,p);
+      });
+    });
+  }, 50);
 }
 
 function calClick(ds){calSelected=ds;if(currentSwiped)closeSwipe();renderCalendar();}
