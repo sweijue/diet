@@ -912,8 +912,15 @@ async function migratePhotosToIdb(){
 function loadPhotoIntoImg(el,photoId){
   if(isBase64Photo(photoId)){el.src=photoId;return;}
   getPhoto(photoId).then(function(b64){
-    if(b64){el.src=b64;console.log('photo loaded:',photoId.slice(0,16));}
-    else{el.style.display='none';console.log('photo NOT found in IDB:',photoId);}
+    if(b64){
+      // 用 Image 物件確保 base64 正確載入再設定 src
+      var img=new Image();
+      img.onload=function(){el.src=b64;};
+      img.onerror=function(){el.style.display='none';};
+      img.src=b64;
+    } else {
+      el.style.display='none';
+    }
   });
 }
 function loadEntries(){try{entries=JSON.parse(localStorage.getItem(STORE_KEY))||[];}catch{entries=[];}}
@@ -999,8 +1006,8 @@ function renderCard(e,ctx){
   if(e.type==='bp') return renderBpCard(e,ctx);
   const isMeal=e.type==='meal';
   const photos=e.photos||[];
-  const imgHtml=photos.length?`<div class="tcard-imgs">${photos.slice(0,3).map((p,i)=>`<img class="tcard-img" id="cimg-${e.id}-${i}" loading="lazy" style="flex:${photos.length===1?'unset;width:100%':'1'};background:#f0ece6" onclick="openLightboxEntry(event,'${e.id}',${i})">`).join('')}</div>`:'';
-  if(photos.length){setTimeout(()=>{photos.slice(0,3).forEach((p,i)=>{const el=document.getElementById('cimg-'+e.id+'-'+i);if(el)loadPhotoIntoImg(el,p);});},0);};
+  const imgHtml=photos.length?`<div class="tcard-imgs">${photos.slice(0,3).map((p,i)=>`<img class="tcard-img" id="cimg-${ctx}-${e.id}-${i}" loading="lazy" style="flex:${photos.length===1?'unset;width:100%':'1'};background:#f0ece6" onclick="openLightboxEntry(event,'${e.id}',${i})">`).join('')}</div>`:'';
+  if(photos.length){setTimeout(()=>{photos.slice(0,3).forEach((p,i)=>{const el=document.getElementById('cimg-'+ctx+'-'+e.id+'-'+i);if(el)loadPhotoIntoImg(el,p);});},0);};
   const tagsHtml=isMeal&&e.foods?.length?`<div class="tags">${e.foods.map(f=>`<span class="tag">${esc(f.name)}</span>`).join('')}</div>`:'';
   const mealCal=isMeal?(e.foods||[]).reduce((a,f)=>a+Math.round((f.cal||0)*(f.qty||1)),0):0;
   const hasUnknown=isMeal&&(e.foods||[]).some(f=>f.cal===0||f.cal===-1);
@@ -1153,7 +1160,7 @@ function renderCalendar(){
     // 卡片圖片（cimg-xxx）：從 se 的 photos 直接載入
     se.forEach(function(e){
       (e.photos||[]).slice(0,3).forEach(function(p,i){
-        const imgEl=document.getElementById('cimg-'+e.id+'-'+i);
+        const imgEl=document.getElementById('cimg-cal-'+e.id+'-'+i);
         if(imgEl)loadPhotoIntoImg(imgEl,p);
       });
     });
