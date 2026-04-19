@@ -1127,7 +1127,7 @@ function renderCalendar(){
     const nc=other?'#ccc':isSel?'#f7f4ef':isTd?'#2c2416':dow===0?'#c0756a':dow===6?'#7090c0':'#2c2416';
     const nb=isTd?'#c8a96e':'transparent';
     const calImgId='calimg-'+ds;
-    const pe=photo?`<img class="cal-cell-photo" id="${calImgId}" loading="lazy" style="opacity:${isSel?.35:.55}">`:'';    let dots='';if(active&&!photo){const en=(g[ds]||[]).slice(0,3);dots=`<div class="cal-dots">${en.map(e=>`<span class="cal-dot" style="background:${e.type==='meal'?'#c8a96e':e.type==='symptom'?'#9b7fc8':e.type==='bp'?'#5b8cbf':'#7aaa8a'}"></span>`).join('')}</div>`;}
+    const pe=photo?`<img class="cal-cell-photo" id="${calImgId}" data-photo="${photo}" loading="lazy" style="opacity:${isSel?.35:.55}">`:'';    let dots='';if(active&&!photo){const en=(g[ds]||[]).slice(0,3);dots=`<div class="cal-dots">${en.map(e=>`<span class="cal-dot" style="background:${e.type==='meal'?'#c8a96e':e.type==='symptom'?'#9b7fc8':e.type==='bp'?'#5b8cbf':'#7aaa8a'}"></span>`).join('')}</div>`;}
     const cs=`background:${isSel?'#2c2416':other?'#f3f0ea':'#fff'};cursor:${other?'default':'pointer'}`;
     const cf=other?'':`onclick="calClick('${ds}')"`;
     const bpDay=!other?loadBpRecords().filter(function(b){return b.date===ds;}):[];
@@ -1143,20 +1143,13 @@ function renderCalendar(){
   const cardsHtml=se.length
     ?se.map(e=>renderCard(e,'cal')).join('')
     :`<div style="text-align:center;padding:22px 0;color:#ccc;font-size:14px">這天還沒有記錄</div>`;
-  // 收集所有有照片的格子
-  const calPhotoMap={};
-  cells.forEach(function(cell){
-    if(cell.other)return;
-    const ds=`${cell.year}-${pad(cell.month)}-${pad(cell.day)}`;
-    const photo=getCalPhoto(ds);
-    if(photo)calPhotoMap['calimg-'+ds]=photo;
-  });
   el.innerHTML=`<div class="cal-nav"><button class="cal-nav-btn" onclick="calPrev()">‹</button><div class="cal-month">${calYear}年${calMonth+1}月</div><button class="cal-nav-btn" onclick="calNext()">›</button></div><div class="cal-weekdays">${WEEKDAYS.map((d,i)=>`<div class="cal-wd" style="color:${i===0?'#c0756a':i===6?'#7090c0':'#8b6f47'}">${d}</div>`).join('')}</div><div class="cal-grid">${grid}</div><div class="cal-selected-header"><div class="cal-selected-date">${fmtDate(calSelected)}</div></div><div class="cal-entries">${cardsHtml}</div>`;
-  // innerHTML 設定完後才載入圖片
-  Object.keys(calPhotoMap).forEach(function(imgId){
-    const imgEl=document.getElementById(imgId);
-    if(imgEl)loadPhotoIntoImg(imgEl,calPhotoMap[imgId]);
-  });
+  // innerHTML 設定完後，掃描所有有 data-photo 的圖片元素
+  setTimeout(function(){
+    el.querySelectorAll('img[data-photo]').forEach(function(imgEl){
+      loadPhotoIntoImg(imgEl, imgEl.dataset.photo);
+    });
+  }, 0);
 }
 
 function calClick(ds){calSelected=ds;if(currentSwiped)closeSwipe();renderCalendar();}
