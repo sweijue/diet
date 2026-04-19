@@ -910,10 +910,10 @@ async function migratePhotosToIdb(){
 
 // 把圖片 ID 載入到 DOM img 元素
 function loadPhotoIntoImg(el,photoId){
-  if(isBase64Photo(photoId)){el.src=photoId;return;} // 相容舊格式
+  if(isBase64Photo(photoId)){el.src=photoId;return;}
   getPhoto(photoId).then(function(b64){
-    if(b64)el.src=b64;
-    else el.style.display='none';
+    if(b64){el.src=b64;console.log('photo loaded:',photoId.slice(0,16));}
+    else{el.style.display='none';console.log('photo NOT found in IDB:',photoId);}
   });
 }
 function loadEntries(){try{entries=JSON.parse(localStorage.getItem(STORE_KEY))||[];}catch{entries=[];}}
