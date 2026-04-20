@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
@@ -59,21 +60,21 @@ button{cursor:pointer}
 .tcard-wrap{position:relative;overflow:hidden;margin-bottom:11px}
 /* 右側：編輯（橘）+ 刪除（紅），左滑顯示 */
 .tcard-action-right{
-  position:absolute;right:0;top:0;bottom:0;
-  display:flex;align-items:stretch;
-  opacity:0;pointer-events:none;
-  border-radius:0 12px 12px 0;
-  overflow:hidden;
+position:absolute;right:0;top:0;bottom:0;
+display:flex;align-items:stretch;
+opacity:0;pointer-events:none;
+border-radius:0 12px 12px 0;
+overflow:hidden;
 }
 .btn-swipe-edit{
-  width:68px;background:#c8a96e;color:#2c2416;border:none;
-  font-size:12px;font-weight:700;cursor:pointer;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+width:68px;background:#c8a96e;color:#2c2416;border:none;
+font-size:12px;font-weight:700;cursor:pointer;
+display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
 }
 .btn-swipe-del{
-  width:68px;background:#e06060;color:#fff;border:none;
-  font-size:12px;font-weight:700;cursor:pointer;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+width:68px;background:#e06060;color:#fff;border:none;
+font-size:12px;font-weight:700;cursor:pointer;
+display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
 }
 .tcard-inner{transition:transform .22s ease;display:flex;align-items:flex-start;position:relative;z-index:1}
 /* 時間欄 */
@@ -242,6 +243,7 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
 </div>
 
 <!-- 篩選按鈕：右下角最低，展開向左 -->
+
 <div id="filterBtn" style="position:fixed;bottom:28px;right:max(80px,calc(50% - 160px));z-index:150;display:flex">
   <button onclick="toggleTimelineFilter()" id="filterBtnEl" style="width:50px;height:50px;border-radius:50%;background:#e8e2d8;color:#5a4a35;border:none;box-shadow:0 4px 18px rgba(44,36,22,.25);display:flex;align-items:center;justify-content:center;transition:transform .2s"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#5a4a35" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></button>
 </div>
@@ -359,6 +361,7 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
 </div>
 
 <!-- Period Sheet -->
+
 <div id="symptomSheet" class="sheet-overlay" style="display:none" onclick="if(event.target===this)closeSymptomSheet()">
   <div class="sheet">
     <div class="sheet-header">
@@ -445,10 +448,13 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
         </div>
       </div>
 
-      <div class="form-label">備注</div>
-      <textarea id="bpNote" class="form-textarea" rows="2" placeholder="量測情況、姿勢…"></textarea>
-      <input type="hidden" id="bpEditId" value="">
-    </div>
+```
+  <div class="form-label">備注</div>
+  <textarea id="bpNote" class="form-textarea" rows="2" placeholder="量測情況、姿勢…"></textarea>
+  <input type="hidden" id="bpEditId" value="">
+</div>
+```
+
   </div>
 </div>
 
@@ -2119,6 +2125,182 @@ function buildBpSymCorrelationHtml(bpRecs, symRecs){
   html+='</div></div>';
   return html;
 }
+
+// ══ 血壓圖表 ══════════════════════════════════════════════════════
+var _bpChartMode='all';
+var _bpChartData=[];
+
+function setBpChartMode(m){
+  _bpChartMode=m;
+  ['all','morn','eve'].forEach(function(k){
+    var btn=document.getElementById('bpSeg-'+k);
+    if(!btn)return;
+    btn.style.background=k===m?'#2c2416':'transparent';
+    btn.style.color=k===m?'#f7f4ef':'#8b6f47';
+  });
+  drawBpChart();
+  drawHrChart();
+}
+
+function initBpChart(monthData){
+  // 按日期分組，每天取早晚平均
+  var byDate={};
+  monthData.forEach(function(b){
+    if(!byDate[b.date])byDate[b.date]={morn:[],eve:[]};
+    var h=parseInt(b.time.slice(0,2));
+    if(h<12)byDate[b.date].morn.push(b);
+    else byDate[b.date].eve.push(b);
+  });
+  function avg(arr,key){if(!arr.length)return null;return Math.round(arr.reduce(function(a,b){return a+b[key];},0)/arr.length);}
+  _bpChartData=Object.keys(byDate).sort().map(function(d){
+    var dd=byDate[d];
+    return {
+      date:d.slice(5).replace('-','/'),
+      mSys:avg(dd.morn,'sys'),mDia:avg(dd.morn,'dia'),mHr:avg(dd.morn,'hr'),
+      eSys:avg(dd.eve,'sys'),eDia:avg(dd.eve,'dia'),eHr:avg(dd.eve,'hr'),
+    };
+  });
+  _bpChartMode='all';
+  drawBpChart();
+  drawHrChart();
+}
+
+function drawBpChart(){
+  var canvas=document.getElementById('bpBarChart');
+  if(!canvas||!_bpChartData.length)return;
+  var dpr=window.devicePixelRatio||1;
+  var n=_bpChartData.length;
+  var cellW=Math.max(40, Math.floor((canvas.parentElement.clientWidth)/n));
+  var W=cellW*n;
+  var H=200;
+  canvas.width=W*dpr; canvas.height=H*dpr;
+  canvas.style.width=W+'px'; canvas.style.height=H+'px';
+  var ctx=canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+
+  var pad={top:24,right:8,bottom:26,left:34};
+  var cw=W-pad.left-pad.right;
+  var ch=H-pad.top-pad.bottom;
+  var barW=Math.min(cellW*0.3,10);
+
+  var vals=[140,90];
+  _bpChartData.forEach(function(d){
+    if(_bpChartMode!=='eve'&&d.mSys){vals.push(d.mSys,d.mDia);}
+    if(_bpChartMode!=='morn'&&d.eSys){vals.push(d.eSys,d.eDia);}
+  });
+  var minY=Math.floor(Math.min.apply(null,vals)/10)*10-5;
+  var maxY=Math.ceil(Math.max.apply(null,vals)/10)*10+5;
+
+  function xc(i){return pad.left+(i+0.5)*(cw/n);}
+  function yc(v){return pad.top+(1-(v-minY)/(maxY-minY))*ch;}
+
+  // 格線
+  ctx.strokeStyle='#f0ece6'; ctx.lineWidth=1;
+  for(var v=minY;v<=maxY;v+=10){ctx.beginPath();ctx.moveTo(pad.left,yc(v));ctx.lineTo(pad.left+cw,yc(v));ctx.stroke();}
+
+  // Y 軸標籤
+  ctx.fillStyle='#bbb'; ctx.font='9px sans-serif'; ctx.textAlign='right';
+  for(var v2=minY;v2<=maxY;v2+=20){ctx.fillText(v2,pad.left-3,yc(v2)+3);}
+
+  // 警戒線 140
+  ctx.save();ctx.strokeStyle='#e53935';ctx.lineWidth=1;ctx.setLineDash([4,3]);
+  ctx.beginPath();ctx.moveTo(pad.left,yc(140));ctx.lineTo(pad.left+cw,yc(140));ctx.stroke();
+  ctx.fillStyle='#e53935';ctx.textAlign='right';ctx.fillText('140',pad.left-2,yc(140)-2);
+  ctx.restore();
+
+  // 警戒線 90
+  ctx.save();ctx.strokeStyle='#c8b89a';ctx.lineWidth=1;ctx.setLineDash([3,3]);
+  ctx.beginPath();ctx.moveTo(pad.left,yc(90));ctx.lineTo(pad.left+cw,yc(90));ctx.stroke();
+  ctx.fillStyle='#c8b89a';ctx.textAlign='right';ctx.fillText('90',pad.left-2,yc(90)+9);
+  ctx.restore();
+
+  // 長條
+  _bpChartData.forEach(function(d,i){
+    var x=xc(i);
+    var showMorn=_bpChartMode!=='eve'&&d.mSys;
+    var showEve=_bpChartMode!=='morn'&&d.eSys;
+    var offset=(_bpChartMode==='all')?barW/2+1:0;
+
+    if(showMorn){
+      var y1=yc(d.mSys),y2=yc(d.mDia);
+      var isHigh=d.mSys>=140||d.mDia>=90;
+      ctx.fillStyle=isHigh?'rgba(229,57,53,.75)':'rgba(240,160,96,.85)';
+      ctx.beginPath();
+      ctx.roundRect(x-offset-barW,Math.min(y1,y2),barW,Math.abs(y2-y1),2);
+      ctx.fill();
+      ctx.fillStyle=isHigh?'#e53935':'#b06820';
+      ctx.font='8px sans-serif';ctx.textAlign='center';
+      ctx.fillText(d.mSys,x-offset-barW/2,Math.min(y1,y2)-3);
+    }
+    if(showEve){
+      var y1e=yc(d.eSys),y2e=yc(d.eDia);
+      var isHighE=d.eSys>=140||d.eDia>=90;
+      ctx.fillStyle=isHighE?'rgba(229,57,53,.75)':'rgba(91,140,191,.85)';
+      ctx.beginPath();
+      ctx.roundRect(x+offset,Math.min(y1e,y2e),barW,Math.abs(y2e-y1e),2);
+      ctx.fill();
+      ctx.fillStyle=isHighE?'#e53935':'#2a5a8f';
+      ctx.font='8px sans-serif';ctx.textAlign='center';
+      ctx.fillText(d.eSys,x+offset+barW/2,Math.min(y1e,y2e)-3);
+    }
+  });
+
+  // X 軸
+  ctx.fillStyle='#bbb';ctx.font='9px sans-serif';ctx.textAlign='center';
+  _bpChartData.forEach(function(d,i){ctx.fillText(d.date.slice(3),xc(i),H-7);});
+}
+
+function drawHrChart(){
+  var canvas=document.getElementById('bpHrChart');
+  if(!canvas||!_bpChartData.length)return;
+  var dpr=window.devicePixelRatio||1;
+  var bpCanvas=document.getElementById('bpBarChart');
+  var W=bpCanvas?parseInt(bpCanvas.style.width):300;
+  var H=90;
+  canvas.width=W*dpr; canvas.height=H*dpr;
+  canvas.style.width=W+'px'; canvas.style.height=H+'px';
+  var ctx=canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+  var n=_bpChartData.length;
+  var pad={top:10,right:8,bottom:22,left:34};
+  var cw=W-pad.left-pad.right;
+  var ch=H-pad.top-pad.bottom;
+
+  var hrVals=[];
+  _bpChartData.forEach(function(d){
+    if(_bpChartMode!=='eve'&&d.mHr)hrVals.push(d.mHr);
+    if(_bpChartMode!=='morn'&&d.eHr)hrVals.push(d.eHr);
+  });
+  if(!hrVals.length)return;
+  var minH=Math.floor(Math.min.apply(null,hrVals)/10)*10-5;
+  var maxH=Math.ceil(Math.max.apply(null,hrVals)/10)*10+5;
+
+  function xc(i){return pad.left+(i+0.5)*(cw/n);}
+  function yc(v){return pad.top+(1-(v-minH)/(maxH-minH))*ch;}
+
+  ctx.strokeStyle='#f0ece6';ctx.lineWidth=1;
+  for(var v=minH;v<=maxH;v+=10){ctx.beginPath();ctx.moveTo(pad.left,yc(v));ctx.lineTo(pad.left+cw,yc(v));ctx.stroke();}
+  ctx.fillStyle='#bbb';ctx.font='9px sans-serif';ctx.textAlign='right';
+  for(var v2=minH;v2<=maxH;v2+=10){ctx.fillText(v2,pad.left-3,yc(v2)+3);}
+
+  function hrLine(getData,color){
+    var pts=_bpChartData.map(function(d,i){return {x:xc(i),v:getData(d)};}).filter(function(p){return p.v;});
+    if(pts.length<1)return;
+    ctx.beginPath();
+    pts.forEach(function(p,i){i===0?ctx.moveTo(p.x,yc(p.v)):ctx.lineTo(p.x,yc(p.v));});
+    ctx.strokeStyle=color;ctx.lineWidth=1.5;ctx.lineJoin='round';ctx.stroke();
+    pts.forEach(function(p){
+      ctx.beginPath();ctx.arc(p.x,yc(p.v),2.5,0,Math.PI*2);
+      ctx.fillStyle=color;ctx.fill();
+      ctx.strokeStyle='#fff';ctx.lineWidth=1;ctx.stroke();
+    });
+  }
+  if(_bpChartMode!=='eve')hrLine(function(d){return d.mHr;},'#f0a060');
+  if(_bpChartMode!=='morn')hrLine(function(d){return d.eHr;},'#5b8cbf');
+
+  ctx.fillStyle='#bbb';ctx.font='9px sans-serif';ctx.textAlign='center';
+  _bpChartData.forEach(function(d,i){ctx.fillText(d.date.slice(3),xc(i),H-5);});
+}
 function renderBpTab(){
   var el=document.getElementById('viewBp');
   if(!el)return;
@@ -2180,6 +2362,20 @@ function renderBpTab(){
   html+='<span style="font-size:12px;color:#bbb">本月共 '+month.length+' 筆記錄</span>';
   html+='<span style="font-size:13px;font-weight:700;color:#5b8cbf">💊 服藥 '+medsCount+'/'+month.length+' 天</span>';
   html+='</div>';
+  html+='</div>';
+
+
+  // 血壓圖表
+  var bpSegBase='padding:7px 4px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;flex:1';
+  html+='<div style="background:#fff;border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.06)">';
+  html+='<div style="display:flex;background:#f5f0e8;border-radius:10px;padding:3px;gap:2px;margin-bottom:12px">';
+  html+='<button data-mode="all" onclick="setBpChartMode(this.dataset.mode)" id="bpSeg-all" style="'+bpSegBase+';background:#2c2416;color:#f7f4ef">全部</button>';
+  html+='<button data-mode="morn" onclick="setBpChartMode(this.dataset.mode)" id="bpSeg-morn" style="'+bpSegBase+';background:transparent;color:#8b6f47">☀️ 早晨</button>';
+  html+='<button data-mode="eve" onclick="setBpChartMode(this.dataset.mode)" id="bpSeg-eve" style="'+bpSegBase+';background:transparent;color:#8b6f47">🌙 晚間</button>';
+  html+='</div>';
+  html+='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><canvas id="bpBarChart"></canvas></div>';
+  html+='<div style="font-size:11px;color:#8b6f47;font-weight:700;margin:10px 0 6px;padding-top:10px;border-top:1px solid #f0ece6">❤️ 心率 bpm</div>';
+  html+='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><canvas id="bpHrChart"></canvas></div>';
   html+='</div>';
 
   // 每日記錄列表（左滑編輯刪除，含當日症狀）
@@ -2264,6 +2460,7 @@ function renderBpTab(){
   });
 
   el.innerHTML=html;
+  if(month.length)setTimeout(function(){initBpChart(month);},0);
 }
 
 
@@ -3025,5 +3222,6 @@ migratePhotosToIdb().then(function(){
 });
 checkUrlBpImport();
 </script>
+
 </body>
 </html>
