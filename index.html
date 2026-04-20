@@ -233,13 +233,15 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
       <button class="tab-btn active" id="tabTimeline" onclick="switchTab('timeline')">⏱ 時間線</button>
       <button class="tab-btn" id="tabCalendar" onclick="switchTab('calendar')">📅 日曆</button>
       <button class="tab-btn" id="tabBp" onclick="switchTab('bp')">🫀 血壓</button>
-      <button class="tab-btn" id="tabStats" onclick="switchTab('stats')">🩺 症狀統計</button>
+      <button class="tab-btn" id="tabStats" onclick="switchTab('stats')">🩺 症狀</button>
+      <button class="tab-btn" id="tabEx" onclick="switchTab('ex')">🏃 運動</button>
     </div>
   </div>
   <div id="viewTimeline"></div>
   <div id="viewCalendar" style="display:none"></div>
   <div id="viewBp" style="display:none;padding:14px 14px 100px"></div>
   <div id="viewStats" style="display:none"></div>
+  <div id="viewEx" style="display:none;padding:14px 14px 100px"></div>
 </div>
 
 <!-- 篩選按鈕：右下角最低，展開向左 -->
@@ -1176,10 +1178,12 @@ function switchTab(tab){
   document.getElementById('viewCalendar').style.display=tab==='calendar'?'block':'none';
   document.getElementById('viewBp').style.display=tab==='bp'?'block':'none';
   document.getElementById('viewStats').style.display=tab==='stats'?'block':'none';
+  if(document.getElementById('viewEx'))document.getElementById('viewEx').style.display=tab==='ex'?'block':'none';
   document.getElementById('tabTimeline').className='tab-btn'+(tab==='timeline'?' active':'');
   document.getElementById('tabCalendar').className='tab-btn'+(tab==='calendar'?' active':'');
   document.getElementById('tabBp').className='tab-btn'+(tab==='bp'?' active':'');
   document.getElementById('tabStats').className='tab-btn'+(tab==='stats'?' active':'');
+  if(document.getElementById('tabEx'))document.getElementById('tabEx').className='tab-btn'+(tab==='ex'?' active':'');
   // FAB 只在時間線和日曆顯示
   var showFab=tab==='timeline'||tab==='calendar';
   document.getElementById('fab').style.display=showFab?'flex':'none';
@@ -1188,6 +1192,7 @@ function switchTab(tab){
   if(tab==='calendar')renderCalendar();
   else if(tab==='bp')renderBpTab();
   else if(tab==='stats'){if(!_statsInited){initStatPeriod();_statsInited=true;}renderStats();}
+  else if(tab==='ex')renderExStats();
   else scrollToDate(calSelected);
 }
 function calPrev(){if(calMonth===0){calYear--;calMonth=11;}else calMonth--;renderCalendar();}
@@ -1196,20 +1201,21 @@ function goToday(){
   var now=new Date();
   if(currentTab==='timeline'){calSelected=todayDate();scrollToToday();}
   else if(currentTab==='bp'){
-    bpTabYear=now.getFullYear();bpTabMonth=now.getMonth();
     renderBpTab();
     setTimeout(function(){
-      var today=todayDate();
-      // 找今天的日期卡片（血壓頁日期格子）
+      var t=todayDate();
       var allDivs=document.getElementById('viewBp').querySelectorAll('[data-bp-date]');
       var found=null;
-      allDivs.forEach(function(d){if(d.dataset.bpDate===today)found=d;});
+      allDivs.forEach(function(d){if(d.dataset.bpDate===t)found=d;});
       if(found)found.scrollIntoView({behavior:'smooth',block:'start'});
     },100);
   }
   else if(currentTab==='stats'){
     statYear=now.getFullYear();statMonth=now.getMonth();
     statDay=todayDate();renderStats();
+  } else if(currentTab==='ex'){
+    exStatPeriod='month';exStatYear=now.getFullYear();exStatMonth=now.getMonth();
+    exStatWeek=getWeekStart(todayDate());renderExStats();
   }
   else{calYear=now.getFullYear();calMonth=now.getMonth();calSelected=todayDate();renderCalendar();}
 }
@@ -2173,13 +2179,13 @@ function drawBpChart(){
   var n=_bpChartData.length;
   var cellW=Math.max(40, Math.floor((canvas.parentElement.clientWidth)/n));
   var W=cellW*n;
-  var H=222;
+  var H=260;
   canvas.width=W*dpr; canvas.height=H*dpr;
   canvas.style.width=W+'px'; canvas.style.height=H+'px';
   var ctx=canvas.getContext('2d');
   ctx.scale(dpr,dpr);
 
-  var pad={top:12,right:8,bottom:38,left:34};
+  var pad={top:16,right:8,bottom:50,left:38};
   var cw=W-pad.left-pad.right;
   var ch=H-pad.top-pad.bottom;
   var barW=Math.min(cellW*0.3,10);
@@ -2200,7 +2206,7 @@ function drawBpChart(){
   for(var v=minY;v<=maxY;v+=10){ctx.beginPath();ctx.moveTo(pad.left,yc(v));ctx.lineTo(pad.left+cw,yc(v));ctx.stroke();}
 
   // Y 軸標籤
-  ctx.fillStyle='#bbb'; ctx.font='9px sans-serif'; ctx.textAlign='right';
+  ctx.fillStyle='#bbb'; ctx.font='11px sans-serif'; ctx.textAlign='right';
   for(var v2=minY;v2<=maxY;v2+=20){ctx.fillText(v2,pad.left-3,yc(v2)+3);}
 
   // 警戒線 140
@@ -2225,33 +2231,37 @@ function drawBpChart(){
     if(showMorn){
       var y1=yc(d.mSys),y2=yc(d.mDia);
       var isHigh=d.mSys>=140||d.mDia>=90;
+      var bx=x-offset-barW;
       ctx.fillStyle=isHigh?'rgba(229,57,53,.75)':'rgba(240,160,96,.85)';
-      ctx.beginPath();
-      ctx.roundRect(x-offset-barW,Math.min(y1,y2),barW,Math.abs(y2-y1),2);
-      ctx.fill();
-      ctx.fillStyle=isHigh?'#e53935':'#b06820';
-      ctx.font='8px sans-serif';ctx.textAlign='center';
-      ctx.fillText(d.mSys,x-offset-barW/2,Math.min(y1,y2)-3);
+      ctx.beginPath();ctx.roundRect(bx,Math.min(y1,y2),barW,Math.abs(y2-y1),2);ctx.fill();
+      ctx.fillStyle=isHigh?'#e53935':'#b06820';ctx.font='12px sans-serif';ctx.textAlign='center';
+      ctx.fillText(d.mSys,bx+barW/2,Math.min(y1,y2)-3);
+      ctx.fillText(d.mDia,bx+barW/2,Math.max(y1,y2)+9);
+      ctx.font='11px sans-serif';ctx.globalAlpha=0.7;
+      ctx.fillText('☀',bx+barW/2,Math.max(y1,y2)-4);
+      ctx.globalAlpha=1;
     }
     if(showEve){
       var y1e=yc(d.eSys),y2e=yc(d.eDia);
       var isHighE=d.eSys>=140||d.eDia>=90;
+      var bxe=x+offset;
       ctx.fillStyle=isHighE?'rgba(229,57,53,.75)':'rgba(91,140,191,.85)';
-      ctx.beginPath();
-      ctx.roundRect(x+offset,Math.min(y1e,y2e),barW,Math.abs(y2e-y1e),2);
-      ctx.fill();
-      ctx.fillStyle=isHighE?'#e53935':'#2a5a8f';
-      ctx.font='8px sans-serif';ctx.textAlign='center';
-      ctx.fillText(d.eSys,x+offset+barW/2,Math.min(y1e,y2e)-3);
+      ctx.beginPath();ctx.roundRect(bxe,Math.min(y1e,y2e),barW,Math.abs(y2e-y1e),2);ctx.fill();
+      ctx.fillStyle=isHighE?'#e53935':'#2a5a8f';ctx.font='12px sans-serif';ctx.textAlign='center';
+      ctx.fillText(d.eSys,bxe+barW/2,Math.min(y1e,y2e)-3);
+      ctx.fillText(d.eDia,bxe+barW/2,Math.max(y1e,y2e)+9);
+      ctx.font='11px sans-serif';ctx.globalAlpha=0.7;
+      ctx.fillText('🌙',bxe+barW/2,Math.max(y1e,y2e)-4);
+      ctx.globalAlpha=1;
     }
   });
 
   // X 軸
-  ctx.fillStyle='#bbb';ctx.font='9px sans-serif';ctx.textAlign='center';
+  ctx.fillStyle='#bbb';ctx.font='11px sans-serif';ctx.textAlign='center';
   _bpChartData.forEach(function(d,i){ctx.fillText(d.date.slice(3),xc(i),H-22);});
 
   // 藥丸行
-  ctx.font='10px sans-serif';ctx.textAlign='center';
+  ctx.font='12px sans-serif';ctx.textAlign='center';
   _bpChartData.forEach(function(d,i){
     ctx.globalAlpha=d.meds?1:0.25;
     ctx.fillText('💊',xc(i),H-6);
@@ -2289,7 +2299,7 @@ function drawHrChart(){
 
   ctx.strokeStyle='#f0ece6';ctx.lineWidth=1;
   for(var v=minH;v<=maxH;v+=10){ctx.beginPath();ctx.moveTo(pad.left,yc(v));ctx.lineTo(pad.left+cw,yc(v));ctx.stroke();}
-  ctx.fillStyle='#bbb';ctx.font='9px sans-serif';ctx.textAlign='right';
+  ctx.fillStyle='#bbb';ctx.font='11px sans-serif';ctx.textAlign='right';
   for(var v2=minH;v2<=maxH;v2+=10){ctx.fillText(v2,pad.left-3,yc(v2)+3);}
 
   function hrLine(getData,color){
@@ -2307,19 +2317,20 @@ function drawHrChart(){
   if(_bpChartMode!=='eve')hrLine(function(d){return d.mHr;},'#f0a060');
   if(_bpChartMode!=='morn')hrLine(function(d){return d.eHr;},'#5b8cbf');
 
-  ctx.fillStyle='#bbb';ctx.font='9px sans-serif';ctx.textAlign='center';
+  ctx.fillStyle='#bbb';ctx.font='11px sans-serif';ctx.textAlign='center';
   _bpChartData.forEach(function(d,i){ctx.fillText(d.date.slice(3),xc(i),H-5);});
 }
 function renderBpTab(){
   var el=document.getElementById('viewBp');
   if(!el)return;
   var recs=loadBpRecords();
-  var prefix=bpTabYear+'-'+(bpTabMonth+1<10?'0':'')+(bpTabMonth+1);
-  var month=recs.filter(function(b){return b.date.startsWith(prefix);});
+  var today=todayDate();
+  var d30=new Date(today+'T00:00:00');d30.setDate(d30.getDate()-29);
+  var from30=d30.toISOString().slice(0,10);
+  var month=recs.filter(function(b){return b.date>=from30&&b.date<=today;});
   month.sort(function(a,b){return a.date.localeCompare(b.date)||a.time.localeCompare(b.time);});
+  var prefix='';
 
-  // 月平均（整體 + 早/晚分開）
-  // 早：0-11點；晚：12-23點
   var morn=month.filter(function(b){return parseInt(b.time.slice(0,2))<12;});
   var eve=month.filter(function(b){return parseInt(b.time.slice(0,2))>=12;});
   function calcAvg(arr){
@@ -2337,42 +2348,11 @@ function renderBpTab(){
   var medsCount=month.filter(function(b){return b.meds;}).length;
 
   var html='';
-  // 月份切換
-  html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">';
-  html+='<button onclick="bpTabNav(-1)" style="background:#f5f0e8;border:none;border-radius:10px;padding:8px 16px;font-size:20px;cursor:pointer">‹</button>';
-  html+='<span style="font-weight:700;font-size:17px;color:#2c2416">'+bpTabYear+' / '+(bpTabMonth+1)+'</span>';
-  html+='<button onclick="bpTabNav(1)" style="background:#f5f0e8;border:none;border-radius:10px;padding:8px 16px;font-size:20px;cursor:pointer">›</button>';
-  html+='</div>';
-
+  var html='';
   if(!month.length){
-    html+='<div class="empty"><div class="empty-icon">🫀</div><div style="font-size:15px;color:#aaa">這個月沒有血壓記錄</div></div>';
+    html+='<div class="empty"><div class="empty-icon">🫀</div><div style="font-size:15px;color:#aaa">最近30天沒有血壓記錄</div></div>';
     el.innerHTML=html;return;
   }
-
-  // 月摘要卡
-  html+='<div class="stat-card" style="margin-bottom:14px;padding:14px 16px">';
-  // 早晚血壓並排
-  html+='<div style="display:flex;gap:8px;margin-bottom:10px">';
-  function bpCell(label,avg,icon){
-    if(!avg)return '<div style="flex:1;text-align:center;background:#faf8f5;border-radius:10px;padding:10px 6px"><div style="font-size:11px;color:#bbb;margin-bottom:3px">'+icon+' '+label+'</div><div style="font-size:13px;color:#ccc">無資料</div></div>';
-    var hi=isHighBp(avg.sys,avg.dia);
-    return '<div style="flex:1;text-align:center;background:#faf8f5;border-radius:10px;padding:10px 6px">'
-      +'<div style="font-size:11px;color:#bbb;margin-bottom:3px">'+icon+' '+label+'</div>'
-      +'<div style="font-size:20px;font-weight:800;color:'+(hi?'#e53935':'#2c2416')+'">'+avg.sys+'/'+avg.dia+'</div>'
-      +(hi?'<div style="font-size:10px;color:#e53935;font-weight:700">偏高</div>':'')
-      +(avg.hr?'<div style="font-size:11px;color:#8b6f47">❤️ '+avg.hr+'</div>':'')
-      +'</div>';
-  }
-  html+=bpCell('早晨',avgMorn,'☀️');
-  html+=bpCell('下午/晚',avgEve,'🌙');
-  html+='</div>';
-  // 服藥統計
-  html+='<div style="display:flex;justify-content:space-between;align-items:center;padding-top:6px;border-top:1px solid #f0ece6">';
-  html+='<span style="font-size:12px;color:#bbb">本月共 '+month.length+' 筆記錄</span>';
-  html+='<span style="font-size:13px;font-weight:700;color:#5b8cbf">💊 服藥 '+medsCount+'/'+month.length+' 天</span>';
-  html+='</div>';
-  html+='</div>';
-
 
   // 血壓圖表
   var bpSegBase='padding:7px 4px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;flex:1';
@@ -2389,7 +2369,7 @@ function renderBpTab(){
 
   // 每日記錄列表（左滑編輯刪除，含當日症狀）
   var allSyms=loadSymptoms();
-  var monthSymsAll=allSyms.filter(function(s){return s.date.startsWith(prefix);});
+  var monthSymsAll=allSyms.filter(function(s){return s.date>=from30&&s.date<=today;});
   var byDate={};
   month.forEach(function(b){(byDate[b.date]=byDate[b.date]||[]).push(b);});
   // 有症狀但沒有血壓記錄的日期也加進來
@@ -2915,6 +2895,158 @@ function toggleStatBp(sid){
   // 更新箭頭方向
   var arrow=row?row.querySelector('span:last-child'):null;
   if(arrow&&arrow.textContent.includes('▾')){arrow.textContent=open?'🫀▴':'🫀▾';}
+}
+
+// ══ 運動統計 ══════════════════════════════════════════════════════
+var exStatPeriod='month';
+var exStatYear=new Date().getFullYear();
+var exStatMonth=new Date().getMonth();
+var exStatWeek=(function(){var d=new Date();var day=d.getDay();d.setDate(d.getDate()-day);return d.toISOString().slice(0,10);})();
+
+function getWeekStart(dateStr){
+  var d=new Date(dateStr+'T00:00:00');
+  var day=d.getDay();d.setDate(d.getDate()-day);
+  return d.toISOString().slice(0,10);
+}
+function getWeekEnd(ws){
+  var d=new Date(ws+'T00:00:00');d.setDate(d.getDate()+6);
+  return d.toISOString().slice(0,10);
+}
+function fmtWeek(ws){
+  var we=getWeekEnd(ws);
+  return ws.slice(5).replace('-','/')+'\u2013'+we.slice(5).replace('-','/');
+}
+function exStatNav(dir){
+  if(exStatPeriod==='month'){
+    exStatMonth+=dir;
+    if(exStatMonth<0){exStatMonth=11;exStatYear--;}
+    if(exStatMonth>11){exStatMonth=0;exStatYear++;}
+  } else {
+    var d=new Date(exStatWeek+'T00:00:00');
+    d.setDate(d.getDate()+dir*7);
+    exStatWeek=d.toISOString().slice(0,10);
+  }
+  renderExStats();
+}
+function exStatNav2(p){exStatPeriod=p;renderExStats();}
+
+function renderExStats(){
+  var el=document.getElementById('viewEx');
+  if(!el)return;
+  var allEx=entries.filter(function(e){return e.type==='exercise';});
+  var filtered,label;
+  if(exStatPeriod==='week'){
+    var ws=exStatWeek,we=getWeekEnd(ws);
+    filtered=allEx.filter(function(e){return e.date>=ws&&e.date<=we;});
+    label=fmtWeek(ws);
+  } else {
+    var pfx=exStatYear+'-'+(exStatMonth+1<10?'0':'')+(exStatMonth+1);
+    filtered=allEx.filter(function(e){return e.date.startsWith(pfx);});
+    label=exStatYear+'/'+(exStatMonth+1);
+  }
+  filtered.sort(function(a,b){return b.date.localeCompare(a.date)||b.time.localeCompare(a.time);});
+
+  var totalMin=filtered.reduce(function(a,e){return a+(parseInt(e.duration)||0);},0);
+  var totalKcal=filtered.reduce(function(a,e){return a+(parseInt(e.calories)||0);},0);
+  var totalKm=filtered.reduce(function(a,e){return a+(parseFloat(e.distance)||0);},0);
+  var days=new Set(filtered.map(function(e){return e.date;})).size;
+
+  var typeCount={};
+  filtered.forEach(function(e){
+    var t=e.exerciseType||'\u5176\u4ed6';
+    typeCount[t]=(typeCount[t]||0)+1;
+  });
+  var typeSorted=Object.keys(typeCount).sort(function(a,b){return typeCount[b]-typeCount[a];});
+  var maxCount=typeSorted.length?typeCount[typeSorted[0]]:1;
+
+  var html='';
+  html+='<div style="display:flex;background:#f5f0e8;border-radius:10px;padding:3px;gap:2px;margin-bottom:14px">';
+  html+='<button onclick="exStatNav2(\'week\')" style="flex:1;padding:8px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;background:'+(exStatPeriod==='week'?'#2c2416':'transparent')+';color:'+(exStatPeriod==='week'?'#f7f4ef':'#8b6f47')+'">\u9031</button>';
+  html+='<button onclick="exStatNav2(\'month\')" style="flex:1;padding:8px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;background:'+(exStatPeriod==='month'?'#2c2416':'transparent')+';color:'+(exStatPeriod==='month'?'#f7f4ef':'#8b6f47')+'">\u6708</button>';
+  html+='</div>';
+  html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">';
+  html+='<button onclick="exStatNav(-1)" style="background:#f5f0e8;border:none;border-radius:10px;padding:8px 16px;font-size:20px;cursor:pointer">&#8249;</button>';
+  html+='<span style="font-weight:700;font-size:17px;color:#2c2416">'+label+'</span>';
+  html+='<button onclick="exStatNav(1)" style="background:#f5f0e8;border:none;border-radius:10px;padding:8px 16px;font-size:20px;cursor:pointer">&#8250;</button>';
+  html+='</div>';
+
+  if(!filtered.length){
+    html+='<div class="empty"><div class="empty-icon">&#127939;</div><div style="font-size:15px;color:#aaa">\u9019\u6bb5\u671f\u9593\u6c92\u6709\u904b\u52d5\u8a18\u9304</div></div>';
+    el.innerHTML=html;return;
+  }
+
+  function exCell(icon,val,unit,lbl){
+    return '<div style="text-align:center;background:#faf8f5;border-radius:10px;padding:10px 6px">'
+      +'<div style="font-size:18px;margin-bottom:2px">'+icon+'</div>'
+      +'<div style="font-size:20px;font-weight:800;color:#2c2416">'+val+'<span style="font-size:12px;font-weight:600;color:#8b6f47"> '+unit+'</span></div>'
+      +'<div style="font-size:11px;color:#bbb">'+lbl+'</div>'
+      +'</div>';
+  }
+
+  html+='<div class="stat-card" style="margin-bottom:14px">';
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">';
+  html+=exCell('&#127939;',filtered.length,'\u6b21','\u904b\u52d5\u6b21\u6578');
+  html+=exCell('&#128197;',days,'\u5929','\u904b\u52d5\u5929\u6578');
+  var h=Math.floor(totalMin/60),m=totalMin%60;
+  html+=exCell('&#9201;',h?h+'h'+(m?m+'m':''):totalMin+'','\u5206','\u7e3d\u6642\u9593');
+  html+=exCell('&#128293;',totalKcal,'kcal','\u6d88\u8017\u71b1\u91cf');
+  if(totalKm>0)html+=exCell('&#128205;',totalKm.toFixed(1),'km','\u7e3d\u8ddd\u96e2');
+  html+='</div></div>';
+
+  if(exStatPeriod==='week'){
+    var activeDates=new Set(filtered.map(function(e){return e.date;}));
+    html+='<div class="stat-card" style="margin-bottom:14px">';
+    html+='<div style="font-size:12px;font-weight:700;color:#8b6f47;margin-bottom:10px">\u672c\u9031\u6253\u5361</div>';
+    html+='<div style="display:flex;gap:6px;justify-content:space-between">';
+    var wdNames=['\u65e5','\u4e00','\u4e8c','\u4e09','\u56db','\u4e94','\u516d'];
+    for(var wi=0;wi<7;wi++){
+      var wd2=new Date(exStatWeek+'T00:00:00');wd2.setDate(wd2.getDate()+wi);
+      var ds2=wd2.toISOString().slice(0,10);
+      var hasEx=activeDates.has(ds2);
+      var isT=ds2===todayDate();
+      html+='<div style="flex:1;text-align:center">';
+      html+='<div style="font-size:11px;color:#bbb;margin-bottom:4px">'+wdNames[wd2.getDay()]+'</div>';
+      html+='<div style="width:36px;height:36px;border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:16px;'
+        +(hasEx?'background:#7aaa8a;color:#fff;':'background:#f0ece6;color:#ccc;')
+        +(isT?'border:2px solid #c8a96e;':'')
+        +'">'+(hasEx?'\u2713':'')+'</div>';
+      html+='<div style="font-size:10px;color:#bbb;margin-top:3px">'+ds2.slice(8)+'</div>';
+      html+='</div>';
+    }
+    html+='</div></div>';
+  }
+
+  if(typeSorted.length){
+    html+='<div class="stat-section"><div class="stat-title">\u904b\u52d5\u985e\u578b</div><div class="stat-card">';
+    typeSorted.slice(0,8).forEach(function(t){
+      var cnt=typeCount[t];
+      var pct=Math.round(cnt/maxCount*100);
+      html+='<div class="stat-row">'
+        +'<span style="font-size:13px;color:#2c2416;font-weight:600;min-width:80px">'+esc(t)+'</span>'
+        +'<div class="stat-bar-wrap"><div class="stat-bar-fill" style="width:'+pct+'%;background:#7aaa8a"></div></div>'
+        +'<span style="font-size:13px;font-weight:700;color:#5a9a6a;min-width:24px;text-align:right">'+cnt+'</span>'
+        +'</div>';
+    });
+    html+='</div></div>';
+  }
+
+  html+='<div class="stat-section"><div class="stat-title">\u8a18\u9304</div><div class="stat-card">';
+  filtered.forEach(function(e){
+    var km=parseFloat(e.distance)||0;
+    var min=parseInt(e.duration)||0;
+    var kcal=parseInt(e.calories)||0;
+    html+='<div style="padding:8px 0;border-bottom:1px solid #f5f0e8;display:flex;align-items:center;gap:8px">';
+    html+='<span style="font-size:12px;color:#bbb;min-width:56px">'+e.date.slice(5).replace('-','/')+' '+e.time+'</span>';
+    html+='<span style="flex:1;font-size:13px;font-weight:700;color:#2c2416">'+esc(e.exerciseType||'\u904b\u52d5')+'</span>';
+    var details=[];
+    if(min)details.push(min+'\u5206');
+    if(km)details.push(km.toFixed(1)+'km');
+    if(kcal)details.push('-'+kcal+'kcal');
+    html+='<span style="font-size:11px;color:#8b6f47">'+details.join(' \xb7 ')+'</span>';
+    html+='</div>';
+  });
+  html+='</div></div>';
+  el.innerHTML=html;
 }
 function statNav2(p){statPeriod=p;renderStats();}
 function statNav(dir){
