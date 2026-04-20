@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
@@ -60,21 +59,21 @@ button{cursor:pointer}
 .tcard-wrap{position:relative;overflow:hidden;margin-bottom:11px}
 /* 右側：編輯（橘）+ 刪除（紅），左滑顯示 */
 .tcard-action-right{
-position:absolute;right:0;top:0;bottom:0;
-display:flex;align-items:stretch;
-opacity:0;pointer-events:none;
-border-radius:0 12px 12px 0;
-overflow:hidden;
+  position:absolute;right:0;top:0;bottom:0;
+  display:flex;align-items:stretch;
+  opacity:0;pointer-events:none;
+  border-radius:0 12px 12px 0;
+  overflow:hidden;
 }
 .btn-swipe-edit{
-width:68px;background:#c8a96e;color:#2c2416;border:none;
-font-size:12px;font-weight:700;cursor:pointer;
-display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  width:68px;background:#c8a96e;color:#2c2416;border:none;
+  font-size:12px;font-weight:700;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
 }
 .btn-swipe-del{
-width:68px;background:#e06060;color:#fff;border:none;
-font-size:12px;font-weight:700;cursor:pointer;
-display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  width:68px;background:#e06060;color:#fff;border:none;
+  font-size:12px;font-weight:700;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
 }
 .tcard-inner{transition:transform .22s ease;display:flex;align-items:flex-start;position:relative;z-index:1}
 /* 時間欄 */
@@ -243,7 +242,6 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
 </div>
 
 <!-- 篩選按鈕：右下角最低，展開向左 -->
-
 <div id="filterBtn" style="position:fixed;bottom:28px;right:max(80px,calc(50% - 160px));z-index:150;display:flex">
   <button onclick="toggleTimelineFilter()" id="filterBtnEl" style="width:50px;height:50px;border-radius:50%;background:#e8e2d8;color:#5a4a35;border:none;box-shadow:0 4px 18px rgba(44,36,22,.25);display:flex;align-items:center;justify-content:center;transition:transform .2s"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#5a4a35" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></button>
 </div>
@@ -361,7 +359,6 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
 </div>
 
 <!-- Period Sheet -->
-
 <div id="symptomSheet" class="sheet-overlay" style="display:none" onclick="if(event.target===this)closeSymptomSheet()">
   <div class="sheet">
     <div class="sheet-header">
@@ -448,13 +445,10 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
         </div>
       </div>
 
-```
-  <div class="form-label">備注</div>
-  <textarea id="bpNote" class="form-textarea" rows="2" placeholder="量測情況、姿勢…"></textarea>
-  <input type="hidden" id="bpEditId" value="">
-</div>
-```
-
+      <div class="form-label">備注</div>
+      <textarea id="bpNote" class="form-textarea" rows="2" placeholder="量測情況、姿勢…"></textarea>
+      <input type="hidden" id="bpEditId" value="">
+    </div>
   </div>
 </div>
 
@@ -1197,7 +1191,18 @@ function calNext(){if(calMonth===11){calYear++;calMonth=0;}else calMonth++;rende
 function goToday(){
   var now=new Date();
   if(currentTab==='timeline'){calSelected=todayDate();scrollToToday();}
-  else if(currentTab==='bp'){bpTabYear=now.getFullYear();bpTabMonth=now.getMonth();renderBpTab();}
+  else if(currentTab==='bp'){
+    bpTabYear=now.getFullYear();bpTabMonth=now.getMonth();
+    renderBpTab();
+    setTimeout(function(){
+      var today=todayDate();
+      // 找今天的日期卡片（血壓頁日期格子）
+      var allDivs=document.getElementById('viewBp').querySelectorAll('[data-bp-date]');
+      var found=null;
+      allDivs.forEach(function(d){if(d.dataset.bpDate===today)found=d;});
+      if(found)found.scrollIntoView({behavior:'smooth',block:'start'});
+    },100);
+  }
   else if(currentTab==='stats'){
     statYear=now.getFullYear();statMonth=now.getMonth();
     statDay=todayDate();renderStats();
@@ -1244,6 +1249,13 @@ document.addEventListener('click',ev=>{
     if(w&&!w.contains(ev.target))closeSwipe();
   }
 });
+
+// 滾動時自動關閉左滑
+var _scrollTimer=null;
+document.addEventListener('scroll',function(){
+  if(currentSwiped){closeSwipe();}
+  if(_bpSwiped){closeBpSwipe();}
+},true);
 
 function openAdd(type,date){
   editId=null;currentType=type||'meal';
@@ -1844,7 +1856,9 @@ async function bpBatchPaste(){
     if(text){document.getElementById('bpBatchText').value=text;showToast('✅ 已貼上');}
     else showToast('剪貼簿是空的');
   }catch(e){
-    showToast('請直接點文字框長按貼上');
+    // 無法自動讀取，直接 focus 文字框讓使用者手動貼上
+    const ta=document.getElementById('bpBatchText');
+    if(ta){ta.focus();ta.select();}
   }
 }
 
@@ -2190,7 +2204,7 @@ function renderBpTab(){
     }
     var daMorn=dayAvg(dayMorn),daEve=dayAvg(dayEve);
     // 整天框在一個卡片裡
-    html+='<div style="background:#fff;border-radius:14px;border:1.5px solid #e0d8cc;margin-bottom:12px;overflow:hidden">';
+    html+='<div data-bp-date="'+date+'" style="background:#fff;border-radius:14px;border:1.5px solid #e0d8cc;margin-bottom:12px;overflow:hidden">';
     // 日期標頭列
     html+='<div style="display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid #f0ece6;gap:8px">';
     html+='<span style="font-size:16px;font-weight:800;color:#2c2416;min-width:48px">'+date.slice(5).replace('-','/')+'</span>';
@@ -3011,6 +3025,5 @@ migratePhotosToIdb().then(function(){
 });
 checkUrlBpImport();
 </script>
-
 </body>
 </html>
