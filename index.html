@@ -3258,7 +3258,9 @@ function isInPeriod(dateStr){
     ps.forEach(function(p){
       const s=new Date(p.start+'T00:00:00'),e=new Date(p.end+'T00:00:00');
       for(let d=new Date(s);d<=e;d.setDate(d.getDate()+1)){
-        _periodDateSet.add(d.toISOString().slice(0,10));
+        // 用本地時間避免時區偏移
+        const yr=d.getFullYear(),mo=String(d.getMonth()+1).padStart(2,'0'),da=String(d.getDate()).padStart(2,'0');
+        _periodDateSet.add(yr+'-'+mo+'-'+da);
       }
     });
   }
