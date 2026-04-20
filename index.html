@@ -2154,10 +2154,13 @@ function initBpChart(monthData){
   function avg(arr,key){if(!arr.length)return null;return Math.round(arr.reduce(function(a,b){return a+b[key];},0)/arr.length);}
   _bpChartData=Object.keys(byDate).sort().map(function(d){
     var dd=byDate[d];
+    var allRecs=[...dd.morn,...dd.eve];
+    var hasMeds=allRecs.some(function(b){return b.meds;});
     return {
       date:d.slice(5).replace('-','/'),
       mSys:avg(dd.morn,'sys'),mDia:avg(dd.morn,'dia'),mHr:avg(dd.morn,'hr'),
       eSys:avg(dd.eve,'sys'),eDia:avg(dd.eve,'dia'),eHr:avg(dd.eve,'hr'),
+      meds:hasMeds,
     };
   });
   _bpChartMode='all';
@@ -2172,7 +2175,7 @@ function drawBpChart(){
   var n=_bpChartData.length;
   var cellW=Math.max(40, Math.floor((canvas.parentElement.clientWidth)/n));
   var W=cellW*n;
-  var H=200;
+  var H=216;
   canvas.width=W*dpr; canvas.height=H*dpr;
   canvas.style.width=W+'px'; canvas.style.height=H+'px';
   var ctx=canvas.getContext('2d');
@@ -2248,6 +2251,14 @@ function drawBpChart(){
   // X 軸
   ctx.fillStyle='#bbb';ctx.font='9px sans-serif';ctx.textAlign='center';
   _bpChartData.forEach(function(d,i){ctx.fillText(d.date.slice(3),xc(i),H-7);});
+
+  // 藥丸行
+  ctx.font='10px sans-serif';ctx.textAlign='center';
+  _bpChartData.forEach(function(d,i){
+    ctx.globalAlpha=d.meds?1:0.25;
+    ctx.fillText('💊',xc(i),H+2);
+    ctx.globalAlpha=1;
+  });
 }
 
 function drawHrChart(){
