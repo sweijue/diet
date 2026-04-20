@@ -1189,10 +1189,10 @@ function switchTab(tab){
   document.getElementById('fab').style.display=showFab?'flex':'none';
   document.getElementById('fabMenu').style.display='none';
   if(!showFab)closeFabMenu();
-  if(tab==='calendar')renderCalendar();
-  else if(tab==='bp')renderBpTab();
-  else if(tab==='stats'){if(!_statsInited){initStatPeriod();_statsInited=true;}renderStats();}
-  else if(tab==='ex')renderExStats();
+  if(tab==='calendar'){renderCalendar();window.scrollTo({top:0,behavior:'instant'});}
+  else if(tab==='bp'){renderBpTab();window.scrollTo({top:0,behavior:'instant'});}
+  else if(tab==='stats'){if(!_statsInited){initStatPeriod();_statsInited=true;}renderStats();window.scrollTo({top:0,behavior:'instant'});}
+  else if(tab==='ex'){renderExStats();window.scrollTo({top:0,behavior:'instant'});}
   else scrollToDate(calSelected);
 }
 function calPrev(){if(calMonth===0){calYear--;calMonth=11;}else calMonth--;renderCalendar();}
@@ -2177,7 +2177,9 @@ function drawBpChart(){
   if(!canvas||!_bpChartData.length)return;
   var dpr=window.devicePixelRatio||1;
   var n=_bpChartData.length;
-  var cellW=Math.max(40, Math.floor((canvas.parentElement.clientWidth)/n));
+  // 固定每格寬讓7天剛好填滿，超過7天可左右滑動
+  var visibleCells=Math.min(n,7);
+  var cellW=Math.floor(canvas.parentElement.clientWidth/visibleCells);
   var W=cellW*n;
   var H=260;
   canvas.width=W*dpr; canvas.height=H*dpr;
@@ -2350,12 +2352,12 @@ function renderBpTab(){
   var html='';
   var html='';
   if(!month.length){
-    html+='<div class="empty"><div class="empty-icon">🫀</div><div style="font-size:15px;color:#aaa">最近30天沒有血壓記錄</div></div>';
+    html+='<div class="empty"><div class="empty-icon">🫀</div><div style="font-size:17px;color:#aaa">最近30天沒有血壓記錄</div></div>';
     el.innerHTML=html;return;
   }
 
   // 血壓圖表
-  var bpSegBase='padding:7px 4px;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;flex:1';
+  var bpSegBase='padding:7px 4px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;flex:1';
   html+='<div style="background:#fff;border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.06)">';
   html+='<div style="display:flex;background:#f5f0e8;border-radius:10px;padding:3px;gap:2px;margin-bottom:12px">';
   html+='<button data-mode="all" onclick="setBpChartMode(this.dataset.mode)" id="bpSeg-all" style="'+bpSegBase+';background:#2c2416;color:#f7f4ef">全部</button>';
@@ -2363,7 +2365,7 @@ function renderBpTab(){
   html+='<button data-mode="eve" onclick="setBpChartMode(this.dataset.mode)" id="bpSeg-eve" style="'+bpSegBase+';background:transparent;color:#8b6f47">🌙 晚間</button>';
   html+='</div>';
   html+='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><canvas id="bpBarChart"></canvas></div>';
-  html+='<div style="font-size:11px;color:#8b6f47;font-weight:700;margin:10px 0 6px;padding-top:10px;border-top:1px solid #f0ece6">❤️ 心率 bpm</div>';
+  html+='<div style="font-size:14px;color:#8b6f47;font-weight:700;margin:10px 0 6px;padding-top:10px;border-top:1px solid #f0ece6">❤️ 心率 bpm</div>';
   html+='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><canvas id="bpHrChart"></canvas></div>';
   html+='</div>';
 
@@ -2392,16 +2394,16 @@ function renderBpTab(){
     html+='<div data-bp-date="'+date+'" style="background:#fff;border-radius:14px;border:1.5px solid #e0d8cc;margin-bottom:12px;overflow:hidden">';
     // 日期標頭列
     html+='<div style="display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid #f0ece6;gap:8px">';
-    html+='<span style="font-size:16px;font-weight:800;color:#2c2416;min-width:48px">'+date.slice(5).replace('-','/')+'</span>';
+    html+='<span style="font-size:17px;font-weight:800;color:#2c2416;min-width:48px">'+date.slice(5).replace('-','/')+'</span>';
     html+='<div style="flex:1;display:flex;gap:6px">';
-    if(daMorn){var mHi=isHighBp(daMorn.sys,daMorn.dia);html+='<span style="font-size:12px;background:#fff8ec;border-radius:8px;padding:3px 8px;color:'+(mHi?'#e53935':'#8b6f47')+';font-weight:700">☀️ '+daMorn.sys+'/'+daMorn.dia+'</span>';}
-    if(daEve){var eHi=isHighBp(daEve.sys,daEve.dia);html+='<span style="font-size:12px;background:#f0f4ff;border-radius:8px;padding:3px 8px;color:'+(eHi?'#e53935':'#5b6abf')+';font-weight:700">🌙 '+daEve.sys+'/'+daEve.dia+'</span>';}
+    if(daMorn){var mHi=isHighBp(daMorn.sys,daMorn.dia);html+='<span style="font-size:14px;background:#fff8ec;border-radius:8px;padding:3px 8px;color:'+(mHi?'#e53935':'#8b6f47')+';font-weight:700">☀️ '+daMorn.sys+'/'+daMorn.dia+'</span>';}
+    if(daEve){var eHi=isHighBp(daEve.sys,daEve.dia);html+='<span style="font-size:14px;background:#f0f4ff;border-radius:8px;padding:3px 8px;color:'+(eHi?'#e53935':'#5b6abf')+';font-weight:700">🌙 '+daEve.sys+'/'+daEve.dia+'</span>';}
     html+='</div>';
-    html+='<span style="font-size:13px;color:#bbb;font-weight:600">週'+wd+'</span>';
-    if(isInPeriod(date))html+='<span style="font-size:15px">🩸</span>';
+    html+='<span style="font-size:14px;color:#bbb;font-weight:600">週'+wd+'</span>';
+    if(isInPeriod(date))html+='<span style="font-size:17px">🩸</span>';
     if(dayRecs.length){
       var hasMeds=dayRecs.some(function(b){return b.meds;});
-      html+='<span data-date="'+date+'" onclick="toggleDayMeds(event,this.dataset.date)" style="font-size:18px;cursor:pointer;'+(hasMeds?'':'filter:grayscale(1);opacity:.35')+'">💊</span>';
+      html+='<span data-date="'+date+'" onclick="toggleDayMeds(event,this.dataset.date)" style="font-size:19px;cursor:pointer;'+(hasMeds?'':'filter:grayscale(1);opacity:.35')+'">💊</span>';
     }
     html+='</div>';
     // 症狀區塊
@@ -2411,9 +2413,9 @@ function renderBpTab(){
         var sv=parseInt(s.severity)||5;
         var sc=sevColor(sv);
         html+='<div style="display:flex;align-items:center;gap:8px;padding:3px 0">';
-        html+='<span style="font-size:12px;color:#9b7fc8;font-weight:700;min-width:40px">'+s.time+'</span>';
-        html+='<span style="font-size:13px;color:#6b4fa0;font-weight:600">'+(s.tags||[]).join('・')+'</span>';
-        html+='<span style="margin-left:auto;font-size:11px;font-weight:700;background:'+sc+'22;color:'+sc+';padding:2px 6px;border-radius:99px">'+sv+'/10</span>';
+        html+='<span style="font-size:14px;color:#9b7fc8;font-weight:700;min-width:40px">'+s.time+'</span>';
+        html+='<span style="font-size:14px;color:#6b4fa0;font-weight:600">'+(s.tags||[]).join('・')+'</span>';
+        html+='<span style="margin-left:auto;font-size:14px;font-weight:700;background:'+sc+'22;color:'+sc+';padding:2px 6px;border-radius:99px">'+sv+'/10</span>';
         html+='</div>';
       });
       html+='</div>';
@@ -2431,12 +2433,12 @@ function renderBpTab(){
       html+=' ontouchend="bpSwipeEnd(event,this.dataset.bpid)"';
       html+=' style="background:#faf8f5;border-radius:10px;border-left:3px solid '+(high?'#e53935':'#5b8cbf')+';padding:9px 12px;display:flex;align-items:center;gap:10px">';
       var isMorn=parseInt(b.time.slice(0,2))<12;
-      html+='<span style="font-size:12px;color:#bbb;min-width:40px">'+b.time+'</span>';
-      html+='<span style="font-size:13px;margin-left:-4px">'+(isMorn?'☀️':'🌙')+'</span>';
-      html+='<span style="font-size:18px;font-weight:800;color:'+bpColor+'">'+b.sys+'/'+b.dia+'</span>';
-      html+='<span style="font-size:11px;color:#bbb">mmHg</span>';
-      if(b.hr)html+='<span style="font-size:12px;color:#8b6f47;margin-left:2px">❤️'+b.hr+'</span>';
-      if(high)html+='<span style="font-size:10px;background:#fce4ec;color:#e53935;padding:2px 5px;border-radius:99px;font-weight:700;margin-left:auto">偏高</span>';
+      html+='<span style="font-size:14px;color:#bbb;min-width:40px">'+b.time+'</span>';
+      html+='<span style="font-size:14px;margin-left:-4px">'+(isMorn?'☀️':'🌙')+'</span>';
+      html+='<span style="font-size:19px;font-weight:800;color:'+bpColor+'">'+b.sys+'/'+b.dia+'</span>';
+      html+='<span style="font-size:14px;color:#bbb">mmHg</span>';
+      if(b.hr)html+='<span style="font-size:14px;color:#8b6f47;margin-left:2px">❤️'+b.hr+'</span>';
+      if(high)html+='<span style="font-size:14px;background:#fce4ec;color:#e53935;padding:2px 5px;border-radius:99px;font-weight:700;margin-left:auto">偏高</span>';
       html+='</div>';
       html+='<div class="tcard-action-right" id="aR-'+pid+'">';
       html+='<button class="btn-swipe-edit" data-id="'+b.id+'" onclick="openBpSheet(this.dataset.id);closeBpSwipe()">✏️<span>編輯</span></button>';
@@ -2449,7 +2451,14 @@ function renderBpTab(){
   });
 
   el.innerHTML=html;
-  if(month.length)setTimeout(function(){initBpChart(month);},0);
+  if(month.length)setTimeout(function(){
+    initBpChart(month);
+    // 滾到最右（最新日期）
+    var wrap=document.getElementById('bpBarChart');
+    if(wrap&&wrap.parentElement)wrap.parentElement.scrollLeft=99999;
+    var wrap2=document.getElementById('bpHrChart');
+    if(wrap2&&wrap2.parentElement)wrap2.parentElement.scrollLeft=99999;
+  },0);
 }
 
 
@@ -2530,8 +2539,8 @@ function renderBpCard(e,ctx){
   var sys=e.sys,dia=e.dia,hr=e.hr,high=isHighBp(sys,dia);
   var pid=ctx+'-'+e.id;
   var valHtml='<span class="bp-val'+(high?' high':'')+'">'
-    +sys+'/'+dia+'</span><span style="font-size:12px;color:#8b6f47;margin-left:4px">mmHg</span>';
-  var hrHtml=hr?'<span style="font-size:12px;color:#8b6f47;margin-left:8px">❤️ '+hr+'</span>':'';
+    +sys+'/'+dia+'</span><span style="font-size:14px;color:#8b6f47;margin-left:4px">mmHg</span>';
+  var hrHtml=hr?'<span style="font-size:14px;color:#8b6f47;margin-left:8px">❤️ '+hr+'</span>':'';
   var medsHtml='';
   var noteHtml=e.note?'<div class="tcard-note">'+esc(e.note)+'</div>':'';
   var ts="ontouchstart=\"tsStart(event,'"+e.id+"','"+ctx+"')\"";
@@ -2545,7 +2554,7 @@ function renderBpCard(e,ctx){
     +'<div class="tcard-body bp">'
     +'<div class="tcard-content">'
     +'<div class="tcard-row"><span class="tcard-name">🫀 血壓</span>'
-    +(high?'<span style="font-size:11px;background:#fce4ec;color:#e53935;padding:2px 7px;border-radius:99px;font-weight:700;margin-left:4px">偏高</span>':'')
+    +(high?'<span style="font-size:14px;background:#fce4ec;color:#e53935;padding:2px 7px;border-radius:99px;font-weight:700;margin-left:4px">偏高</span>':'')
     +'</div>'
     +'<div style="display:flex;align-items:center;margin:4px 0">'+valHtml+hrHtml+'</div>'
     +noteHtml
@@ -2622,7 +2631,7 @@ function renderSymTagsUI(){
   selSymTags.forEach(t=>{if(!allTags.includes(t))allTags.push(t);});
   wrap.innerHTML=allTags.map(t=>{
     const on=selSymTags.has(t);
-    return `<button onclick="toggleSymTag('${esc(t)}')" style="padding:6px 12px;border-radius:99px;border:1.5px solid ${on?'#9b7fc8':'#d8cfc4'};background:${on?'#f0eafc':'#fdf9f4'};color:${on?'#6b4fa0':'#8b6f47'};font-size:13px;font-weight:600;cursor:pointer">${esc(t)}</button>`;
+    return `<button onclick="toggleSymTag('${esc(t)}')" style="padding:6px 12px;border-radius:99px;border:1.5px solid ${on?'#9b7fc8':'#d8cfc4'};background:${on?'#f0eafc':'#fdf9f4'};color:${on?'#6b4fa0':'#8b6f47'};font-size:14px;font-weight:600;cursor:pointer">${esc(t)}</button>`;
   }).join('');
 }
 function toggleSymTag(t){if(selSymTags.has(t))selSymTags.delete(t);else selSymTags.add(t);renderSymTagsUI();}
@@ -2743,7 +2752,7 @@ function renderStats(){
     const cnt=filtered.filter(function(s){return inBand(parseInt(s.severity)||5,b);}).length;
     const pct=filtered.length?Math.round(cnt/filtered.length*100):0;
     return '<div class="stat-row">'
-      +'<span style="font-size:13px;font-weight:600;min-width:60px;color:'+color+'">'+lbl+'</span>'
+      +'<span style="font-size:14px;font-weight:600;min-width:60px;color:'+color+'">'+lbl+'</span>'
       +'<div class="stat-bar-wrap"><div class="stat-bar-fill" style="width:'+pct+'%;background:'+color+'"></div></div>'
       +'<span class="stat-num" style="color:'+color+'">'+cnt+'</span>'
       +'</div>';
@@ -2757,19 +2766,19 @@ function renderStats(){
     const bpDetail=dayBps.map(function(b){
       var hi=isHighBp(b.sys,b.dia);
       return '<div style="display:flex;align-items:center;gap:8px;padding:4px 0 4px 12px;border-top:1px solid #f5f0fc">'
-        +'<span style="font-size:11px;color:#bbb;min-width:40px">'+b.time+'</span>'
-        +'<span style="font-size:13px;font-weight:800;color:'+(hi?'#e53935':'#2c2416')+'">'+b.sys+'/'+b.dia+'</span>'
-        +(b.hr?'<span style="font-size:11px;color:#8b6f47">❤️'+b.hr+'</span>':'')
-        +(hi?'<span style="font-size:10px;background:#fce4ec;color:#e53935;padding:1px 5px;border-radius:99px;font-weight:700">偏高</span>':'')
+        +'<span style="font-size:14px;color:#bbb;min-width:40px">'+b.time+'</span>'
+        +'<span style="font-size:14px;font-weight:800;color:'+(hi?'#e53935':'#2c2416')+'">'+b.sys+'/'+b.dia+'</span>'
+        +(b.hr?'<span style="font-size:14px;color:#8b6f47">❤️'+b.hr+'</span>':'')
+        +(hi?'<span style="font-size:14px;background:#fce4ec;color:#e53935;padding:1px 5px;border-radius:99px;font-weight:700">偏高</span>':'')
         +'</div>';
     }).join('');
     return '<div>'
       +'<div class="stat-row" style="cursor:'+(hasBp?'pointer':'default')+'" data-sid="'+s.id+'" id="srec-'+s.id+'" '+(hasBp?'onclick="toggleStatBp(this.dataset.sid)"':'')+'>'
-      +'<span style="font-size:12px;color:#bbb;min-width:60px">'+s.date.slice(5)+' '+s.time+'</span>'
-      +(isInPeriod(s.date)?'<span style="font-size:13px;margin-right:2px">🩸</span>':'')
-      +'<span style="flex:1;font-size:13px;color:#2c2416;margin:0 4px">'+(s.tags||[]).join('、')+'</span>'
+      +'<span style="font-size:14px;color:#bbb;min-width:60px">'+s.date.slice(5)+' '+s.time+'</span>'
+      +(isInPeriod(s.date)?'<span style="font-size:14px;margin-right:2px">🩸</span>':'')
+      +'<span style="flex:1;font-size:14px;color:#2c2416;margin:0 4px">'+(s.tags||[]).join('、')+'</span>'
       +'<span class="sev-score" style="background:'+sc+'22;color:'+sc+'">'+sv+'/10</span>'
-      +(hasBp?'<span style="font-size:11px;color:#9b7fc8;margin-left:4px">🫀▾</span>':'')
+      +(hasBp?'<span style="font-size:14px;color:#9b7fc8;margin-left:4px">🫀▾</span>':'')
       +'</div>'
       +(hasBp?'<div id="sbp-'+s.id+'" style="display:none">'+bpDetail+'</div>':'')
       +'</div>';
@@ -2786,7 +2795,7 @@ function renderStats(){
     var tag=item[0],cnt=item[1];
     var pct=Math.round(cnt/maxCount*100);
     return '<div class="stat-row">'
-      +'<span style="font-size:13px;color:#2c2416;font-weight:600;min-width:72px">'+esc(tag)+'</span>'
+      +'<span style="font-size:14px;color:#2c2416;font-weight:600;min-width:72px">'+esc(tag)+'</span>'
       +'<div class="stat-bar-wrap"><div class="stat-bar-fill" style="width:'+pct+'%"></div></div>'
       +'<span class="stat-num">'+cnt+'</span>'
       +'</div>';
@@ -2800,11 +2809,11 @@ function renderStats(){
   html+='</div>';
   html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">';
   html+='<button onclick="statNav(-1)" style="background:#f5f0e8;border:none;border-radius:10px;padding:8px 16px;font-size:20px;cursor:pointer">‹</button>';
-  html+='<span style="font-weight:700;font-size:17px;color:#2c2416">'+label+'</span>';
+  html+='<span style="font-weight:700;font-size:18px;color:#2c2416">'+label+'</span>';
   html+='<button onclick="statNav(1)" style="background:#f5f0e8;border:none;border-radius:10px;padding:8px 16px;font-size:20px;cursor:pointer">›</button>';
   html+='</div>';
   if(filtered.length===0){
-    html+='<div class="empty"><div class="empty-icon">🩺</div><div style="font-size:15px;color:#aaa">這段期間沒有症狀記錄</div></div>';
+    html+='<div class="empty"><div class="empty-icon">🩺</div><div style="font-size:16px;color:#aaa">這段期間沒有症狀記錄</div></div>';
   } else {
     html+='<div class="stat-section">';
     html+='<div class="stat-title">共 '+filtered.length+' 筆'+(avgSev?' · 平均嚴重度 '+avgSev+'/10':'')+' </div>';
@@ -2817,7 +2826,7 @@ function renderStats(){
     html+='<div class="stat-section">';
     html+='<div class="stat-title">最近記錄</div>';
     html+='<div class="stat-card">'+recentRows;
-    if(filtered.length>5)html+='<div style="text-align:center;font-size:12px;color:#bbb;padding-top:6px">顯示最近 5 筆，共 '+filtered.length+' 筆</div>';
+    if(filtered.length>5)html+='<div style="text-align:center;font-size:14px;color:#bbb;padding-top:6px">顯示最近 5 筆，共 '+filtered.length+' 筆</div>';
     html+='</div></div>';
     // 血壓與症狀關聯（整體平均）
     var _bpAll=loadBpRecords();
@@ -2866,18 +2875,18 @@ function renderStats(){
           var overlapTxt=totalDaysWithBp?highDays+'/'+totalDaysWithBp+'天偏高':'';
           html+='<div style="padding:8px 0;border-bottom:1px solid #f5f0e8">';
           html+='<div style="display:flex;align-items:center;gap:4px;margin-bottom:3px">';
-          html+='<span style="font-size:13px;font-weight:700;color:#6b4fa0;min-width:56px">'+r.tag+'</span>';
-          html+='<span style="font-size:15px;font-weight:800;color:'+(r.hi?'#e53935':'#2c2416')+';min-width:72px">'+r.withSys+'/'+r.withDia+'</span>';
+          html+='<span style="font-size:14px;font-weight:700;color:#6b4fa0;min-width:56px">'+r.tag+'</span>';
+          html+='<span style="font-size:16px;font-weight:800;color:'+(r.hi?'#e53935':'#2c2416')+';min-width:72px">'+r.withSys+'/'+r.withDia+'</span>';
           if(Math.abs(r.diff)>=3){
             var up=r.diff>0;
-            html+='<span style="font-size:11px;color:'+(up?'#e53935':'#4caf50')+';font-weight:700;white-space:nowrap;background:'+(up?'#fce4ec':'#e8f5e9')+';padding:1px 5px;border-radius:99px">'+(up?'▲':'▼')+Math.abs(r.diff)+'</span>';
+            html+='<span style="font-size:14px;color:'+(up?'#e53935':'#4caf50')+';font-weight:700;white-space:nowrap;background:'+(up?'#fce4ec':'#e8f5e9')+';padding:1px 5px;border-radius:99px">'+(up?'▲':'▼')+Math.abs(r.diff)+'</span>';
           }
-          html+='<span style="font-size:11px;color:#bbb;margin-left:auto">'+r.n+'天</span>';
+          html+='<span style="font-size:14px;color:#bbb;margin-left:auto">'+r.n+'天</span>';
           html+='</div>';
-          if(overlapTxt)html+='<div style="font-size:11px;color:#8b6f47;padding-left:2px">📊 '+overlapTxt+'（'+Math.round(highDays/totalDaysWithBp*100)+'%）</div>';
+          if(overlapTxt)html+='<div style="font-size:14px;color:#8b6f47;padding-left:2px">📊 '+overlapTxt+'（'+Math.round(highDays/totalDaysWithBp*100)+'%）</div>';
           html+='</div>';
         });
-        html+='<div style="font-size:11px;color:#bbb;padding-top:6px">▲▼ 為與無此症狀日相比的差值</div>';
+        html+='<div style="font-size:14px;color:#bbb;padding-top:6px">▲▼ 為與無此症狀日相比的差值</div>';
         html+='</div></div>';
       }
     }
@@ -2901,11 +2910,13 @@ function toggleStatBp(sid){
 var exStatPeriod='month';
 var exStatYear=new Date().getFullYear();
 var exStatMonth=new Date().getMonth();
-var exStatWeek=(function(){var d=new Date();var day=d.getDay();d.setDate(d.getDate()-day);return d.toISOString().slice(0,10);})();
+var exStatWeek=(function(){var d=new Date();var day=d.getDay();var diff=day===0?-6:1-day;d.setDate(d.getDate()+diff);return d.toISOString().slice(0,10);})();
 
 function getWeekStart(dateStr){
   var d=new Date(dateStr+'T00:00:00');
-  var day=d.getDay();d.setDate(d.getDate()-day);
+  var day=d.getDay();
+  var diff=day===0?-6:1-day; // 週一為開始
+  d.setDate(d.getDate()+diff);
   return d.toISOString().slice(0,10);
 }
 function getWeekEnd(ws){
@@ -2961,30 +2972,30 @@ function renderExStats(){
 
   var html='';
   html+='<div style="display:flex;background:#f5f0e8;border-radius:10px;padding:3px;gap:2px;margin-bottom:14px">';
-  html+='<button onclick="exStatNav2(\'week\')" style="flex:1;padding:8px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;background:'+(exStatPeriod==='week'?'#2c2416':'transparent')+';color:'+(exStatPeriod==='week'?'#f7f4ef':'#8b6f47')+'">\u9031</button>';
-  html+='<button onclick="exStatNav2(\'month\')" style="flex:1;padding:8px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;background:'+(exStatPeriod==='month'?'#2c2416':'transparent')+';color:'+(exStatPeriod==='month'?'#f7f4ef':'#8b6f47')+'">\u6708</button>';
+  html+='<button onclick="exStatNav2(\'week\')" style="flex:1;padding:8px;border-radius:8px;border:none;font-size:14px;font-weight:600;cursor:pointer;background:'+(exStatPeriod==='week'?'#2c2416':'transparent')+';color:'+(exStatPeriod==='week'?'#f7f4ef':'#8b6f47')+'">\u9031</button>';
+  html+='<button onclick="exStatNav2(\'month\')" style="flex:1;padding:8px;border-radius:8px;border:none;font-size:14px;font-weight:600;cursor:pointer;background:'+(exStatPeriod==='month'?'#2c2416':'transparent')+';color:'+(exStatPeriod==='month'?'#f7f4ef':'#8b6f47')+'">\u6708</button>';
   html+='</div>';
   html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">';
   html+='<button onclick="exStatNav(-1)" style="background:#f5f0e8;border:none;border-radius:10px;padding:8px 16px;font-size:20px;cursor:pointer">&#8249;</button>';
-  html+='<span style="font-weight:700;font-size:17px;color:#2c2416">'+label+'</span>';
+  html+='<span style="font-weight:700;font-size:18px;color:#2c2416">'+label+'</span>';
   html+='<button onclick="exStatNav(1)" style="background:#f5f0e8;border:none;border-radius:10px;padding:8px 16px;font-size:20px;cursor:pointer">&#8250;</button>';
   html+='</div>';
 
   if(!filtered.length){
-    html+='<div class="empty"><div class="empty-icon">&#127939;</div><div style="font-size:15px;color:#aaa">\u9019\u6bb5\u671f\u9593\u6c92\u6709\u904b\u52d5\u8a18\u9304</div></div>';
+    html+='<div class="empty"><div class="empty-icon">&#127939;</div><div style="font-size:18px;color:#aaa">\u9019\u6bb5\u671f\u9593\u6c92\u6709\u904b\u52d5\u8a18\u9304</div></div>';
     el.innerHTML=html;return;
   }
 
   function exCell(icon,val,unit,lbl){
-    return '<div style="text-align:center;background:#faf8f5;border-radius:10px;padding:10px 6px">'
-      +'<div style="font-size:18px;margin-bottom:2px">'+icon+'</div>'
-      +'<div style="font-size:20px;font-weight:800;color:#2c2416">'+val+'<span style="font-size:12px;font-weight:600;color:#8b6f47"> '+unit+'</span></div>'
-      +'<div style="font-size:11px;color:#bbb">'+lbl+'</div>'
+    return '<div style="text-align:center;background:#faf8f5;border-radius:10px;padding:8px 4px">'
+      +'<div style="font-size:18px;margin-bottom:1px">'+icon+'</div>'
+      +'<div style="font-size:18px;font-weight:800;color:#2c2416">'+val+'<span style="font-size:14px;font-weight:600;color:#8b6f47"> '+unit+'</span></div>'
+      +'<div style="font-size:14px;color:#bbb">'+lbl+'</div>'
       +'</div>';
   }
 
   html+='<div class="stat-card" style="margin-bottom:14px">';
-  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">';
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">';
   html+=exCell('&#127939;',filtered.length,'\u6b21','\u904b\u52d5\u6b21\u6578');
   html+=exCell('&#128197;',days,'\u5929','\u904b\u52d5\u5929\u6578');
   var h=Math.floor(totalMin/60),m=totalMin%60;
@@ -2996,7 +3007,7 @@ function renderExStats(){
   if(exStatPeriod==='week'){
     var activeDates=new Set(filtered.map(function(e){return e.date;}));
     html+='<div class="stat-card" style="margin-bottom:14px">';
-    html+='<div style="font-size:12px;font-weight:700;color:#8b6f47;margin-bottom:10px">\u672c\u9031\u6253\u5361</div>';
+    html+='<div style="font-size:14px;font-weight:700;color:#8b6f47;margin-bottom:10px">\u672c\u9031\u6253\u5361</div>';
     html+='<div style="display:flex;gap:6px;justify-content:space-between">';
     var wdNames=['\u65e5','\u4e00','\u4e8c','\u4e09','\u56db','\u4e94','\u516d'];
     for(var wi=0;wi<7;wi++){
@@ -3005,12 +3016,12 @@ function renderExStats(){
       var hasEx=activeDates.has(ds2);
       var isT=ds2===todayDate();
       html+='<div style="flex:1;text-align:center">';
-      html+='<div style="font-size:11px;color:#bbb;margin-bottom:4px">'+wdNames[wd2.getDay()]+'</div>';
-      html+='<div style="width:36px;height:36px;border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:16px;'
+      html+='<div style="font-size:14px;color:#bbb;margin-bottom:4px">'+wdNames[wd2.getDay()]+'</div>';
+      html+='<div style="width:36px;height:36px;border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:18px;'
         +(hasEx?'background:#7aaa8a;color:#fff;':'background:#f0ece6;color:#ccc;')
         +(isT?'border:2px solid #c8a96e;':'')
         +'">'+(hasEx?'\u2713':'')+'</div>';
-      html+='<div style="font-size:10px;color:#bbb;margin-top:3px">'+ds2.slice(8)+'</div>';
+      html+='<div style="font-size:14px;color:#bbb;margin-top:3px">'+ds2.slice(8)+'</div>';
       html+='</div>';
     }
     html+='</div></div>';
@@ -3022,9 +3033,9 @@ function renderExStats(){
       var cnt=typeCount[t];
       var pct=Math.round(cnt/maxCount*100);
       html+='<div class="stat-row">'
-        +'<span style="font-size:13px;color:#2c2416;font-weight:600;min-width:80px">'+esc(t)+'</span>'
+        +'<span style="font-size:14px;color:#2c2416;font-weight:600;min-width:80px">'+esc(t)+'</span>'
         +'<div class="stat-bar-wrap"><div class="stat-bar-fill" style="width:'+pct+'%;background:#7aaa8a"></div></div>'
-        +'<span style="font-size:13px;font-weight:700;color:#5a9a6a;min-width:24px;text-align:right">'+cnt+'</span>'
+        +'<span style="font-size:14px;font-weight:700;color:#5a9a6a;min-width:24px;text-align:right">'+cnt+'</span>'
         +'</div>';
     });
     html+='</div></div>';
@@ -3036,13 +3047,13 @@ function renderExStats(){
     var min=parseInt(e.duration)||0;
     var kcal=parseInt(e.calories)||0;
     html+='<div style="padding:8px 0;border-bottom:1px solid #f5f0e8;display:flex;align-items:center;gap:8px">';
-    html+='<span style="font-size:12px;color:#bbb;min-width:56px">'+e.date.slice(5).replace('-','/')+' '+e.time+'</span>';
-    html+='<span style="flex:1;font-size:13px;font-weight:700;color:#2c2416">'+esc(e.exerciseType||'\u904b\u52d5')+'</span>';
+    html+='<span style="font-size:14px;color:#bbb;min-width:56px">'+e.date.slice(5).replace('-','/')+' '+e.time+'</span>';
+    html+='<span style="flex:1;font-size:14px;font-weight:700;color:#2c2416">'+esc(e.exerciseType||'\u904b\u52d5')+'</span>';
     var details=[];
     if(min)details.push(min+'\u5206');
     if(km)details.push(km.toFixed(1)+'km');
     if(kcal)details.push('-'+kcal+'kcal');
-    html+='<span style="font-size:11px;color:#8b6f47">'+details.join(' \xb7 ')+'</span>';
+    html+='<span style="font-size:14px;color:#8b6f47">'+details.join(' \xb7 ')+'</span>';
     html+='</div>';
   });
   html+='</div></div>';
