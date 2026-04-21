@@ -2928,11 +2928,11 @@ function getWeekStart(dateStr){
   var day=d.getDay();
   var diff=day===0?-6:1-day;
   d.setDate(d.getDate()+diff);
-  return d.toISOString().slice(0,10);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
 function getWeekEnd(ws){
   var d=new Date(ws+'T00:00:00');d.setDate(d.getDate()+6);
-  return d.toISOString().slice(0,10);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
 function fmtWeek(ws){
   var we=getWeekEnd(ws);
@@ -2946,7 +2946,7 @@ function exStatNav(dir){
   } else {
     var d=new Date(exStatWeek+'T00:00:00');
     d.setDate(d.getDate()+dir*7);
-    exStatWeek=d.toISOString().slice(0,10);
+    exStatWeek=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   }
   renderExStats();
 }
@@ -3018,7 +3018,7 @@ function renderExStats(){
     var wdNames=['日','一','二','三','四','五','六'];
     for(var wi=0;wi<7;wi++){
       var wd2=new Date(exStatWeek+'T00:00:00');wd2.setDate(wd2.getDate()+wi);
-      var ds2=wd2.toISOString().slice(0,10);
+      var ds2=wd2.getFullYear()+'-'+String(wd2.getMonth()+1).padStart(2,'0')+'-'+String(wd2.getDate()).padStart(2,'0');
       var hasEx=activeDates.has(ds2);
       var isT=ds2===todayDate();
       html+='<div style="flex:1;text-align:center">';
@@ -3069,7 +3069,7 @@ function statNav2(p){statPeriod=p;renderStats();}
 function statNav(dir){
   if(statPeriod==='week'){
     var d=new Date(statWeek+'T00:00:00');d.setDate(d.getDate()+dir*7);
-    statWeek=d.toISOString().slice(0,10);
+    statWeek=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   } else if(statPeriod==='month'){
     statMonth+=dir;
     if(statMonth<0){statMonth=11;statYear--;}
