@@ -91,7 +91,7 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;gap
 .tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
 .tag{display:inline-block;padding:3px 9px;border-radius:99px;background:#f5f0e8;color:#6b5230;font-size:12px;font-weight:600}
 .tcard-sub{font-size:12px;color:#999;margin-top:4px}
-.tcard-note{font-size:12px;color:#aaa;font-style:italic;margin-top:4px;border-top:1px solid #f5f0e8;padding-top:4px}
+.tcard-note{font-size:12px;color:#a8a8a8;font-style:italic;margin-top:4px;border-top:1px solid #f5f0e8;padding-top:4px}
 
 /* 日曆 */
 .cal-nav{display:flex;align-items:center;justify-content:space-between;padding:3px 16px 3px;border-bottom:1px solid #e8e2d8}
@@ -207,7 +207,7 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
   <div id="header">
     <div class="header-top">
       <div>
-        <div class="header-title-sub">FOOD &amp; LIFE LOG <span style="letter-spacing:0;opacity:0.5;font-size:9px">2604v1</span></div>
+        <div class="header-title-sub">FOOD &amp; LIFE LOG <span style="letter-spacing:0;opacity:0.5;font-size:9px">2604v3</span></div>
         <div class="header-title">🥗 Daily Journal</div>
       </div>
       <div class="header-right">
@@ -2421,7 +2421,9 @@ function renderBpTab(){
         var sc=sevColor(sv);
         html+='<div style="display:flex;align-items:center;gap:8px;padding:3px 0">';
         html+='<span style="font-size:14px;color:#9b7fc8;font-weight:700;min-width:40px">'+s.time+'</span>';
-        html+='<span style="font-size:14px;color:#6b4fa0;font-weight:600">'+(s.tags||[]).join('・')+'</span>';
+        html+='<span style="font-size:14px;color:#6b4fa0;font-weight:600">'+(s.tags||[]).join('・')
+          +(s.note?'<span style="border-left:1.5px solid #d0c0e8;margin-left:6px;padding-left:6px;font-size:13px;color:#a8a8a8;font-style:italic;font-weight:400">'+esc(s.note)+'</span>':'')
+          +'</span>';
         html+='<span style="margin-left:auto;font-size:14px;font-weight:700;background:'+sc+'22;color:'+sc+';padding:2px 6px;border-radius:99px">'+sv+'/10</span>';
         html+='</div>';
       });
@@ -2787,7 +2789,9 @@ function renderStats(){
       +'<div class="stat-row" style="cursor:'+(hasBp?'pointer':'default')+'" data-sid="'+s.id+'" id="srec-'+s.id+'" '+(hasBp?'onclick="toggleStatBp(this.dataset.sid)"':'')+'>'
       +'<span style="font-size:14px;color:#bbb;min-width:60px">'+s.date.slice(5)+' '+s.time+'</span>'
       +(isInPeriod(s.date)?'<span style="font-size:14px;margin-right:2px">🩸</span>':'')
-      +'<span style="flex:1;font-size:14px;color:#2c2416;margin:0 4px">'+(s.tags||[]).join('、')+'</span>'
+      +'<span style="flex:1;font-size:14px;color:#2c2416;margin:0 4px">'+(s.tags||[]).join('、')
+      +(s.note?'<span style="border-left:1.5px solid #ddd;margin-left:6px;padding-left:6px;font-size:13px;color:#a8a8a8;font-style:italic;font-weight:400">'+esc(s.note)+'</span>':'')
+      +'</span>'
       +'<span class="sev-score" style="background:'+sc+'22;color:'+sc+'">'+sv+'/10</span>'
       +(hasBp?'<span style="font-size:14px;color:#9b7fc8;margin-left:4px">🫀▾</span>':'')
       +'</div>'
@@ -2837,7 +2841,7 @@ function renderStats(){
     html+='<div class="stat-section">';
     html+='<div class="stat-title">最近記錄</div>';
     html+='<div class="stat-card">'+recentRows;
-    if(filtered.length>5)html+='<div style="text-align:center;font-size:14px;color:#bbb;padding-top:6px">顯示最近 5 筆，共 '+filtered.length+' 筆</div>';
+
     html+='</div></div>';
     // 血壓與症狀關聯（整體平均）
     var _bpAll=loadBpRecords();
