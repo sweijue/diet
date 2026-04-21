@@ -2177,10 +2177,13 @@ function drawBpChart(){
   if(!canvas||!_bpChartData.length)return;
   var dpr=window.devicePixelRatio||1;
   var n=_bpChartData.length;
+  var YW=38; // Y軸canvas寬度
   var wrap=document.getElementById('bpBarWrap');
-  var totalW=wrap?wrap.clientWidth:canvas.parentElement.clientWidth;
+  // 用外層容器寬度減去Y軸寬度，確保正確
+  var outerW=wrap?wrap.parentElement.clientWidth:canvas.parentElement.parentElement.clientWidth;
+  var bodyW=outerW-YW;
   var visibleCells=Math.min(n,7);
-  var cellW=Math.floor(totalW/visibleCells);
+  var cellW=Math.floor(bodyW/visibleCells);
   var W=cellW*n;
   var H=260;
   canvas.width=W*dpr; canvas.height=H*dpr;
@@ -2188,11 +2191,10 @@ function drawBpChart(){
   var ctx=canvas.getContext('2d');
   ctx.scale(dpr,dpr);
 
-  var pad={top:16,right:8,bottom:50,left:38};
+  var pad={top:16,right:8,bottom:50,left:4}; // 主體不需要左邊Y軸空間
   var cw=W-pad.left-pad.right;
   var ch=H-pad.top-pad.bottom;
-  var barW=Math.min(cellW*0.28,12); // 每個長條寬度
-  // offset=1 讓早晚長條緊靠在一起（中間只留2px空隙）
+  var barW=Math.min(cellW*0.28,12);
 
   var vals=[140,90];
   _bpChartData.forEach(function(d){
@@ -2205,25 +2207,30 @@ function drawBpChart(){
   function xc(i){return pad.left+(i+0.5)*(cw/n);}
   function yc(v){return pad.top+(1-(v-minY)/(maxY-minY))*ch;}
 
-  // 格線
+  // 格線（全寬）
   ctx.strokeStyle='#f0ece6'; ctx.lineWidth=1;
-  for(var v=minY;v<=maxY;v+=10){ctx.beginPath();ctx.moveTo(pad.left,yc(v));ctx.lineTo(pad.left+cw,yc(v));ctx.stroke();}
+  for(var v=minY;v<=maxY;v+=10){ctx.beginPath();ctx.moveTo(0,yc(v));ctx.lineTo(W,yc(v));ctx.stroke();}
 
-  // Y 軸標籤
-  ctx.fillStyle='#bbb'; ctx.font='11px sans-serif'; ctx.textAlign='right';
-  for(var v2=minY;v2<=maxY;v2+=20){ctx.fillText(v2,pad.left-3,yc(v2)+3);}
-
-  // 警戒線 140
+  // 警戒線（主體，無標籤）
   ctx.save();ctx.strokeStyle='#e53935';ctx.lineWidth=1;ctx.setLineDash([4,3]);
-  ctx.beginPath();ctx.moveTo(pad.left,yc(140));ctx.lineTo(pad.left+cw,yc(140));ctx.stroke();
-  ctx.fillStyle='#e53935';ctx.textAlign='right';ctx.fillText('140',pad.left-2,yc(140)-2);
-  ctx.restore();
-
-  // 警戒線 90
+  ctx.beginPath();ctx.moveTo(0,yc(140));ctx.lineTo(W,yc(140));ctx.stroke();ctx.restore();
   ctx.save();ctx.strokeStyle='#c8b89a';ctx.lineWidth=1;ctx.setLineDash([3,3]);
-  ctx.beginPath();ctx.moveTo(pad.left,yc(90));ctx.lineTo(pad.left+cw,yc(90));ctx.stroke();
-  ctx.fillStyle='#c8b89a';ctx.textAlign='right';ctx.fillText('90',pad.left-2,yc(90)+9);
-  ctx.restore();
+  ctx.beginPath();ctx.moveTo(0,yc(90));ctx.lineTo(W,yc(90));ctx.stroke();ctx.restore();
+
+  // ── 畫 Y 軸 canvas（固定）──────────────────────────────────────
+  var yAxisEl=document.getElementById('bpYAxis');
+  if(yAxisEl){
+    yAxisEl.width=YW*dpr; yAxisEl.height=H*dpr;
+    yAxisEl.style.width=YW+'px'; yAxisEl.style.height=H+'px';
+    var yctx=yAxisEl.getContext('2d');
+    yctx.scale(dpr,dpr);
+    yctx.clearRect(0,0,YW,H);
+    yctx.fillStyle='#fff'; yctx.fillRect(0,0,YW,H);
+    yctx.fillStyle='#bbb'; yctx.font='11px sans-serif'; yctx.textAlign='right';
+    for(var v2=minY;v2<=maxY;v2+=20){yctx.fillText(v2,YW-3,yc(v2)+3);}
+    yctx.fillStyle='#e53935'; yctx.fillText('140',YW-2,yc(140)-2);
+    yctx.fillStyle='#c8b89a'; yctx.fillText('90',YW-2,yc(90)+9);
+  }
 
   // 長條
   _bpChartData.forEach(function(d,i){
@@ -2279,13 +2286,14 @@ function drawHrChart(){
   var dpr=window.devicePixelRatio||1;
   var bpCanvas=document.getElementById('bpBarChart');
   var W=bpCanvas?parseInt(bpCanvas.style.width):300;
+  var YW=38;
   var H=90;
   canvas.width=W*dpr; canvas.height=H*dpr;
   canvas.style.width=W+'px'; canvas.style.height=H+'px';
   var ctx=canvas.getContext('2d');
   ctx.scale(dpr,dpr);
   var n=_bpChartData.length;
-  var pad={top:10,right:8,bottom:22,left:34};
+  var pad={top:10,right:8,bottom:22,left:4};
   var cw=W-pad.left-pad.right;
   var ch=H-pad.top-pad.bottom;
 
@@ -2301,10 +2309,22 @@ function drawHrChart(){
   function xc(i){return pad.left+(i+0.5)*(cw/n);}
   function yc(v){return pad.top+(1-(v-minH)/(maxH-minH))*ch;}
 
+  // 格線（全寬）
   ctx.strokeStyle='#f0ece6';ctx.lineWidth=1;
-  for(var v=minH;v<=maxH;v+=10){ctx.beginPath();ctx.moveTo(pad.left,yc(v));ctx.lineTo(pad.left+cw,yc(v));ctx.stroke();}
-  ctx.fillStyle='#bbb';ctx.font='11px sans-serif';ctx.textAlign='right';
-  for(var v2=minH;v2<=maxH;v2+=10){ctx.fillText(v2,pad.left-3,yc(v2)+3);}
+  for(var v=minH;v<=maxH;v+=10){ctx.beginPath();ctx.moveTo(0,yc(v));ctx.lineTo(W,yc(v));ctx.stroke();}
+
+  // Y 軸 canvas（固定）
+  var hrYEl=document.getElementById('bpHrYAxis');
+  if(hrYEl){
+    hrYEl.width=YW*dpr; hrYEl.height=H*dpr;
+    hrYEl.style.width=YW+'px'; hrYEl.style.height=H+'px';
+    var yctx2=hrYEl.getContext('2d');
+    yctx2.scale(dpr,dpr);
+    yctx2.clearRect(0,0,YW,H);
+    yctx2.fillStyle='#fff'; yctx2.fillRect(0,0,YW,H);
+    yctx2.fillStyle='#bbb'; yctx2.font='11px sans-serif'; yctx2.textAlign='right';
+    for(var v2=minH;v2<=maxH;v2+=10){yctx2.fillText(v2,YW-3,pad.top+(1-(v2-minH)/(maxH-minH))*ch+3);}
+  }
 
   function hrLine(getData,color){
     var pts=_bpChartData.map(function(d,i){return {x:xc(i),v:getData(d)};}).filter(function(p){return p.v;});
@@ -2366,9 +2386,9 @@ function renderBpTab(){
   html+='<button data-mode="morn" onclick="setBpChartMode(this.dataset.mode)" id="bpSeg-morn" style="'+bpSegBase+';background:transparent;color:#8b6f47">☀️ 早晨</button>';
   html+='<button data-mode="eve" onclick="setBpChartMode(this.dataset.mode)" id="bpSeg-eve" style="'+bpSegBase+';background:transparent;color:#8b6f47">🌙 晚間</button>';
   html+='</div>';
-  html+='<div id="bpBarWrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch"><canvas id="bpBarChart"></canvas></div>';
+  html+='<div style="display:flex;align-items:flex-start"><canvas id="bpYAxis" style="flex-shrink:0"></canvas><div id="bpBarWrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;flex:1"><canvas id="bpBarChart"></canvas></div></div>';
   html+='<div style="font-size:14px;color:#8b6f47;font-weight:700;margin:10px 0 6px;padding-top:10px;border-top:1px solid #f0ece6">❤️ 心率 bpm</div>';
-  html+='<div id="bpHrWrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch"><canvas id="bpHrChart"></canvas></div>';
+  html+='<div style="display:flex;align-items:flex-start"><canvas id="bpHrYAxis" style="flex-shrink:0"></canvas><div id="bpHrWrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;flex:1"><canvas id="bpHrChart"></canvas></div></div>';
   html+='</div>';
 
   // 每日記錄列表（左滑編輯刪除，含當日症狀）
@@ -2455,11 +2475,15 @@ function renderBpTab(){
   el.innerHTML=html;
   if(month.length)setTimeout(function(){
     initBpChart(month);
-    // 滾到最右（最新日期）
-    var wrap=document.getElementById('bpBarWrap');
-    if(wrap)wrap.scrollLeft=99999;
-    var wrap2=document.getElementById('bpHrWrap');
-    if(wrap2)wrap2.scrollLeft=99999;
+    var w1=document.getElementById('bpBarWrap');
+    var w2=document.getElementById('bpHrWrap');
+    if(w1)w1.scrollLeft=99999;
+    if(w2)w2.scrollLeft=99999;
+    // 滾動同步
+    if(w1&&w2){
+      w1.addEventListener('scroll',function(){w2.scrollLeft=w1.scrollLeft;},{passive:true});
+      w2.addEventListener('scroll',function(){w1.scrollLeft=w2.scrollLeft;},{passive:true});
+    }
   },0);
 }
 
