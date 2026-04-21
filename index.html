@@ -2194,7 +2194,7 @@ function drawBpChart(){
   var pad={top:16,right:8,bottom:50,left:4}; // 主體不需要左邊Y軸空間
   var cw=W-pad.left-pad.right;
   var ch=H-pad.top-pad.bottom;
-  var barW=Math.min(cellW*0.28,12);
+  var barW=Math.min(cellW*0.38,16);
 
   var vals=[140,90];
   _bpChartData.forEach(function(d){
@@ -2232,12 +2232,23 @@ function drawBpChart(){
     yctx.fillStyle='#c8b89a'; yctx.fillText('90',YW-2,yc(90)+9);
   }
 
+  // 每天背景色塊（奇偶交替，只覆蓋長條群組寬度）
+  _bpChartData.forEach(function(d,i){
+    if(i%2===0){
+      ctx.fillStyle='rgba(0,0,0,0.06)';
+      var cx=pad.left+(i+0.5)*(cw/n);
+      var groupW=barW*2+6; // 兩根長條+間距
+      var bgPad=barW*0.5; // 左右各加半個長條寬
+      ctx.fillRect(cx-groupW/2-bgPad,pad.top,groupW+bgPad*2,ch);
+    }
+  });
+
   // 長條
   _bpChartData.forEach(function(d,i){
     var x=xc(i);
     var showMorn=_bpChartMode!=='eve'&&d.mSys;
     var showEve=_bpChartMode!=='morn'&&d.eSys;
-    var offset=(_bpChartMode==='all')?barW/2+1.5:0;
+    var offset=(_bpChartMode==='all')?barW/2+0.5:0;
 
     if(showMorn){
       var y1=yc(d.mSys),y2=yc(d.mDia);
