@@ -2235,10 +2235,10 @@ function drawBpChart(){
   // 每天背景色塊（奇偶交替，只覆蓋長條群組寬度）
   _bpChartData.forEach(function(d,i){
     if(i%2===0){
-      ctx.fillStyle='rgba(0,0,0,0.06)';
+      ctx.fillStyle='rgba(0,0,0,0.04)';
       var cx=pad.left+(i+0.5)*(cw/n);
       var groupW=barW*2+6; // 兩根長條+間距
-      var bgPad=barW*0.5; // 左右各加半個長條寬
+      var bgPad=barW*0.9; // 左右各加接近一個長條寬
       ctx.fillRect(cx-groupW/2-bgPad,pad.top,groupW+bgPad*2,ch);
     }
   });
