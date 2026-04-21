@@ -1212,7 +1212,7 @@ function goToday(){
   }
   else if(currentTab==='stats'){
     statYear=now.getFullYear();statMonth=now.getMonth();
-    statDay=todayDate();renderStats();
+    statWeek=getWeekStart(todayDate());renderStats();
   } else if(currentTab==='ex'){
     exStatPeriod='month';exStatYear=now.getFullYear();exStatMonth=now.getMonth();
     exStatWeek=getWeekStart(todayDate());renderExStats();
@@ -2177,9 +2177,10 @@ function drawBpChart(){
   if(!canvas||!_bpChartData.length)return;
   var dpr=window.devicePixelRatio||1;
   var n=_bpChartData.length;
-  // 固定每格寬讓7天剛好填滿，超過7天可左右滑動
+  var wrap=document.getElementById('bpBarWrap');
+  var totalW=wrap?wrap.clientWidth:canvas.parentElement.clientWidth;
   var visibleCells=Math.min(n,7);
-  var cellW=Math.floor(canvas.parentElement.clientWidth/visibleCells);
+  var cellW=Math.floor(totalW/visibleCells);
   var W=cellW*n;
   var H=260;
   canvas.width=W*dpr; canvas.height=H*dpr;
@@ -2190,7 +2191,8 @@ function drawBpChart(){
   var pad={top:16,right:8,bottom:50,left:38};
   var cw=W-pad.left-pad.right;
   var ch=H-pad.top-pad.bottom;
-  var barW=Math.min(cellW*0.3,10);
+  var barW=Math.min(cellW*0.28,12); // 每個長條寬度
+  // offset=1 讓早晚長條緊靠在一起（中間只留2px空隙）
 
   var vals=[140,90];
   _bpChartData.forEach(function(d){
@@ -2228,7 +2230,7 @@ function drawBpChart(){
     var x=xc(i);
     var showMorn=_bpChartMode!=='eve'&&d.mSys;
     var showEve=_bpChartMode!=='morn'&&d.eSys;
-    var offset=(_bpChartMode==='all')?barW/2+1:0;
+    var offset=(_bpChartMode==='all')?barW/2+1.5:0;
 
     if(showMorn){
       var y1=yc(d.mSys),y2=yc(d.mDia);
@@ -2364,9 +2366,9 @@ function renderBpTab(){
   html+='<button data-mode="morn" onclick="setBpChartMode(this.dataset.mode)" id="bpSeg-morn" style="'+bpSegBase+';background:transparent;color:#8b6f47">☀️ 早晨</button>';
   html+='<button data-mode="eve" onclick="setBpChartMode(this.dataset.mode)" id="bpSeg-eve" style="'+bpSegBase+';background:transparent;color:#8b6f47">🌙 晚間</button>';
   html+='</div>';
-  html+='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><canvas id="bpBarChart"></canvas></div>';
+  html+='<div id="bpBarWrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch"><canvas id="bpBarChart"></canvas></div>';
   html+='<div style="font-size:14px;color:#8b6f47;font-weight:700;margin:10px 0 6px;padding-top:10px;border-top:1px solid #f0ece6">❤️ 心率 bpm</div>';
-  html+='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><canvas id="bpHrChart"></canvas></div>';
+  html+='<div id="bpHrWrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch"><canvas id="bpHrChart"></canvas></div>';
   html+='</div>';
 
   // 每日記錄列表（左滑編輯刪除，含當日症狀）
@@ -2454,10 +2456,10 @@ function renderBpTab(){
   if(month.length)setTimeout(function(){
     initBpChart(month);
     // 滾到最右（最新日期）
-    var wrap=document.getElementById('bpBarChart');
-    if(wrap&&wrap.parentElement)wrap.parentElement.scrollLeft=99999;
-    var wrap2=document.getElementById('bpHrChart');
-    if(wrap2&&wrap2.parentElement)wrap2.parentElement.scrollLeft=99999;
+    var wrap=document.getElementById('bpBarWrap');
+    if(wrap)wrap.scrollLeft=99999;
+    var wrap2=document.getElementById('bpHrWrap');
+    if(wrap2)wrap2.scrollLeft=99999;
   },0);
 }
 
@@ -2711,9 +2713,9 @@ function doEditSym(id,ctx){closeSwipe();openSymptomSheet(id);}
 // editEntry 需要處理 symptom
 
 // ══ 統計 ══════════════════════════════════════════════════════════
-let statPeriod='month'; // 'day' | 'month' | 'year'
+let statPeriod='month'; // 'week' | 'month' | 'year'
 let _statsInited=false;
-let statYear=new Date().getFullYear(),statMonth=new Date().getMonth(),statDay=new Date().toISOString().slice(0,10);
+let statYear=new Date().getFullYear(),statMonth=new Date().getMonth(),statWeek=getWeekStart(new Date().toISOString().slice(0,10));
 
 function initStatPeriod(){
   const syms=loadSymptoms();
@@ -2722,7 +2724,7 @@ function initStatPeriod(){
   if(latest){
     statYear=parseInt(latest.slice(0,4));
     statMonth=parseInt(latest.slice(5,7))-1;
-    statDay=latest;
+    statWeek=getWeekStart(latest);
   }
 }
 
@@ -2733,9 +2735,10 @@ function renderStats(){
 
   // 篩選
   let filtered,label;
-  if(statPeriod==='day'){
-    filtered=syms.filter(s=>s.date===statDay);
-    label=statDay.replace(/-/g,'/');
+  if(statPeriod==='week'){
+    var sWe=getWeekEnd(statWeek);
+    filtered=syms.filter(s=>s.date>=statWeek&&s.date<=sWe);
+    label=fmtWeek(statWeek);
   } else if(statPeriod==='month'){
     const prefix=`${statYear}-${String(statMonth+1).padStart(2,'0')}`;
     filtered=syms.filter(s=>s.date.startsWith(prefix));
@@ -2758,7 +2761,7 @@ function renderStats(){
       +'</div>';
   }).join('');
   var _bpForRecent=loadBpRecords();
-  const recentRows=filtered.slice().sort(function(a,b){return b.date.localeCompare(a.date)||b.time.localeCompare(a.time);}).slice(0,5).map(function(s){
+  const recentRows=filtered.slice().sort(function(a,b){return b.date.localeCompare(a.date)||b.time.localeCompare(a.time);}).map(function(s){
     const sv=parseInt(s.severity)||5;const sc=sevColor(sv);
     const dayBps=_bpForRecent.filter(function(b){return b.date===s.date;});
     const hasBp=dayBps.length>0;
@@ -2803,7 +2806,7 @@ function renderStats(){
 
   var html='';
   html+='<div class="stat-period-bar" style="margin-bottom:12px">';
-  html+=['<button class="stat-period-btn',statPeriod==='day'?' active':'','" onclick="statNav2(&quot;day&quot;)">日</button>'].join('');
+  html+=['<button class="stat-period-btn',statPeriod==='week'?' active':'','" onclick="statNav2(&quot;week&quot;)">週</button>'].join('');
   html+=['<button class="stat-period-btn',statPeriod==='month'?' active':'','" onclick="statNav2(&quot;month&quot;)">月</button>'].join('');
   html+=['<button class="stat-period-btn',statPeriod==='year'?' active':'','" onclick="statNav2(&quot;year&quot;)">年</button>'].join('');
   html+='</div>';
@@ -2826,7 +2829,7 @@ function renderStats(){
     html+='<div class="stat-section">';
     html+='<div class="stat-title">最近記錄</div>';
     html+='<div class="stat-card">'+recentRows;
-    if(filtered.length>5)html+='<div style="text-align:center;font-size:14px;color:#bbb;padding-top:6px">顯示最近 5 筆，共 '+filtered.length+' 筆</div>';
+
     html+='</div></div>';
     // 血壓與症狀關聯（整體平均）
     var _bpAll=loadBpRecords();
@@ -3061,9 +3064,9 @@ function renderExStats(){
 }
 function statNav2(p){statPeriod=p;renderStats();}
 function statNav(dir){
-  if(statPeriod==='day'){
-    const d=new Date(statDay);d.setDate(d.getDate()+dir);
-    statDay=d.toISOString().slice(0,10);
+  if(statPeriod==='week'){
+    var d=new Date(statWeek+'T00:00:00');d.setDate(d.getDate()+dir*7);
+    statWeek=d.toISOString().slice(0,10);
   } else if(statPeriod==='month'){
     statMonth+=dir;
     if(statMonth<0){statMonth=11;statYear--;}
