@@ -43,8 +43,8 @@ button{cursor:pointer}
 .dropdown-menu{position:absolute;right:0;top:calc(100% + 6px);background:#2c2416;border:1px solid #3d3020;border-radius:12px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.45);min-width:170px;z-index:300;animation:slideUp .2s ease}
 .dropdown-item{display:block;width:100%;padding:13px 18px;background:none;border:none;color:#f7f4ef;font-size:15px;text-align:left;font-weight:600;border-bottom:1px solid #3d3020}
 .dropdown-item:last-child{border-bottom:none}
-.storage-bar-wrap{padding:11px 16px 13px;border-top:1px solid #3d3020}
-.storage-label{display:flex;justify-content:space-between;font-size:12px;color:#8b6f47;margin-bottom:5px}
+.storage-bar-wrap{padding:8px 16px 6px;border-top:1px solid #3d3020}
+.storage-label{display:flex;justify-content:space-between;font-size:14px;color:#8b6f47;margin-bottom:0}
 .storage-track{height:5px;background:#3d3020;border-radius:99px;overflow:hidden}
 .storage-fill{height:100%;border-radius:99px;transition:width .4s}
 .day-header{display:flex;align-items:center;justify-content:space-between;padding:11px 16px 6px;position:sticky;top:83px;z-index:50;background:#f7f4ef;border-bottom:1px solid #e8e2d8;cursor:pointer;user-select:none;-webkit-user-select:none}
@@ -217,8 +217,6 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
           <div class="dropdown-menu" id="dropdownMenu" style="display:none">
             <div class="storage-bar-wrap">
               <div class="storage-label"><span>已用空間</span><span id="storageText">計算中…</span></div>
-              <div class="storage-track"><div class="storage-fill" id="storageFill" style="width:0%;background:#c8a96e"></div></div>
-              <div style="font-size:11px;color:#5a4a35;margin-top:4px">瀏覽器上限約 5-10MB</div>
             </div>
             <button class="dropdown-item" onclick="exportData()">📤 匯出備份</button>
             <button class="dropdown-item" onclick="document.getElementById('importInput').click()">📥 匯入資料</button>
@@ -927,11 +925,34 @@ function loadEntries(){try{entries=JSON.parse(localStorage.getItem(STORE_KEY))||
 function saveEntries(){try{localStorage.setItem(STORE_KEY,JSON.stringify(entries));}catch{showToast('儲存失敗：空間不足');}}
 function calcStorage(){
   try{
-    const raw=localStorage.getItem(STORE_KEY)||'';const bytes=new Blob([raw]).size;
-    const mb=(bytes/1024/1024).toFixed(2);const pct=Math.min((bytes/(8*1024*1024))*100,100).toFixed(0);
-    document.getElementById('storageText').textContent=mb+' MB';
-    const f=document.getElementById('storageFill');f.style.width=pct+'%';
-    f.style.background=pct>80?'#e06060':pct>60?'#e0a060':'#c8a96e';
+    // localStorage 文字資料
+    const raw=localStorage.getItem(STORE_KEY)||'';
+    const lsBytes=new Blob([raw]).size;
+    // IndexedDB 圖片大小
+    const req=indexedDB.open('DietPhotos',1);
+    req.onsuccess=function(e){
+      const db=e.target.result;
+      if(!db.objectStoreNames.contains('photos')){updateStorageUI(lsBytes);return;}
+      const tx=db.transaction('photos','readonly');
+      const store=tx.objectStore('photos');
+      const all=store.getAll();
+      all.onsuccess=function(){
+        var idbBytes=0;
+        (all.result||[]).forEach(function(r){
+          if(r&&r.data)idbBytes+=new Blob([r.data]).size;
+        });
+        updateStorageUI(lsBytes+idbBytes);
+      };
+      all.onerror=function(){updateStorageUI(lsBytes);};
+    };
+    req.onerror=function(){updateStorageUI(lsBytes);};
+  }catch(err){console.log('calcStorage error',err);}
+}
+function updateStorageUI(bytes){
+  try{
+    const kb=bytes/1024;
+    const text=kb<1024?(kb.toFixed(0)+' KB'):(kb/1024).toFixed(2)+' MB';
+    document.getElementById('storageText').textContent=text;
   }catch{}
 }
 function grouped(){
