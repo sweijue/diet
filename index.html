@@ -207,7 +207,7 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
   <div id="header">
     <div class="header-top">
       <div>
-        <div class="header-title-sub">FOOD &amp; LIFE LOG <span style="letter-spacing:0;opacity:0.5;font-size:9px">2604v3</span></div>
+        <div class="header-title-sub">FOOD &amp; LIFE LOG <span style="letter-spacing:0;opacity:0.5;font-size:9px">2604v5</span></div>
         <div class="header-title">🥗 Daily Journal</div>
       </div>
       <div class="header-right">
@@ -924,29 +924,32 @@ function loadPhotoIntoImg(el,photoId){
 function loadEntries(){try{entries=JSON.parse(localStorage.getItem(STORE_KEY))||[];}catch{entries=[];}}
 function saveEntries(){try{localStorage.setItem(STORE_KEY,JSON.stringify(entries));}catch{showToast('儲存失敗：空間不足');}}
 function calcStorage(){
+  var lsBytes=0;
   try{
-    // localStorage 文字資料
-    const raw=localStorage.getItem(STORE_KEY)||'';
-    const lsBytes=new Blob([raw]).size;
-    // IndexedDB 圖片大小
-    const req=indexedDB.open('DietPhotos',1);
-    req.onsuccess=function(e){
-      const db=e.target.result;
-      if(!db.objectStoreNames.contains('photos')){updateStorageUI(lsBytes);return;}
-      const tx=db.transaction('photos','readonly');
-      const store=tx.objectStore('photos');
-      const all=store.getAll();
-      all.onsuccess=function(){
-        var idbBytes=0;
-        (all.result||[]).forEach(function(r){
-          if(r&&r.data)idbBytes+=new Blob([r.data]).size;
-        });
-        updateStorageUI(lsBytes+idbBytes);
-      };
-      all.onerror=function(){updateStorageUI(lsBytes);};
-    };
-    req.onerror=function(){updateStorageUI(lsBytes);};
-  }catch(err){console.log('calcStorage error',err);}
+    ['diet_log_v3','bp_records','symptoms','periods','ex_custom','user_weight','collapsed_state','cal_cache','tl_filter'].forEach(function(k){
+      try{var v=localStorage.getItem(k)||'';lsBytes+=new Blob([v]).size;}catch{}
+    });
+  }catch{}
+  // IndexedDB 圖片
+  try{
+    openIdb().then(function(db){
+      try{
+        var tx=db.transaction('photos','readonly');
+        var store=tx.objectStore('photos');
+        var all=store.getAll();
+        all.onsuccess=function(){
+          try{
+            var idbBytes=0;
+            (all.result||[]).forEach(function(r){
+              if(r&&r.data){var dataStr=typeof r.data==='string'?r.data:'';idbBytes+=Math.round(dataStr.length*0.75);}
+            });
+            updateStorageUI(lsBytes+idbBytes);
+          }catch{updateStorageUI(lsBytes);}
+        };
+        all.onerror=function(){updateStorageUI(lsBytes);};
+      }catch{updateStorageUI(lsBytes);}
+    }).catch(function(){updateStorageUI(lsBytes);});
+  }catch{updateStorageUI(lsBytes);}
 }
 function updateStorageUI(bytes){
   try{
