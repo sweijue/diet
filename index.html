@@ -207,7 +207,7 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
   <div id="header">
     <div class="header-top">
       <div>
-        <div class="header-title-sub">FOOD &amp; LIFE LOG <span style="letter-spacing:0;opacity:0.5;font-size:9px">2604v6</span></div>
+        <div class="header-title-sub">FOOD &amp; LIFE LOG <span style="letter-spacing:0;opacity:0.5;font-size:9px">2604v7</span></div>
         <div class="header-title">🥗 Daily Journal</div>
       </div>
       <div class="header-right">
@@ -1054,11 +1054,11 @@ function renderCard(e,ctx){
     ontouchend="tsEnd(event,'${e.id}','${ctx}')">
     <div class="tcard-time">${e.time}</div>
     <div class="${bodyClass}">
-      ${imgHtml}
       <div class="tcard-content">
         <div class="tcard-row"><span class="tcard-name">${isMeal?icon+" "+esc(e.mealType):icon}</span>${rightHtml}</div>
         ${tagsHtml}${subHtml}${noteHtml}
       </div>
+      ${imgHtml}
     </div>
   </div>
   <div class="tcard-action-right" id="aR-${pid}">
