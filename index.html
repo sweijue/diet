@@ -207,7 +207,7 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
   <div id="header">
     <div class="header-top">
       <div>
-        <div class="header-title-sub">FOOD &amp; LIFE LOG <span style="letter-spacing:0;opacity:0.5;font-size:9px">2604v5</span></div>
+        <div class="header-title-sub">FOOD &amp; LIFE LOG <span style="letter-spacing:0;opacity:0.5;font-size:9px">2604v6</span></div>
         <div class="header-title">🥗 Daily Journal</div>
       </div>
       <div class="header-right">
@@ -930,26 +930,29 @@ function calcStorage(){
       try{var v=localStorage.getItem(k)||'';lsBytes+=new Blob([v]).size;}catch{}
     });
   }catch{}
-  // IndexedDB 圖片
+  // IndexedDB 圖片（用 openPhotoDb）
   try{
-    openIdb().then(function(db){
+    openPhotoDb().then(function(db){
       try{
         var tx=db.transaction('photos','readonly');
         var store=tx.objectStore('photos');
-        var all=store.getAll();
-        all.onsuccess=function(){
-          try{
-            var idbBytes=0;
-            (all.result||[]).forEach(function(r){
-              if(r&&r.data){var dataStr=typeof r.data==='string'?r.data:'';idbBytes+=Math.round(dataStr.length*0.75);}
-            });
+        // 用 cursor 逐筆加總，value 直接是 base64 字串
+        var idbBytes=0;
+        var req=store.openCursor();
+        req.onsuccess=function(e){
+          var cursor=e.target.result;
+          if(cursor){
+            var val=cursor.value;
+            if(typeof val==='string')idbBytes+=Math.round(val.length*0.75);
+            cursor.continue();
+          } else {
             updateStorageUI(lsBytes+idbBytes);
-          }catch{updateStorageUI(lsBytes);}
+          }
         };
-        all.onerror=function(){updateStorageUI(lsBytes);};
-      }catch{updateStorageUI(lsBytes);}
-    }).catch(function(){updateStorageUI(lsBytes);});
-  }catch{updateStorageUI(lsBytes);}
+        req.onerror=function(){updateStorageUI(lsBytes);};
+      }catch(e2){console.log('idb calc err',e2);updateStorageUI(lsBytes);}
+    }).catch(function(e3){console.log('openPhotoDb err',e3);updateStorageUI(lsBytes);});
+  }catch(e4){console.log('calcStorage idb err',e4);updateStorageUI(lsBytes);}
 }
 function updateStorageUI(bytes){
   try{
