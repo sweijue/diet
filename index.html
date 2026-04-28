@@ -1596,6 +1596,7 @@ function handlePhotos(event,kind){
 // ── Paste image support ──────────────────────────────────────────
 async function pasteFromClipboard(kind){
   try{
+    // Try modern Clipboard API first (works on iOS 16.4+)
     if(navigator.clipboard && navigator.clipboard.read){
       const items = await navigator.clipboard.read();
       let found = false;
@@ -1606,12 +1607,6 @@ async function pasteFromClipboard(kind){
           const file = new File([blob], 'paste.jpg', {type:imgType});
           compressAndAdd(file, kind);
           found = true;
-          // 運動圖片自動解析
-          if(kind==='ex'){
-            const reader=new FileReader();
-            reader.onload=function(ev){parseExerciseImage(ev.target.result);};
-            reader.readAsDataURL(blob);
-          }
         }
       }
       if(!found) showToast('剪貼簿沒有圖片');
@@ -1624,46 +1619,6 @@ async function pasteFromClipboard(kind){
     } else {
       showToast('無法讀取剪貼簿');
     }
-  }
-}
-
-async function parseExerciseImage(dataUrl){
-  showToast('🔍 解析運動數據…');
-  try{
-    const base64=dataUrl.split(',')[1];
-    const mediaType=dataUrl.split(';')[0].split(':')[1]||'image/jpeg';
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:200,
-        system:'你是運動數據解析器。從圖片中擷取運動資訊，只回傳 JSON，不要任何解釋。格式：{"type":"運動類型中文","duration":分鐘數整數,"distance":公里數浮點數或null,"calories":卡路里整數或null}',
-        messages:[{role:'user',content:[
-          {type:'image',source:{type:'base64',media_type:mediaType,data:base64}},
-          {type:'text',text:'請從這張運動截圖中擷取：運動類型、時間（分鐘）、距離（公里）、卡路里。'}
-        ]}]
-      })
-    });
-    const data=await resp.json();
-    const text=data.content.map(b=>b.text||'').join('');
-    const clean=text.replace(/```json|```/g,'').trim();
-    const parsed=JSON.parse(clean);
-    // 填入欄位
-    if(parsed.duration)document.getElementById('fDuration').value=parsed.duration;
-    if(parsed.distance)document.getElementById('fDistance').value=parsed.distance;
-    if(parsed.calories)document.getElementById('fCalories').value=parsed.calories;
-    if(parsed.type){
-      // 嘗試比對現有運動類型
-      const types=allExTypes();
-      const match=types.find(t=>t.includes(parsed.type)||parsed.type.includes(t.replace(/^[^\s]+ /,'')));
-      if(match){selEx(match);}
-    }
-    autoCalcExCal();
-    showToast('✅ 已自動填入運動數據');
-  }catch(e){
-    console.log('parseExerciseImage error',e);
-    showToast('⚠️ 解析失敗，請手動填入');
   }
 }
 
@@ -1680,11 +1635,6 @@ document.addEventListener('paste', ev=>{
     const file=item.getAsFile();
     if(!file) return;
     compressAndAdd(file, kind);
-    if(kind==='ex'){
-      const reader=new FileReader();
-      reader.onload=function(ev){parseExerciseImage(ev.target.result);};
-      reader.readAsDataURL(file);
-    }
   });
 });
 
@@ -1941,7 +1891,7 @@ async function bpBatchPaste(){
   const ta=document.getElementById('bpBatchText');
   try{
     const text=await navigator.clipboard.readText();
-    if(text){ta.value=text;showToast('✅ 已貼上');parseBpBatch();}
+    if(text){ta.value=text;parseBpBatch();}
     else if(ta){ta.focus();}
   }catch(e){
     if(ta){ta.focus();}
