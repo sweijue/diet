@@ -207,7 +207,7 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
   <div id="header">
     <div class="header-top">
       <div>
-        <div class="header-title-sub">FOOD &amp; LIFE LOG <span style="letter-spacing:0;opacity:0.5;font-size:9px">2604v8</span></div>
+        <div class="header-title-sub">FOOD &amp; LIFE LOG <span style="letter-spacing:0;opacity:0.5;font-size:9px">2604v10</span></div>
         <div class="header-title">🥗 Daily Journal</div>
       </div>
       <div class="header-right">
@@ -1901,71 +1901,70 @@ async function bpBatchPaste(){
 function parseOmronText(text){
   var lines=text.split('\n').map(function(l){return l.trim();}).filter(function(l){return l;});
   var results=[];
-  var curYear=new Date().getFullYear(),curMonth=null,curDate=null;
+  var cy=new Date().getFullYear(),cm=null,cd=null;
 
-  function extractNum(s){
-    var c=s.replace(/[^0-9]/g,'');
-    if(!c)return null;
-    var n=parseInt(c);
-    if(c.length===4&&c.endsWith('0')&&n>1000)return Math.round(n/10);
-    return n;
-  }
-  function isTime(s){return /\d{1,2}:\d{2}/.test(s);}
-  function extractTime(s){var m=s.match(/(\d{1,2}:\d{2})/);return m?m[1].padStart(5,'0'):null;}
   function isBp(n){return n>=60&&n<=250;}
   function isHr(n){return n>=30&&n<=200;}
 
-  // 標記每行
-  var tagged=lines.map(function(line,idx){
-    var ym=line.match(/(\d{4})年(\d{1,2})月/);
-    var dm=line.match(/(\d{1,2})月(\d{1,2})日/);
-    return {line:line,idx:idx,isTime:isTime(line),time:extractTime(line),
-            isYM:!!ym,ym:ym,isDM:!!dm,dm:dm,num:extractNum(line)};
+  // 先偵測格式：同行模式 or 每行一數字模式
+  var hasTabRow=lines.some(function(l){
+    return /\d{1,2}:\d{2}/.test(l)&&(l.match(/\d+/g)||[]).length>=3;
   });
 
-  // 傳播日期
-  var cy=curYear,cm=null,cd=null;
-  tagged.forEach(function(t){
-    if(t.isYM){cy=parseInt(t.ym[1]);cm=parseInt(t.ym[2]);}
-    if(t.isDM){cm=parseInt(t.dm[1]);cd=parseInt(t.dm[2]);}
-    t.year=cy;t.month=cm;t.date=cd;
-  });
-
-  var i=0;
-  while(i<tagged.length){
-    var t=tagged[i];
-    if(t.num!==null&&isBp(t.num)&&t.date){
-      var j=i+1,candidates=[];
-      while(j<tagged.length&&candidates.length<2){
-        if(tagged[j].isDM||tagged[j].isYM)break;
-        if(tagged[j].num!==null)candidates.push(tagged[j]);
-        j++;
-      }
-      if(candidates.length>=1&&isBp(candidates[0].num)){
-        var sys=t.num,dia=candidates[0].num;
-        var hr=candidates[1]&&isHr(candidates[1].num)?candidates[1].num:null;
-        var time='00:00';
-        for(var k=i-1;k>=Math.max(0,i-5);k--){
-          if(tagged[k].isTime){time=tagged[k].time;break;}
+  if(hasTabRow){
+    // 同行格式：08:18  119  92  63
+    lines.forEach(function(line){
+      var ym=line.match(/(\d{4})年(\d{1,2})月/);
+      if(ym){cy=parseInt(ym[1]);cm=parseInt(ym[2]);return;}
+      var dm=line.match(/(\d{1,2})月(\d{1,2})日/);
+      if(dm&&!line.match(/\d{1,2}:\d{2}/)){cm=parseInt(dm[1]);cd=parseInt(dm[2]);return;}
+      var tm=line.match(/(\d{1,2}:\d{2})/);
+      if(!tm||!cm||!cd)return;
+      var time=tm[1].padStart(5,'0');
+      var cleaned=line.replace(/\d{1,2}:\d{2}/,'').replace(/[^\d\s]/g,' ');
+      var ns=(cleaned.match(/\d+/g)||[]).map(Number).filter(function(n){return n>=40;});
+      if(ns.length<2)return;
+      var sys=ns[0],dia=ns[1],hr=ns[2]&&isHr(ns[2])?ns[2]:null;
+      if(!isBp(sys)||!isBp(dia))return;
+      results.push({date:cy+'-'+String(cm).padStart(2,'0')+'-'+String(cd).padStart(2,'0'),time:time,sys:sys,dia:dia,hr:hr});
+    });
+  } else {
+    // 每行一數字格式
+    var i=0;
+    while(i<lines.length){
+      var line=lines[i];
+      // 年份
+      var ym=line.match(/(\d{4})年(\d{1,2})月/);
+      if(ym){cy=parseInt(ym[1]);cm=parseInt(ym[2]);i++;continue;}
+      // 日期
+      var dm=line.match(/(\d{1,2})月(\d{1,2})日/);
+      if(dm){cm=parseInt(dm[1]);cd=parseInt(dm[2]);i++;continue;}
+      // 時間行
+      var tm=line.match(/^(\d{1,2}:\d{2})$/);
+      if(tm&&cm&&cd){
+        var time=tm[1].padStart(5,'0');
+        // 收集後續數字行
+        var ns=[];
+        var j=i+1;
+        while(j<lines.length&&ns.length<3){
+          var nl=lines[j];
+          // 遇到日期或時間就停
+          if(/\d{1,2}月\d{1,2}日/.test(nl)||/^\d{1,2}:\d{2}$/.test(nl))break;
+          var n=parseInt(nl.replace(/[^0-9]/g,''));
+          if(!isNaN(n)&&n>=40)ns.push(n);
+          j++;
         }
-        if(time==='00:00'){
-          var endIdx=hr?candidates[1].idx:candidates[0].idx;
-          for(var k2=endIdx+1;k2<=Math.min(tagged.length-1,endIdx+3);k2++){
-            if(tagged[k2].isTime){time=tagged[k2].time;break;}
-          }
+        if(ns.length>=2&&isBp(ns[0])&&isBp(ns[1])){
+          var hr=ns[2]&&isHr(ns[2])?ns[2]:null;
+          results.push({date:cy+'-'+String(cm).padStart(2,'0')+'-'+String(cd).padStart(2,'0'),time:time,sys:ns[0],dia:ns[1],hr:hr});
+          i=j;continue;
         }
-        var mo=String(t.month).padStart(2,'0');
-        var da=String(t.date).padStart(2,'0');
-        results.push({date:t.year+'-'+mo+'-'+da,time:time,sys:sys,dia:dia,hr:hr});
-        i=hr?candidates[1].idx+1:candidates[0].idx+1;
-        continue;
       }
+      i++;
     }
-    i++;
   }
   return results;
 }
-
 function parseBpBatch(){
   var text=document.getElementById('bpBatchText').value.trim();
   if(!text){showToast('請先貼上文字');return;}
