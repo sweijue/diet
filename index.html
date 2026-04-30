@@ -207,7 +207,7 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
   <div id="header">
     <div class="header-top">
       <div>
-        <div class="header-title-sub">FOOD &amp; LIFE LOG <span style="letter-spacing:0;opacity:0.5;font-size:9px">2604v11</span></div>
+        <div class="header-title-sub">FOOD &amp; LIFE LOG <span style="letter-spacing:0;opacity:0.5;font-size:9px">2604v12</span></div>
         <div class="header-title">🥗 Daily Journal</div>
       </div>
       <div class="header-right">
@@ -586,8 +586,8 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
 
 <script>
 const STORE_KEY='diet_log_v3';
-const MEAL_ICONS={'早餐':'☀️','早午餐':'🍳','午餐':'🌤️','下午茶':'🧋','晚餐':'🌙','點心':'🍡','宵夜':'🌛'};
-const MEAL_TYPES=['早餐','早午餐','午餐','下午茶','晚餐','點心','宵夜'];
+const MEAL_ICONS={'早餐':'☀️','早午餐':'🍳','午餐':'🌤️','下午茶':'🧋','晚餐':'🌙','點心':'🍡','宵夜':'🌛','飲料':'🥤'};
+const MEAL_TYPES=['早餐','早午餐','午餐','下午茶','晚餐','點心','宵夜','飲料'];
 // 只保留「跑步」作為原始類別，其餘改為自訂
 const WEEKDAYS=['日','一','二','三','四','五','六'];
 const SWIPE_W=136; // 兩個按鈕各68px
@@ -1033,7 +1033,13 @@ function renderCard(e,ctx){
   if(e.type==='bp') return renderBpCard(e,ctx);
   const isMeal=e.type==='meal';
   const photos=e.photos||[];
-  const imgHtml=photos.length?`<div class="tcard-imgs">${photos.slice(0,3).map((p,i)=>`<img class="tcard-img" id="cimg-${ctx}-${e.id}-${i}" loading="lazy" style="flex:${photos.length===1?'unset;width:100%':'1'};background:#f0ece6" onclick="openLightboxEntry(event,'${e.id}',${i})">`).join('')}</div>`:'';
+  const imgHtml=photos.length?`<div class="tcard-imgs">${photos.slice(0,3).map((p,i)=>{
+    const isLast=i===2&&photos.length>3;
+    return `<div style="flex:${photos.length===1?'unset;width:100%':'1'};position:relative;min-width:0" onclick="openLightboxEntry(event,'${e.id}',${i})">
+      <img class="tcard-img" id="cimg-${ctx}-${e.id}-${i}" loading="lazy" style="width:100%;background:#f0ece6;display:block">
+      ${isLast?`<div style="position:absolute;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;border-radius:0;cursor:pointer"><span style="color:#fff;font-size:20px;font-weight:700">+${photos.length-3}</span></div>`:''}
+    </div>`;
+  }).join('')}</div>`:'';
   if(photos.length){setTimeout(()=>{photos.slice(0,3).forEach((p,i)=>{const el=document.getElementById('cimg-'+ctx+'-'+e.id+'-'+i);if(el)loadPhotoIntoImg(el,p);});},0);};
   const tagsHtml=isMeal&&e.foods?.length?`<div class="tags">${e.foods.map(f=>`<span class="tag">${esc(f.name)}</span>`).join('')}</div>`:'';
   const mealCal=isMeal?(e.foods||[]).reduce((a,f)=>a+Math.round((f.cal||0)*(f.qty||1)),0):0;
