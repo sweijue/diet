@@ -83,7 +83,7 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;gap
 .tcard-body{flex:1;background:#fff;border-radius:12px;border:1px solid #ece6de;overflow:hidden;box-shadow:0 2px 8px rgba(44,36,22,.06)}
 .tcard-body.exercise{border-color:#7aaa8a;box-shadow:0 2px 8px rgba(90,154,106,.10)}
 .tcard-imgs{display:flex;gap:4px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}.tcard-imgs::-webkit-scrollbar{display:none}
-.tcard-img{flex-shrink:0;width:160px;height:110px;object-fit:cover;display:block;cursor:zoom-in;scroll-snap-align:start;border-radius:4px}
+.tcard-img{flex-shrink:0;width:calc(50% - 2px);height:110px;object-fit:cover;display:block;cursor:zoom-in;scroll-snap-align:start;border-radius:4px}
 .tcard-content{padding:9px 12px}
 .tcard-row{display:flex;justify-content:space-between;align-items:center}
 .tcard-name{font-weight:700;font-size:15px;color:#2c2416}
@@ -207,7 +207,7 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
   <div id="header">
     <div class="header-top">
       <div>
-        <div class="header-title-sub">FOOD &amp; LIFE LOG <span style="letter-spacing:0;opacity:0.5;font-size:9px">2604v16</span></div>
+        <div class="header-title-sub">FOOD &amp; LIFE LOG <span style="letter-spacing:0;opacity:0.5;font-size:9px">2604v17</span></div>
         <div class="header-title">🥗 Daily Journal</div>
       </div>
       <div class="header-right">
@@ -1037,9 +1037,9 @@ function renderCard(e,ctx){
   const imgHtml=photos.length?`<div style="position:relative">
     <div class="tcard-imgs" id="imgs-${ctx}-${e.id}">${photos.map((p,i)=>`<img class="tcard-img" id="cimg-${ctx}-${e.id}-${i}" loading="lazy" style="background:#f0ece6" onclick="openLightboxEntry(event,'${e.id}',${i})">`).join('')}</div>
     ${photos.length>1?`
-    <button onclick="tcardScroll('${ctx}-${e.id}',-1,event)" style="position:absolute;left:4px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.4);border:none;color:#fff;width:26px;height:26px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1">‹</button>
-    <button onclick="tcardScroll('${ctx}-${e.id}',1,event)" style="position:absolute;right:4px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.4);border:none;color:#fff;width:26px;height:26px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1">›</button>
-    <div id="dots-${ctx}-${e.id}" style="position:absolute;bottom:5px;left:0;right:0;display:flex;justify-content:center;gap:4px;pointer-events:none">${photos.map((_,i)=>`<div class="tcard-dot" id="dot-${ctx}-${e.id}-${i}" style="width:5px;height:5px;border-radius:50%;background:${i===0?'#fff':'rgba(255,255,255,.45)'};transition:background .2s"></div>`).join('')}</div>
+    <button onclick="tcardScroll('${ctx}-${e.id}',-1,event)" style="position:absolute;left:4px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.4);border:none;color:#fff;width:26px;height:26px;border-radius:50%;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1">‹</button>
+    <button onclick="tcardScroll('${ctx}-${e.id}',1,event)" style="position:absolute;right:4px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.4);border:none;color:#fff;width:26px;height:26px;border-radius:50%;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1">›</button>
+    <div id="dots-${ctx}-${e.id}" style="position:absolute;bottom:5px;left:0;right:0;display:flex;justify-content:center;gap:4px;pointer-events:none">${Array.from({length:Math.ceil(photos.length/2)},(_,i)=>`<div class="tcard-dot" id="dot-${ctx}-${e.id}-${i}" style="width:5px;height:5px;border-radius:50%;background:${i===0?'#fff':'rgba(255,255,255,.45)'};transition:background .2s"></div>`).join('')}</div>
     `:''}
   </div>`:'';
   if(photos.length){setTimeout(()=>{photos.forEach((p,i)=>{const el=document.getElementById('cimg-'+ctx+'-'+e.id+'-'+i);if(el)loadPhotoIntoImg(el,p);});},0);  
@@ -1728,14 +1728,16 @@ function tcardScroll(id,dir,ev){
   ev.stopPropagation();
   var wrap=document.getElementById('imgs-'+id);
   if(!wrap)return;
-  var scrollAmt=164; // 160px圖寬+4gap
-  wrap.scrollBy({left:dir*scrollAmt,behavior:'smooth'});
+  var pageW=wrap.clientWidth+4;
+  wrap.scrollBy({left:dir*pageW,behavior:'smooth'});
 }
 function tcardUpdateDots(id,wrap,total){
-  var idx=Math.round(wrap.scrollLeft/164);
-  for(var i=0;i<total;i++){
+  var pageW=wrap.clientWidth+4;
+  var pageIdx=Math.round(wrap.scrollLeft/pageW);
+  var numDots=Math.ceil(total/2);
+  for(var i=0;i<numDots;i++){
     var dot=document.getElementById('dot-'+id+'-'+i);
-    if(dot)dot.style.background=i===idx?'#fff':'rgba(255,255,255,.45)';
+    if(dot)dot.style.background=i===pageIdx?'#fff':'rgba(255,255,255,.45)';
   }
 }
 function closeLightbox(){document.getElementById('lightbox').style.display='none';}
