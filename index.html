@@ -175,7 +175,7 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
 /* ── 血壓 ── */
 .tcard-body.bp{border-left:3px solid #5b8cbf;}
 .bp-val{font-size:16px;font-weight:800;color:#2c2416}
-.bp-val.high{color:#e53935}
+.bp-val.high{}
 .bp-meds-on{font-size:18px;filter:none}
 .bp-meds-off{font-size:18px;filter:grayscale(1);opacity:.4}
 .bp-input-row{display:flex;gap:8px;margin-bottom:12px}
@@ -207,7 +207,7 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
   <div id="header">
     <div class="header-top">
       <div>
-        <div class="header-title-sub">FOOD &amp; LIFE LOG <span style="letter-spacing:0;opacity:0.5;font-size:9px">2604v19</span></div>
+        <div class="header-title-sub">FOOD &amp; LIFE LOG <span style="letter-spacing:0;opacity:0.5;font-size:9px">2604v24</span></div>
         <div class="header-title">🥗 Daily Journal</div>
       </div>
       <div class="header-right">
@@ -2022,7 +2022,8 @@ function parseBpBatch(){
       var hi=isHighBp(p.sys,p.dia);
       html+='<div style="display:flex;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid #f0ece6">';
       html+='<span style="color:#bbb;min-width:80px">'+p.date.slice(5)+' '+p.time+'</span>';
-      html+='<span style="font-weight:700;color:'+(hi?'#e53935':'#2c2416')+'">'+p.sys+'/'+p.dia+'</span>';
+      var pSH=p.sys>=140,pDH=p.dia>=90;
+      html+='<span style="font-weight:700"><span style="color:'+(pSH?'#e53935':'#2c2416')+'">'+p.sys+'</span><span style="color:#999">/</span><span style="color:'+(pDH?'#e53935':'#2c2416')+'">'+p.dia+'</span></span>';
       if(p.hr)html+='<span style="color:#8b6f47">❤️'+p.hr+'</span>';
       if(hi)html+='<span style="font-size:10px;background:#fce4ec;color:#e53935;padding:1px 5px;border-radius:99px">偏高</span>';
       html+='</div>';
@@ -2121,10 +2122,13 @@ function saveBp(){
   closeBpSheet();
   rerenderDay(rec.date);
   if(currentTab==='calendar')renderCalendar();
+  if(currentTab==='bp')renderBpTab();
   showToast('✅ 已記錄血壓');
 }
 
 function isHighBp(sys,dia){return sys>=140||dia>=90;}
+function isLowBp(sys,dia){return sys<90||dia<60;}
+function bpColor(val,high,low){return high?'#e53935':low?'#5b8cbf':'#2c2416';}
 
 
 // ══ 血壓分頁 ══════════════════════════════════════════════════════
@@ -2154,7 +2158,7 @@ function buildBpSymCorrelationHtml(bpRecs, symRecs){
     var hi=isHighBp(avgSym.sys,avgSym.dia);
     html+='<div class="stat-row">'
       +'<span style="font-size:13px;font-weight:600;color:#9b7fc8;min-width:64px">有症狀日</span>'
-      +'<span style="font-size:15px;font-weight:800;color:'+(hi?'#e53935':'#2c2416')+';min-width:76px">'+avgSym.sys+'/'+avgSym.dia+'</span>'
+      +'<span style="font-size:15px;font-weight:800;min-width:76px"><span style="color:'+(avgSym.sys>=140?'#e53935':'#2c2416')+'">'+avgSym.sys+'</span><span style="color:#999">/</span><span style="color:'+(avgSym.dia>=90?'#e53935':'#2c2416')+'">'+avgSym.dia+'</span></span>'
       +(hi?'<span style="font-size:10px;background:#fce4ec;color:#e53935;padding:1px 5px;border-radius:99px;font-weight:700;white-space:nowrap">偏高</span>':'<span style="display:inline-block;min-width:32px"></span>')
       +'<span style="font-size:11px;color:#bbb;margin-left:auto">'+bpOnSym.length+' 筆</span>'
       +'</div>';
@@ -2163,7 +2167,7 @@ function buildBpSymCorrelationHtml(bpRecs, symRecs){
     var hi2=isHighBp(avgNone.sys,avgNone.dia);
     html+='<div class="stat-row">'
       +'<span style="font-size:13px;font-weight:600;color:#8b6f47;min-width:64px">無症狀日</span>'
-      +'<span style="font-size:15px;font-weight:800;color:'+(hi2?'#e53935':'#2c2416')+';min-width:76px">'+avgNone.sys+'/'+avgNone.dia+'</span>'
+      +'<span style="font-size:15px;font-weight:800;min-width:76px"><span style="color:'+(avgNone.sys>=140?'#e53935':'#2c2416')+'">'+avgNone.sys+'</span><span style="color:#999">/</span><span style="color:'+(avgNone.dia>=90?'#e53935':'#2c2416')+'">'+avgNone.dia+'</span></span>'
       +(hi2?'<span style="font-size:10px;background:#fce4ec;color:#e53935;padding:1px 5px;border-radius:99px;font-weight:700;white-space:nowrap">偏高</span>':'<span style="display:inline-block;min-width:32px"></span>')
       +'<span style="font-size:11px;color:#bbb;margin-left:auto">'+bpNoSym.length+' 筆</span>'
       +'</div>';
@@ -2455,8 +2459,8 @@ function renderBpTab(){
     html+='<div style="display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid #f0ece6;gap:8px">';
     html+='<span style="font-size:17px;font-weight:800;color:#2c2416;min-width:48px">'+date.slice(5).replace('-','/')+'</span>';
     html+='<div style="flex:1;display:flex;gap:6px">';
-    if(daMorn){var mHi=isHighBp(daMorn.sys,daMorn.dia);html+='<span style="font-size:14px;background:#fff8ec;border-radius:8px;padding:3px 8px;color:'+(mHi?'#e53935':'#8b6f47')+';font-weight:700">☀️ '+daMorn.sys+'/'+daMorn.dia+'</span>';}
-    if(daEve){var eHi=isHighBp(daEve.sys,daEve.dia);html+='<span style="font-size:14px;background:#f0f4ff;border-radius:8px;padding:3px 8px;color:'+(eHi?'#e53935':'#5b6abf')+';font-weight:700">🌙 '+daEve.sys+'/'+daEve.dia+'</span>';}
+    if(daMorn){var mSHi=daMorn.sys>=140,mDHi=daMorn.dia>=90,mSLo=daMorn.sys<90,mDLo=daMorn.dia<60;html+='<span style="font-size:14px;background:#fff8ec;border-radius:8px;padding:3px 8px;font-weight:700">☀️ <span style="color:'+(mSHi?'#e53935':mSLo?'#5b8cbf':'#8b6f47')+'">'+daMorn.sys+'</span><span style="color:#bbb">/</span><span style="color:'+(mDHi?'#e53935':mDLo?'#5b8cbf':'#8b6f47')+'">'+daMorn.dia+'</span></span>';}
+    if(daEve){var eSHi=daEve.sys>=140,eDHi=daEve.dia>=90,eSLo=daEve.sys<90,eDLo=daEve.dia<60;html+='<span style="font-size:14px;background:#f0f4ff;border-radius:8px;padding:3px 8px;font-weight:700">🌙 <span style="color:'+(eSHi?'#e53935':eSLo?'#5b8cbf':'#5b6abf')+'">'+daEve.sys+'</span><span style="color:#bbb">/</span><span style="color:'+(eDHi?'#e53935':eDLo?'#5b8cbf':'#5b6abf')+'">'+daEve.dia+'</span></span>';}
     html+='</div>';
     html+='<span style="font-size:14px;color:#bbb;font-weight:600">週'+wd+'</span>';
     if(isInPeriod(date))html+='<span style="font-size:17px">🩸</span>';
@@ -2485,7 +2489,7 @@ function renderBpTab(){
     html+='<div style="padding:6px 8px">';
     dayRecs.forEach(function(b){
       var high=isHighBp(b.sys,b.dia);
-      var bpColor=high?'#e53935':'#2c2416';
+      var bpSysHigh=b.sys>=140,bpDiaHigh=b.dia>=90,bpSysLow=b.sys<90,bpDiaLow=b.dia<60;
       var pid='bp-'+b.id;
       html+='<div class="tcard-wrap" id="wrap-'+pid+'" style="margin-bottom:4px">';
       html+='<div class="tcard-inner" id="inn-'+pid+'"';
@@ -2496,7 +2500,11 @@ function renderBpTab(){
       var isMorn=parseInt(b.time.slice(0,2))<12;
       html+='<span style="font-size:14px;color:#bbb;min-width:40px">'+b.time+'</span>';
       html+='<span style="font-size:14px;margin-left:-4px">'+(isMorn?'☀️':'🌙')+'</span>';
-      html+='<span style="font-size:19px;font-weight:800;color:'+bpColor+'">'+b.sys+'/'+b.dia+'</span>';
+      html+='<span style="font-size:19px;font-weight:800">'
+        +'<span style="color:'+(bpSysHigh?'#e53935':bpSysLow?'#5b8cbf':'#2c2416')+'">'+b.sys+'</span>'
+        +'<span style="color:#bbb">/</span>'
+        +'<span style="color:'+(bpDiaHigh?'#e53935':bpDiaLow?'#5b8cbf':'#2c2416')+'">'+b.dia+'</span>'
+        +'</span>';
       html+='<span style="font-size:14px;color:#bbb">mmHg</span>';
       if(b.hr)html+='<span style="font-size:14px;color:#8b6f47;margin-left:2px">❤️'+b.hr+'</span>';
       if(high)html+='<span style="font-size:14px;background:#fce4ec;color:#e53935;padding:2px 5px;border-radius:99px;font-weight:700;margin-left:auto">偏高</span>';
@@ -2601,9 +2609,13 @@ function deleteBpRec(id){
 }
 function renderBpCard(e,ctx){
   var sys=e.sys,dia=e.dia,hr=e.hr,high=isHighBp(sys,dia);
+  var sysHigh=sys>=140,diaHigh=dia>=90,sysLow=sys<90,diaLow=dia<60;
   var pid=ctx+'-'+e.id;
-  var valHtml='<span class="bp-val'+(high?' high':'')+'">'
-    +sys+'/'+dia+'</span><span style="font-size:14px;color:#8b6f47;margin-left:4px">mmHg</span>';
+  var valHtml='<span class="bp-val">'
+    +'<span style="color:'+(sysHigh?'#e53935':sysLow?'#5b8cbf':'inherit')+'">'+sys+'</span>'
+    +'<span style="color:#999">/</span>'
+    +'<span style="color:'+(diaHigh?'#e53935':diaLow?'#5b8cbf':'inherit')+'">'+dia+'</span>'
+    +'</span><span style="font-size:14px;color:#8b6f47;margin-left:4px">mmHg</span>';
   var hrHtml=hr?'<span style="font-size:14px;color:#8b6f47;margin-left:8px">❤️ '+hr+'</span>':'';
   var medsHtml='';
   var noteHtml=e.note?'<div class="tcard-note">'+esc(e.note)+'</div>':'';
