@@ -207,7 +207,7 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
   <div id="header">
     <div class="header-top">
       <div>
-        <div class="header-title-sub">FOOD &amp; LIFE LOG <span style="letter-spacing:0;opacity:0.5;font-size:9px">2604v24</span></div>
+        <div class="header-title-sub">FOOD &amp; LIFE LOG <span style="letter-spacing:0;opacity:0.5;font-size:9px">2604v25</span></div>
         <div class="header-title">🥗 Daily Journal</div>
       </div>
       <div class="header-right">
@@ -2203,7 +2203,6 @@ function setBpChartMode(m){
 }
 
 function initBpChart(monthData){
-  // 按日期分組，每天取早晚平均
   var byDate={};
   monthData.forEach(function(b){
     if(!byDate[b.date])byDate[b.date]={morn:[],eve:[]};
@@ -2212,15 +2211,24 @@ function initBpChart(monthData){
     else byDate[b.date].eve.push(b);
   });
   function avg(arr,key){if(!arr.length)return null;return Math.round(arr.reduce(function(a,b){return a+b[key];},0)/arr.length);}
-  _bpChartData=Object.keys(byDate).sort().map(function(d){
-    var dd=byDate[d];
+  // 填滿最近30天所有日期
+  var today=todayDate();
+  var allDates=[];
+  for(var i=29;i>=0;i--){
+    var d=new Date(today+'T00:00:00');d.setDate(d.getDate()-i);
+    allDates.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'));
+  }
+  _bpChartData=allDates.map(function(d){
+    var dd=byDate[d]||{morn:[],eve:[]};
     var allRecs=[...dd.morn,...dd.eve];
     var hasMeds=allRecs.some(function(b){return b.meds;});
     return {
       date:d.slice(5).replace('-','/'),
+      fullDate:d,
       mSys:avg(dd.morn,'sys'),mDia:avg(dd.morn,'dia'),mHr:avg(dd.morn,'hr'),
       eSys:avg(dd.eve,'sys'),eDia:avg(dd.eve,'dia'),eHr:avg(dd.eve,'hr'),
       meds:hasMeds,
+      hasData:allRecs.length>0,
     };
   });
   _bpChartMode='all';
@@ -2529,6 +2537,23 @@ function renderBpTab(){
     if(w1&&w2){
       w1.addEventListener('scroll',function(){w2.scrollLeft=w1.scrollLeft;},{passive:true});
       w2.addEventListener('scroll',function(){w1.scrollLeft=w2.scrollLeft;},{passive:true});
+    }
+    // 點擊圖表跳到對應日期卡片
+    if(w1){
+      w1.addEventListener('click',function(ev){
+        var canvas=document.getElementById('bpBarChart');
+        if(!canvas||!_bpChartData.length)return;
+        var rect=canvas.getBoundingClientRect();
+        var x=ev.clientX-rect.left+w1.scrollLeft;
+        var n=_bpChartData.length;
+        var cellW=canvas.offsetWidth/n;
+        var idx=Math.floor(x/cellW);
+        if(idx<0||idx>=n)return;
+        var d=_bpChartData[idx];
+        if(!d||!d.hasData)return;
+        var card=document.querySelector('[data-bp-date="'+d.fullDate+'"]');
+        if(card)card.scrollIntoView({behavior:'smooth',block:'start'});
+      });
     }
   },0);
 }
