@@ -47,12 +47,12 @@ button{cursor:pointer}
 .storage-label{display:flex;justify-content:space-between;font-size:14px;color:#8b6f47;margin-bottom:0}
 .storage-track{height:5px;background:#3d3020;border-radius:99px;overflow:hidden}
 .storage-fill{height:100%;border-radius:99px;transition:width .4s}
-.day-header{display:flex;align-items:center;justify-content:space-between;padding:11px 16px 6px;position:sticky;top:83px;z-index:50;background:#f7f4ef;border-bottom:1px solid #e8e2d8;cursor:pointer;user-select:none;-webkit-user-select:none}
+.day-header{display:flex;align-items:center;justify-content:space-between;padding:7px 16px;min-height:48px;box-sizing:border-box;position:sticky;top:83px;z-index:50;background:#f7f4ef;border-bottom:1px solid #e8e2d8;cursor:pointer;user-select:none;-webkit-user-select:none}
 .day-title{display:flex;align-items:center;gap:7px}
 .day-dot{width:7px;height:7px;border-radius:50%;background:#c8a96e;animation:pulse 2s infinite;flex-shrink:0}
 .day-name{font-weight:800;font-size:18px;color:#2c2416}
 .today-badge{font-size:11px;background:#c8a96e;color:#2c2416;padding:2px 8px;border-radius:99px;font-weight:700}
-.day-cal{font-size:12px;text-align:right;line-height:1.7}
+.day-cal{font-size:12px;text-align:right;line-height:1.5}
 .timeline-entries{padding:8px 16px;position:relative}
 .timeline-line{position:absolute;left:50px;top:0;bottom:0;width:1px;background:#e0d8cc}
 
@@ -207,7 +207,7 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
   <div id="header">
     <div class="header-top">
       <div>
-        <div class="header-title-sub">FOOD &amp; LIFE LOG <span style="letter-spacing:0;opacity:0.5;font-size:9px">2604v25</span></div>
+        <div class="header-title-sub">FOOD &amp; LIFE LOG <span style="letter-spacing:0;opacity:0.5;font-size:9px">2604v27</span></div>
         <div class="header-title">🥗 Daily Journal</div>
       </div>
       <div class="header-right">
@@ -1003,7 +1003,7 @@ function renderTimeline(){
     const isToday=date===todayDate(),col=isCollapsed(date);
     const calHtml=dayCal>0?`<div style="color:#8b6f47;font-weight:600">${Math.round(dayCal)} kcal</div>`:'';
     const burnHtml=dayBurn>0?`<div style="color:#5a9a6a">−${dayBurn} kcal</div>`:'';
-    return `<div id="tday-${date}">
+    return `<div id="tday-${date}" style="margin-bottom:2px">
 <div class="day-header" onclick="toggleDay('${date}')">
   <div class="day-title">
     ${isToday?'<span class="day-dot"></span>':''}
@@ -2544,15 +2544,26 @@ function renderBpTab(){
         var canvas=document.getElementById('bpBarChart');
         if(!canvas||!_bpChartData.length)return;
         var rect=canvas.getBoundingClientRect();
-        var x=ev.clientX-rect.left+w1.scrollLeft;
+        var scrollX=w1.scrollLeft;
+        var x=ev.clientX-rect.left+scrollX;
         var n=_bpChartData.length;
         var cellW=canvas.offsetWidth/n;
         var idx=Math.floor(x/cellW);
         if(idx<0||idx>=n)return;
         var d=_bpChartData[idx];
         if(!d||!d.hasData)return;
-        var card=document.querySelector('[data-bp-date="'+d.fullDate+'"]');
-        if(card)card.scrollIntoView({behavior:'smooth',block:'start'});
+        // 用 viewBp 裡所有帶 data-bp-date 的元素找到對應日期
+        console.log('click fullDate:',d.fullDate);
+        var found=document.querySelector('#viewBp [data-bp-date="'+d.fullDate+'"]');
+        console.log('found card:',found);
+        if(found){
+          var viewBp=document.getElementById('viewBp');
+          var offsetTop=found.offsetTop;
+          window.scrollTo({top:offsetTop-100,behavior:'smooth'});
+          found.style.transition='box-shadow .3s';
+          found.style.boxShadow='0 0 0 3px #c8a96e';
+          setTimeout(function(){found.style.boxShadow='none';},1000);
+        }
       });
     }
   },0);
@@ -2812,7 +2823,7 @@ function doEditSym(id,ctx){closeSwipe();openSymptomSheet(id);}
 // editEntry 需要處理 symptom
 
 // ══ 統計 ══════════════════════════════════════════════════════════
-let statPeriod='month'; // 'week' | 'month' | 'year'
+let statPeriod='week'; // 'week' | 'month' | 'year'
 let _statsInited=false;
 let statYear=new Date().getFullYear(),statMonth=new Date().getMonth(),statWeek='';
 
@@ -3011,7 +3022,7 @@ function toggleStatBp(sid){
 }
 
 // ══ 運動統計 ═════════════════════════════════════════════════════
-var exStatPeriod='month';
+var exStatPeriod='week';
 var exStatYear=new Date().getFullYear();
 var exStatMonth=new Date().getMonth();
 var exStatWeek='';
