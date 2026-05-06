@@ -207,7 +207,7 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
   <div id="header">
     <div class="header-top">
       <div>
-        <div class="header-title-sub">FOOD &amp; LIFE LOG <span style="letter-spacing:0;opacity:0.5;font-size:9px">2604v29</span></div>
+        <div class="header-title-sub">FOOD &amp; LIFE LOG <span style="letter-spacing:0;opacity:0.5;font-size:9px">2604v31</span></div>
         <div class="header-title">🥗 Daily Journal</div>
       </div>
       <div class="header-right">
@@ -2335,7 +2335,19 @@ function drawBpChart(){
     }
   });
   ctx.fillStyle='#bbb';ctx.font='13px sans-serif';ctx.textAlign='center';
-  _bpChartData.forEach(function(d,i){ctx.fillText(d.date.slice(3),xc(i),H-22);});
+  var lastMo='';
+  _bpChartData.forEach(function(d,i){
+    var mo=d.date.slice(0,2),day=d.date.slice(3);
+    if(mo!==lastMo){
+      // 換月份時顯示月/日
+      ctx.fillStyle='#8b6f47';ctx.font='bold 12px sans-serif';
+      ctx.fillText(mo+'/'+day,xc(i),H-22);
+      lastMo=mo;
+    } else {
+      ctx.fillStyle='#bbb';ctx.font='13px sans-serif';
+      ctx.fillText(day,xc(i),H-22);
+    }
+  });
   ctx.font='14px sans-serif';ctx.textAlign='center';
   _bpChartData.forEach(function(d,i){
     ctx.globalAlpha=d.meds?1:0.25;
@@ -2545,12 +2557,12 @@ function renderBpTab(){
       canvas2.addEventListener('click',function(ev){
         if(!_bpChartData.length)return;
         var rect=canvas2.getBoundingClientRect();
-        var padLeft=4; // 對應 drawBpChart 的 pad.left
-        var x=ev.clientX-rect.left-padLeft;
+        // iOS touch 用 changedTouches，mouse 用 clientX
+        var clientX=ev.changedTouches?ev.changedTouches[0].clientX:ev.clientX;
+        var x=clientX-rect.left;
         var n=_bpChartData.length;
-        var cw=rect.width-padLeft-8; // 減去 pad.left 和 pad.right
-        var cellW=cw/n;
-        var idx=Math.floor(x/cellW);
+        var cellW=canvas2.offsetWidth/n;
+        var idx=Math.round(x/cellW-0.5); // 用 round 對齊格子中心
         if(idx<0||idx>=n)return;
         var d=_bpChartData[idx];
         if(!d||!d.hasData)return;
