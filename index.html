@@ -207,7 +207,7 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
   <div id="header">
     <div class="header-top">
       <div>
-        <div class="header-title-sub">FOOD &amp; LIFE LOG <span style="letter-spacing:0;opacity:0.5;font-size:9px">2604v32</span></div>
+        <div class="header-title-sub">FOOD &amp; LIFE LOG <span style="letter-spacing:0;opacity:0.5;font-size:9px">2604v33</span></div>
         <div class="header-title">🥗 Daily Journal</div>
       </div>
       <div class="header-right">
@@ -2459,7 +2459,7 @@ function renderBpTab(){
   month.forEach(function(b){(byDate[b.date]=byDate[b.date]||[]).push(b);});
   // 有症狀但沒有血壓記錄的日期也加進來
   monthSymsAll.forEach(function(s){if(!byDate[s.date])byDate[s.date]=[];});
-  var dates=Object.keys(byDate).sort(function(a,b){return a.localeCompare(b);});
+  var dates=Object.keys(byDate).sort(function(a,b){return b.localeCompare(a);});
   dates.forEach(function(date){
     var dayRecs=byDate[date];
     var daySyms=allSyms.filter(function(s){return s.date===date;});
@@ -2567,7 +2567,8 @@ function renderBpTab(){
         if(!d||!d.hasData)return;
         var found=document.querySelector('#viewBp [data-bp-date="'+d.fullDate+'"]');
         if(found){
-          found.scrollIntoView({behavior:'smooth',block:'start'});
+          var top=found.getBoundingClientRect().top+window.pageYOffset-120;
+          window.scrollTo({top:top,behavior:'smooth'});
           found.style.transition='box-shadow .3s';
           found.style.boxShadow='0 0 0 3px #c8a96e';
           setTimeout(function(){found.style.boxShadow='none';},1000);
