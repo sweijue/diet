@@ -207,7 +207,7 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
   <div id="header">
     <div class="header-top">
       <div>
-        <div class="header-title-sub">FOOD &amp; LIFE LOG <span style="letter-spacing:0;opacity:0.5;font-size:9px">2604v31</span></div>
+        <div class="header-title-sub">FOOD &amp; LIFE LOG <span style="letter-spacing:0;opacity:0.5;font-size:9px">2604v32</span></div>
         <div class="header-title">🥗 Daily Journal</div>
       </div>
       <div class="header-right">
@@ -2459,7 +2459,7 @@ function renderBpTab(){
   month.forEach(function(b){(byDate[b.date]=byDate[b.date]||[]).push(b);});
   // 有症狀但沒有血壓記錄的日期也加進來
   monthSymsAll.forEach(function(s){if(!byDate[s.date])byDate[s.date]=[];});
-  var dates=Object.keys(byDate).sort(function(a,b){return b.localeCompare(a);});
+  var dates=Object.keys(byDate).sort(function(a,b){return a.localeCompare(b);});
   dates.forEach(function(date){
     var dayRecs=byDate[date];
     var daySyms=allSyms.filter(function(s){return s.date===date;});
@@ -2557,12 +2557,11 @@ function renderBpTab(){
       canvas2.addEventListener('click',function(ev){
         if(!_bpChartData.length)return;
         var rect=canvas2.getBoundingClientRect();
-        // iOS touch 用 changedTouches，mouse 用 clientX
         var clientX=ev.changedTouches?ev.changedTouches[0].clientX:ev.clientX;
         var x=clientX-rect.left;
         var n=_bpChartData.length;
         var cellW=canvas2.offsetWidth/n;
-        var idx=Math.round(x/cellW-0.5); // 用 round 對齊格子中心
+        var idx=Math.floor(x/cellW);
         if(idx<0||idx>=n)return;
         var d=_bpChartData[idx];
         if(!d||!d.hasData)return;
