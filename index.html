@@ -207,7 +207,7 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
   <div id="header">
     <div class="header-top">
       <div>
-        <div class="header-title-sub">FOOD &amp; LIFE LOG <span style="letter-spacing:0;opacity:0.5;font-size:9px">2604v33</span></div>
+        <div class="header-title-sub">FOOD &amp; LIFE LOG <span style="letter-spacing:0;opacity:0.5;font-size:9px">2604v36</span></div>
         <div class="header-title">🥗 Daily Journal</div>
       </div>
       <div class="header-right">
@@ -307,6 +307,13 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
         <div class="form-label">餐別</div>
         <div class="chip-group" id="mealTypeChips"></div>
         <div class="form-label">食物（空格分隔，自動估算卡路里）</div>
+        <div id="quickFoodsWrap" style="display:none;margin-bottom:8px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+            <span style="font-size:12px;color:#bbb">常用食物</span>
+            <button onclick="toggleQuickFoods()" id="quickFoodsToggle" style="background:none;border:none;font-size:12px;color:#bbb;cursor:pointer;padding:0">展開 ▾</button>
+          </div>
+          <div id="quickFoodsList" style="display:none;flex-wrap:wrap;gap:5px"></div>
+        </div>
         <textarea id="fFoodText" class="form-textarea" rows="3" placeholder="例如：雞胸肉 白飯 花椰菜 荷包蛋" oninput="onFoodTextChange()"></textarea>
         <div id="foodTagsRow" style="margin-top:8px;margin-bottom:4px"></div>
         <div id="calEstRow" style="display:none;background:#f5f0e8;border-radius:10px;padding:9px 14px;margin-top:6px;align-items:center;justify-content:space-between">
@@ -1044,7 +1051,7 @@ function renderCard(e,ctx){
   </div>`:'';
   if(photos.length){setTimeout(()=>{photos.forEach((p,i)=>{const el=document.getElementById('cimg-'+ctx+'-'+e.id+'-'+i);if(el)loadPhotoIntoImg(el,p);});},0);  
     if(photos.length>1){setTimeout(()=>{const wrap=document.getElementById('imgs-'+ctx+'-'+e.id);if(wrap)wrap.addEventListener('scroll',function(){tcardUpdateDots(ctx+'-'+e.id,wrap,photos.length);},{passive:true});},100);}}
-  const tagsHtml=isMeal&&e.foods?.length?`<div class="tags">${e.foods.map(f=>`<span class="tag">${esc(f.name)}</span>`).join('')}</div>`:'';
+  const tagsHtml=isMeal&&e.foods?.length?`<div class="tags">${e.foods.map(f=>`<span class="tag" onclick="copyFoodTag(event,'${esc(f.name).replace(/'/g,'\\&apos;')}')">${esc(f.name)}</span>`).join('')}</div>`:'';
   const mealCal=isMeal?(e.foods||[]).reduce((a,f)=>a+Math.round((f.cal||0)*(f.qty||1)),0):0;
   const hasUnknown=isMeal&&(e.foods||[]).some(f=>f.cal===0||f.cal===-1);
   const calLabel=isMeal&&mealCal>0
@@ -1593,6 +1600,7 @@ function saveEntry(){
   }
   if(editId)entries=entries.map(e=>e.id==editId?entry:e);else entries.push(entry);
   saveEntries();closeAdd();
+  renderQuickFoods();
   if(currentTab==='timeline')rerenderDay(entry.date);
   else if(currentTab==='calendar')renderCalendar();
 }
@@ -1738,6 +1746,61 @@ function tcardUpdateDots(id,wrap,total){
   for(var i=0;i<numDots;i++){
     var dot=document.getElementById('dot-'+id+'-'+i);
     if(dot)dot.style.background=i===pageIdx?'#fff':'rgba(255,255,255,.45)';
+  }
+}
+// ══ 常用食物快捷 ══════════════════════════════════════════════
+var _quickExpanded=false;
+function getFreqFoods(){
+  var count={};
+  entries.forEach(function(e){
+    if(e.type!=='meal'||!e.foods)return;
+    e.foods.forEach(function(f){
+      if(f.name)count[f.name]=(count[f.name]||0)+1;
+    });
+  });
+  return Object.entries(count)
+    .filter(function(x){return x[1]>=3;})
+    .sort(function(a,b){return b[1]-a[1];})
+    .slice(0,30)
+    .map(function(x){return x[0];});
+}
+function renderQuickFoods(){
+  var foods=getFreqFoods();
+  var wrap=document.getElementById('quickFoodsWrap');
+  var list=document.getElementById('quickFoodsList');
+  var toggle=document.getElementById('quickFoodsToggle');
+  if(!wrap||!list||!foods.length){if(wrap)wrap.style.display='none';return;}
+  wrap.style.display='block';
+  var show=_quickExpanded?foods:foods.slice(0,10);
+  list.innerHTML=show.map(function(f){
+    var safe=esc(f).replace(/"/g,'&quot;');
+    return '<button onclick="addQuickFood(&quot;'+safe+'&quot;)" style="padding:5px 11px;border-radius:16px;border:1px solid #e0d8cc;background:#faf8f5;color:#8b6f47;font-size:13px;font-weight:600;cursor:pointer">'+esc(f)+'</button>';
+  }).join('');
+  if(foods.length>10){
+    toggle.style.display='block';
+    toggle.textContent=_quickExpanded?'收合 ▴':'展開 ▾ ('+foods.length+')';
+  } else {
+    toggle.style.display='none';
+  }
+  list.style.display='flex';
+}
+function toggleQuickFoods(){
+  _quickExpanded=!_quickExpanded;
+  renderQuickFoods();
+}
+function addQuickFood(name){
+  var ta=document.getElementById('fFoodText');
+  if(!ta)return;
+  var cur=ta.value.trim();
+  ta.value=cur?cur+' '+name:name;
+  onFoodTextChange();
+}
+function copyFoodTag(ev,name){
+  ev.preventDefault();
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(name).then(function(){showToast('✅ 已複製：'+name);}).catch(function(){showToast(name);});
+  } else {
+    showToast(name);
   }
 }
 function closeLightbox(){document.getElementById('lightbox').style.display='none';}
