@@ -207,7 +207,7 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
   <div id="header">
     <div class="header-top">
       <div>
-        <div class="header-title-sub">FOOD &amp; LIFE LOG <span style="letter-spacing:0;opacity:0.5;font-size:9px">2604v36</span></div>
+        <div class="header-title-sub">FOOD &amp; LIFE LOG <span style="letter-spacing:0;opacity:0.5;font-size:9px">2604v37</span></div>
         <div class="header-title">🥗 Daily Journal</div>
       </div>
       <div class="header-right">
@@ -1325,6 +1325,7 @@ function openAdd(type,date){
   document.getElementById('addSheet').style.display='flex';
   document.getElementById('addSheet').querySelector('.sheet-save').textContent='儲存';
   closeDropdown();
+  if(type==='meal'||currentType==='meal'){_quickExpanded=false;renderQuickFoods();}
 }
 function closeAdd(){document.getElementById('addSheet').style.display='none';}
 function closeAddIfBg(ev){if(ev.target===document.getElementById('addSheet'))closeAdd();}
@@ -1335,7 +1336,7 @@ function setType(t){
   document.getElementById('mealFields').style.display=t==='meal'?'block':'none';
   document.getElementById('exerciseFields').style.display=t==='exercise'?'block':'none';
 }
-function switchType(t){setType(t);}
+function switchType(t){setType(t);if(t==='meal')renderQuickFoods();}
 
 // ── 體重設定 ──────────────────────────────────────────────────────
 
