@@ -207,7 +207,7 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
   <div id="header">
     <div class="header-top">
       <div>
-        <div class="header-title-sub">FOOD &amp; LIFE LOG <span style="letter-spacing:0;opacity:0.5;font-size:9px">2604v37</span></div>
+        <div class="header-title-sub">FOOD &amp; LIFE LOG <span style="letter-spacing:0;opacity:0.5;font-size:9px">2604v43</span></div>
         <div class="header-title">🥗 Daily Journal</div>
       </div>
       <div class="header-right">
@@ -1234,8 +1234,8 @@ function switchTab(tab){
   if(!showFab)closeFabMenu();
   if(tab==='calendar'){renderCalendar();window.scrollTo({top:0,behavior:'instant'});}
   else if(tab==='bp'){renderBpTab();window.scrollTo({top:0,behavior:'instant'});}
-  else if(tab==='stats'){if(!_statsInited){initStatPeriod();_statsInited=true;}renderStats();window.scrollTo({top:0,behavior:'instant'});}
-  else if(tab==='ex'){renderExStats();window.scrollTo({top:0,behavior:'instant'});}
+  else if(tab==='stats'){initStatPeriod();renderStats();window.scrollTo({top:0,behavior:'instant'});}
+  else if(tab==='ex'){initExStatPeriod();renderExStats();window.scrollTo({top:0,behavior:'instant'});}
   else scrollToDate(calSelected);
 }
 function calPrev(){if(calMonth===0){calYear--;calMonth=11;}else calMonth--;renderCalendar();}
@@ -2564,6 +2564,7 @@ function renderBpTab(){
         html+='<span style="font-size:14px;color:#6b4fa0;font-weight:600">'+(s.tags||[]).join('・')
           +(s.note?'<span style="border-left:1.5px solid #d0c0e8;margin-left:6px;padding-left:6px;font-size:13px;color:#a8a8a8;font-style:italic;font-weight:400">'+esc(s.note)+'</span>':'')
           +'</span>';
+        if(s.endTime)html+='<div style="font-size:12px;color:#bbb;margin-top:2px">'+s.time+' → '+s.endTime.slice(-5)+'</div>';
         html+='<span style="margin-left:auto;font-size:14px;font-weight:700;background:'+sc+'22;color:'+sc+';padding:2px 6px;border-radius:99px">'+sv+'/10</span>';
         html+='</div>';
       });
@@ -2872,7 +2873,7 @@ function renderSymptomCard(e,ctx){
     ontouchstart="tsStart(event,'${e.id}','${ctx}')"
     ontouchmove="tsMove(event,'${e.id}','${ctx}')"
     ontouchend="tsEnd(event,'${e.id}','${ctx}')">
-    <div class="tcard-time">${e.time}</div>
+    <div class="tcard-time">${e.time}${e.endTime?" → "+e.endTime.slice(-5):""}</div>
     <div class="tcard-body symptom">
       <div class="tcard-content">
         <div class="tcard-row">
@@ -2881,6 +2882,9 @@ function renderSymptomCard(e,ctx){
         </div>
         <div style="margin:4px 0 2px">${(e.tags||[]).map(t=>`<span class="symptom-tag">${esc(t)}</span>`).join('')}</div>
         ${e.note?`<div class="tcard-note">${esc(e.note)}</div>`:''}
+        ${!e.endTime
+          ?`<button onclick="markSymEnd('${e.id}','${ctx}')" style="margin-top:5px;background:#f0f7f0;border:1px solid #b8ddb8;border-radius:8px;padding:3px 10px;font-size:12px;color:#5a9a6a;cursor:pointer">✅ 標記消失</button>`
+          :`<button onclick="editSymEnd('${e.id}','${ctx}')" style="margin-top:5px;background:#f5f0e8;border:1px solid #d8cfc4;border-radius:8px;padding:3px 10px;font-size:12px;color:#8b6f47;cursor:pointer">✏️ 修改消失時間</button>`}
       </div>
     </div>
   </div>
@@ -2891,6 +2895,35 @@ function renderSymptomCard(e,ctx){
 </div>`;
 }
 function doEditSym(id,ctx){closeSwipe();openSymptomSheet(id);}
+function editSymEnd(id,ctx){
+  var syms=loadSymptoms();
+  var s=syms.find(function(x){return x.id===id;});
+  if(!s)return;
+  var cur=s.endTime?s.endTime.slice(-5):'';
+  var newTime=prompt('修改消失時間（HH:MM）：',cur);
+  if(newTime===null)return;
+  newTime=newTime.trim();
+  if(!newTime){
+    // 清除
+    s.endTime='';
+  } else {
+    s.endTime=s.date+' '+newTime;
+  }
+  saveSymptoms(syms);
+  rerenderDay(s.date);
+  showToast(newTime?'✅ 已更新：'+newTime:'已清除消失時間');
+}
+function markSymEnd(id,ctx){
+  var now=new Date();
+  var timeStr=now.toTimeString().slice(0,5);
+  var syms=loadSymptoms();
+  var s=syms.find(function(x){return x.id===id;});
+  if(!s)return;
+  s.endTime=todayDate()+' '+timeStr;
+  saveSymptoms(syms);
+  rerenderDay(s.date);
+  showToast('✅ 已標記消失於 '+timeStr);
+}
 
 // grouped() 需要包含 symptom entries
 // editEntry 需要處理 symptom
@@ -2960,7 +2993,7 @@ function renderStats(){
     }).join('');
     return '<div>'
       +'<div class="stat-row" style="cursor:'+(hasBp?'pointer':'default')+'" data-sid="'+s.id+'" id="srec-'+s.id+'" '+(hasBp?'onclick="toggleStatBp(this.dataset.sid)"':'')+'>'
-      +'<span style="font-size:14px;color:#bbb;min-width:60px">'+s.date.slice(5)+' '+s.time+'</span>'
+      +'<span style="font-size:14px;color:#b09070;font-weight:600;min-width:60px">'+s.date.slice(5)+' '+s.time+(s.endTime?' → '+s.endTime.slice(-5):'')+'</span>'
       +(isInPeriod(s.date)?'<span style="font-size:14px;margin-right:2px">🩸</span>':'')
       +'<span style="flex:1;font-size:14px;color:#2c2416;margin:0 4px">'+(s.tags||[]).join('、')
       +(s.note?'<span style="border-left:1.5px solid #ddd;margin-left:6px;padding-left:6px;font-size:13px;color:#a8a8a8;font-style:italic;font-weight:400">'+esc(s.note)+'</span>':'')
@@ -3126,6 +3159,12 @@ function exStatNav(dir){
     exStatWeek=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   }
   renderExStats();
+}
+function initExStatPeriod(){
+  var allEx=entries.filter(function(e){return e.type==='exercise';});
+  if(!allEx.length)return;
+  var latest=allEx.map(function(e){return e.date;}).sort().pop();
+  if(latest)exStatWeek=getWeekStart(latest);
 }
 function exStatNav2(p){exStatPeriod=p;renderExStats();}
 
