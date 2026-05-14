@@ -2900,18 +2900,32 @@ function editSymEnd(id,ctx){
   var s=syms.find(function(x){return x.id===id;});
   if(!s)return;
   var cur=s.endTime?s.endTime.slice(-5):'';
-  var newTime=prompt('修改消失時間（HH:MM）：',cur);
-  if(newTime===null)return;
-  newTime=newTime.trim();
-  if(!newTime){
-    // 清除
-    s.endTime='';
-  } else {
-    s.endTime=s.date+' '+newTime;
-  }
-  saveSymptoms(syms);
-  rerenderDay(s.date);
-  showToast(newTime?'✅ 已更新：'+newTime:'已清除消失時間');
+  // 顯示 time picker overlay
+  var overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:flex-end';
+  overlay.innerHTML='<div style="width:100%;background:#fff;border-radius:16px 16px 0 0;padding:20px 20px 40px">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'
+    +'<button id="endTimeClear" style="background:none;border:none;color:#e53935;font-size:15px;cursor:pointer">清除</button>'
+    +'<span style="font-size:16px;font-weight:700;color:#2c2416">修改消失時間</span>'
+    +'<button id="endTimeSave" style="background:none;border:none;color:#5b8cbf;font-size:15px;font-weight:700;cursor:pointer">儲存</button>'
+    +'</div>'
+    +'<input type="time" id="endTimeInput" value="'+cur+'" style="width:100%;font-size:32px;border:none;outline:none;text-align:center;color:#2c2416;background:transparent">'
+    +'</div>';
+  document.body.appendChild(overlay);
+  var inp=document.getElementById('endTimeInput');
+  inp.focus();
+  document.getElementById('endTimeClear').onclick=function(){
+    s.endTime='';saveSymptoms(syms);
+    document.body.removeChild(overlay);
+    rerenderDay(s.date);showToast('已清除消失時間');
+  };
+  document.getElementById('endTimeSave').onclick=function(){
+    var v=inp.value;
+    if(v){s.endTime=s.date+' '+v;saveSymptoms(syms);}
+    document.body.removeChild(overlay);
+    rerenderDay(s.date);showToast(v?'✅ 已更新：'+v:'');
+  };
+  overlay.addEventListener('click',function(e){if(e.target===overlay){document.body.removeChild(overlay);}});
 }
 function markSymEnd(id,ctx){
   var now=new Date();
@@ -2993,7 +3007,7 @@ function renderStats(){
     }).join('');
     return '<div>'
       +'<div class="stat-row" style="cursor:'+(hasBp?'pointer':'default')+'" data-sid="'+s.id+'" id="srec-'+s.id+'" '+(hasBp?'onclick="toggleStatBp(this.dataset.sid)"':'')+'>'
-      +'<span style="font-size:14px;color:#b09070;font-weight:600;min-width:60px">'+s.date.slice(5)+' '+s.time+(s.endTime?' → '+s.endTime.slice(-5):'')+'</span>'
+      +'<span style="font-size:14px;color:#4d4d4d;font-weight:600;min-width:60px">'+s.date.slice(5)+' '+s.time+(s.endTime?' → '+s.endTime.slice(-5):'')+'</span>'
       +(isInPeriod(s.date)?'<span style="font-size:14px;margin-right:2px">🩸</span>':'')
       +'<span style="flex:1;font-size:14px;color:#2c2416;margin:0 4px">'+(s.tags||[]).join('、')
       +(s.note?'<span style="border-left:1.5px solid #ddd;margin-left:6px;padding-left:6px;font-size:13px;color:#a8a8a8;font-style:italic;font-weight:400">'+esc(s.note)+'</span>':'')
