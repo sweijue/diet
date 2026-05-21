@@ -2246,6 +2246,53 @@ function buildBpSymCorrelationHtml(bpRecs, symRecs){
 var _bpChartMode='all';
 var _bpChartData=[];
 
+function bpJumpToDate(){
+  // 顯示日期選擇 overlay
+  var overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:flex-end';
+  overlay.innerHTML='<div style="width:100%;background:#fff;border-radius:16px 16px 0 0;padding:20px 20px 40px">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'
+    +'<button id="bpJumpCancel" style="background:none;border:none;color:#bbb;font-size:15px;cursor:pointer">取消</button>'
+    +'<span style="font-size:16px;font-weight:700;color:#2c2416">跳到日期</span>'
+    +'<button id="bpJumpGo" style="background:none;border:none;color:#5b8cbf;font-size:15px;font-weight:700;cursor:pointer">前往</button>'
+    +'</div>'
+    +'<input type="date" id="bpJumpInput" style="width:100%;font-size:20px;border:1px solid #e0d8cc;border-radius:10px;padding:10px;box-sizing:border-box;color:#2c2416;background:#fff">'
+    +'</div>';
+  document.body.appendChild(overlay);
+  // 預設今天
+  document.getElementById('bpJumpInput').value=todayDate();
+  document.getElementById('bpJumpCancel').onclick=function(){document.body.removeChild(overlay);};
+  document.getElementById('bpJumpGo').onclick=function(){
+    var val=document.getElementById('bpJumpInput').value;
+    document.body.removeChild(overlay);
+    if(!val)return;
+    // 先找卡片
+    var card=document.querySelector('#viewBp [data-bp-date="'+val+'"]');
+    if(card){
+      var top=card.getBoundingClientRect().top+window.pageYOffset-120;
+      window.scrollTo({top:top,behavior:'smooth'});
+      card.style.transition='box-shadow .3s';
+      card.style.boxShadow='0 0 0 3px #c8a96e';
+      setTimeout(function(){card.style.boxShadow='none';},1000);
+    } else {
+      // 沒有卡片，嘗試跳到圖表對應位置
+      var found=_bpChartData.find(function(d){return d.fullDate===val;});
+      if(found){
+        var n=_bpChartData.length;
+        var idx=_bpChartData.indexOf(found);
+        var wrap=document.getElementById('bpBarWrap');
+        if(wrap){
+          var canvas=document.getElementById('bpBarChart');
+          var cellW=canvas?canvas.offsetWidth/n:0;
+          wrap.scrollTo({left:idx*cellW,behavior:'smooth'});
+        }
+      } else {
+        showToast('該日期沒有血壓記錄');
+      }
+    }
+  };
+  overlay.addEventListener('click',function(e){if(e.target===overlay)document.body.removeChild(overlay);});
+}
 function setBpChartMode(m){
   _bpChartMode=m;
   ['all','morn','eve'].forEach(function(k){
@@ -2270,7 +2317,7 @@ function initBpChart(monthData){
   // 填滿最近30天所有日期
   var today=todayDate();
   var allDates=[];
-  for(var i=29;i>=0;i--){
+  for(var i=179;i>=0;i--){
     var d=new Date(today+'T00:00:00');d.setDate(d.getDate()-i);
     allDates.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'));
   }
@@ -2466,7 +2513,7 @@ function renderBpTab(){
   if(!el)return;
   var recs=loadBpRecords();
   var today=todayDate();
-  var d30=new Date(today+'T00:00:00');d30.setDate(d30.getDate()-29);
+  var d30=new Date(today+'T00:00:00');d30.setDate(d30.getDate()-179);
   var from30=d30.toISOString().slice(0,10);
   var month=recs.filter(function(b){return b.date>=from30&&b.date<=today;});
   month.sort(function(a,b){return a.date.localeCompare(b.date)||a.time.localeCompare(b.time);});
@@ -2490,7 +2537,7 @@ function renderBpTab(){
 
   var html='';
   if(!month.length){
-    html+='<div class="empty"><div class="empty-icon">🫀</div><div style="font-size:17px;color:#aaa">最近30天沒有血壓記錄</div></div>';
+    html+='<div class="empty"><div class="empty-icon">🫀</div><div style="font-size:17px;color:#aaa">最近180天沒有血壓記錄</div></div>';
     el.innerHTML=html;return;
   }
 
@@ -2502,6 +2549,9 @@ function renderBpTab(){
   html+='<button data-mode="all" onclick="setBpChartMode(this.dataset.mode)" id="bpSeg-all" style="'+bpSegBase+';background:#2c2416;color:#f7f4ef">全部</button>';
   html+='<button data-mode="morn" onclick="setBpChartMode(this.dataset.mode)" id="bpSeg-morn" style="'+bpSegBase+';background:transparent;color:#8b6f47">☀️ 早晨</button>';
   html+='<button data-mode="eve" onclick="setBpChartMode(this.dataset.mode)" id="bpSeg-eve" style="'+bpSegBase+';background:transparent;color:#8b6f47">🌙 晚間</button>';
+  html+='</div>';
+  html+='<div style="display:flex;justify-content:flex-end;margin-bottom:8px">';
+  html+='<button onclick="bpJumpToDate()" style="background:#f5f0e8;border:1px solid #e0d8cc;border-radius:8px;padding:5px 12px;font-size:13px;color:#8b6f47;cursor:pointer">📅 跳到日期</button>';
   html+='</div>';
   html+='<div style="display:flex;align-items:flex-start"><canvas id="bpYAxis" style="flex-shrink:0"></canvas><div id="bpBarWrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;flex:1"><canvas id="bpBarChart"></canvas></div></div>';
   html+='<div style="font-size:14px;color:#8b6f47;font-weight:700;margin:10px 0 6px;padding-top:10px;border-top:1px solid #f0ece6">❤️ 心率 bpm</div>';
