@@ -199,7 +199,7 @@ input[type=range].sev-range::-webkit-slider-thumb{-webkit-appearance:none;width:
   <div id="header">
     <div class="header-top">
       <div>
-        <div class="header-title-sub">FOOD &amp; LIFE LOG <span style="letter-spacing:0;opacity:0.5;font-size:9px">2604v52</span></div>
+        <div class="header-title-sub">FOOD &amp; LIFE LOG <span style="letter-spacing:0;opacity:0.5;font-size:9px">2604v54</span></div>
         <div class="header-title">🥗 Daily Journal</div>
       </div>
       <div class="header-right">
@@ -1009,7 +1009,7 @@ function renderTimeline(){
     <span class="day-name">${fmtDate(date)}</span>
     ${isToday?'<span class="today-badge">今天</span>':''}
     ${isInPeriod(date)?'<span style="font-size:15px;line-height:1">🩸</span>':''}
-    ${(()=>{const bps=loadBpRecords().filter(b=>b.date===date);return bps.length&&bps.some(b=>b.meds)?'<span style="font-size:15px;line-height:1">💊</span>':bps.length?'<span style="font-size:15px;line-height:1;filter:grayscale(1);opacity:.35">💊</span>':''})()}
+    ${(()=>{const m=loadMeds()[date]||loadBpRecords().filter(b=>b.date===date).some(b=>b.meds);return '<button onclick="event.stopPropagation();toggleMeds(\''+date+'\')" style="background:none;border:none;cursor:pointer;font-size:15px;padding:0;line-height:1;opacity:'+(m?'1':'0.25')+'">💊</button>';})()}
     <span id="tbadge-${date}" style="display:${col?'inline-block':'none'};font-size:11px;background:#e8e2d8;color:#8b6f47;padding:2px 8px;border-radius:99px;font-weight:600">${de.length}筆</span>
   </div>
   <div style="display:flex;align-items:center;gap:8px">
@@ -1959,6 +1959,23 @@ let selSymTags=new Set(),selSeverityVal=5;
 
 // ══ 血壓記錄 ══════════════════════════════════════════════════════
 var _bpCache=null;
+
+// ══ 服藥記錄（獨立於血壓，以日期為 key）══════════════════════════
+function loadMeds(){try{return JSON.parse(localStorage.getItem('bp_meds')||'{}');}catch{return {};}}
+function saveMeds(obj){localStorage.setItem('bp_meds',JSON.stringify(obj));}
+function toggleMeds(date){
+  var m=loadMeds();
+  m[date]=!m[date];
+  saveMeds(m);
+  // 更新圖表和頁面
+  if(currentTab==='bp')renderBpTab();
+  else rerenderDayHeader(date);
+}
+function rerenderDayHeader(date){
+  // 更新時間線的💊圖示
+  var el=document.getElementById('tday-'+date);
+  if(el)rerenderDay(date);
+}
 function loadBpRecords(){
   if(_bpCache)return _bpCache;
   try{_bpCache=JSON.parse(localStorage.getItem('bp_records')||'[]');}catch{_bpCache=[];}
@@ -2324,7 +2341,8 @@ function initBpChart(monthData){
   _bpChartData=allDates.map(function(d){
     var dd=byDate[d]||{morn:[],eve:[]};
     var allRecs=[...dd.morn,...dd.eve];
-    var hasMeds=allRecs.some(function(b){return b.meds;});
+    var medsData=loadMeds();
+    var hasMeds=medsData[d]||allRecs.some(function(b){return b.meds;});
     return {
       date:d.slice(5).replace('-','/'),
       fullDate:d,
@@ -2580,6 +2598,7 @@ function renderBpTab(){
     }
     var daMorn=dayAvg(dayMorn),daEve=dayAvg(dayEve);
     // 整天框在一個卡片裡
+    var medsObj=loadMeds();var dateMeds=medsObj[date]||false;
     html+='<div data-bp-date="'+date+'" style="background:#fff;border-radius:14px;border:1.5px solid #e0d8cc;margin-bottom:12px;overflow:hidden">';
     // 日期標頭列
     html+='<div style="display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid #f0ece6;gap:8px">';
